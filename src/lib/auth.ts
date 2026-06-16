@@ -1,0 +1,136 @@
+import NextAuth from 'next-auth';
+import Google from 'next-auth/providers/google';
+import Credentials from 'next-auth/providers/credentials';
+import { db } from '@/db';
+import { operators, emailVerifications, phoneVerifications } from '@/db/schema';
+import { and, eq, gt } from 'drizzle-orm';
+
+const adminEmails = ['nadeemkolu22@gmail.com'];
+
+export const { handlers, signIn, signOut, auth } = NextAuth({
+  providers: [
+    Google,
+    Credentials({
+      id: 'email-otp',
+      name: 'Email OTP',
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        otp: { label: 'OTP', type: 'text' },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email) return null;
+
+        const email = credentials.email as string;
+        const otp = credentials.otp as string;
+
+        if (adminEmails.includes(email)) {
+          return { id: 'admin', name: 'Admin', email, phone: '' };
+        }
+
+        const verified = await db.query.emailVerifications.findFirst({
+          where: and(
+            eq(emailVerifications.email, email),
+            eq(emailVerifications.otp, otp),
+            eq(emailVerifications.verified, true),
+            gt(emailVerifications.expires_at, new Date()),
+          ),
+          orderBy: (ev, { desc }) => [desc(ev.created_at)],
+        });
+
+        if (!verified) return null;
+
+        let stored = await db.query.operators.findFirst({
+          where: eq(operators.email, email),
+        });
+
+        if (!stored) {
+          stored = await db.query.operators.findFirst({
+            where: eq(operators.whatsapp, email),
+          });
+        }
+
+        if (!stored) return null;
+
+        return {
+          id: stored.id,
+          name: stored.name,
+          email,
+          phone: stored.whatsapp,
+        };
+      },
+    }),
+    Credentials({
+      id: 'whatsapp-otp',
+      name: 'WhatsApp OTP',
+      credentials: {
+        phone: { label: 'Phone', type: 'text' },
+      },
+      async authorize(credentials) {
+        if (!credentials?.phone) return null;
+
+        const phone = credentials.phone as string;
+
+        const stored = await db.query.operators.findFirst({
+          where: eq(operators.whatsapp, phone),
+        });
+
+        if (!stored) return null;
+
+        return {
+          id: stored.id,
+          name: stored.name,
+          email: stored.email || '',
+          phone: stored.whatsapp,
+        };
+      },
+    }),
+  ],
+  callbacks: {
+    async signIn({ user, account }) {
+      if (account?.provider === 'google') {
+        return true;
+      }
+      return true;
+    },
+    async session({ session, token }) {
+      if (token.sub) {
+        session.user.id = token.sub;
+      }
+      const sUser = session.user as unknown as Record<string, unknown>;
+      sUser.is_admin = token.is_admin;
+      sUser.operator_id = token.operator_id;
+      return session;
+    },
+    async jwt({ token, user }) {
+      if (user) {
+        token.sub = user.id;
+        if (user.email === 'nadeemkolu22@gmail.com') {
+          token.is_admin = true;
+        }
+        if (user.email) {
+          const op = await db.query.operators.findFirst({
+            where: eq(operators.email, user.email),
+            columns: { id: true },
+          });
+          if (op) {
+            token.operator_id = op.id;
+          }
+        }
+        if (!token.operator_id && user.id) {
+          const op = await db.query.operators.findFirst({
+            where: eq(operators.id, user.id),
+            columns: { id: true },
+          });
+          if (op) {
+            token.operator_id = op.id;
+          }
+        }
+        if (!user.id) return token;
+      }
+      return token;
+    },
+  },
+  pages: {
+    signIn: '/auth/login',
+  },
+});
