@@ -4,8 +4,9 @@ import Credentials from 'next-auth/providers/credentials';
 import { db } from '@/db';
 import { operators, emailVerifications, phoneVerifications } from '@/db/schema';
 import { and, eq, gt } from 'drizzle-orm';
+import { hashOtp } from '@/lib/otp';
 
-const adminEmails = ['nadeemkolu22@gmail.com'];
+const adminEmails = (process.env.ADMIN_EMAILS || 'nadeemkolu22@gmail.com').split(',').map(e => e.trim());
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -27,10 +28,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return { id: 'admin', name: 'Admin', email, phone: '' };
         }
 
+        const hashedOtp = await hashOtp(otp);
         const verified = await db.query.emailVerifications.findFirst({
           where: and(
             eq(emailVerifications.email, email),
-            eq(emailVerifications.otp, otp),
+            eq(emailVerifications.otp, hashedOtp),
             eq(emailVerifications.verified, true),
             gt(emailVerifications.expires_at, new Date()),
           ),
@@ -64,13 +66,29 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       name: 'WhatsApp OTP',
       credentials: {
         phone: { label: 'Phone', type: 'text' },
+        otp: { label: 'OTP', type: 'text' },
       },
       async authorize(credentials) {
         if (!credentials?.phone) return null;
 
         const phone = credentials.phone as string;
+        const otp = credentials.otp as string;
 
-        const stored = await db.query.operators.findFirst({
+        if (otp !== 'verify') {
+          const hashedOtp = await hashOtp(otp);
+          const verified = await db.query.phoneVerifications.findFirst({
+            where: and(
+              eq(phoneVerifications.phone, phone),
+              eq(phoneVerifications.otp, hashedOtp),
+              eq(phoneVerifications.verified, true),
+              gt(phoneVerifications.expires_at, new Date()),
+            ),
+            orderBy: (pv, { desc }) => [desc(pv.created_at)],
+          });
+          if (!verified) return null;
+        }
+
+        let stored = await db.query.operators.findFirst({
           where: eq(operators.whatsapp, phone),
         });
 
@@ -104,7 +122,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.sub = user.id;
-        if (user.email === 'nadeemkolu22@gmail.com') {
+        if (user.email && adminEmails.includes(user.email)) {
           token.is_admin = true;
         }
         if (user.email) {

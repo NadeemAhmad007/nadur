@@ -11,8 +11,6 @@ graph TB
     subgraph Client [Browser]
         R[React 19 SPA]
         T[Tailwind CSS / shadcn]
-        L[Leaflet Maps]
-        CL[Cloudinary Widget]
     end
 
     subgraph NextJS [Next.js 16 Server]
@@ -33,9 +31,7 @@ graph TB
         C[Cloudinary]
         R[Resend]
         G[Google OAuth]
-        W[WhatsApp API]
-        O[OpenStreetMap Tiles]
-        S3[S3-compatible Storage]
+        W[OpenWA WhatsApp Gateway]
     end
 
     Client --> CDN
@@ -51,10 +47,6 @@ graph TB
     NA --> R
     NA --> W
     API --> C
-    CC --> C
-    CC --> L
-    L --> O
-    API --> S3
 ```
 
 ---
@@ -65,16 +57,19 @@ graph TB
 graph TB
     subgraph App [App Router Pages]
         L[layout.tsx]
-        LP[page.tsx - Landing]
-        BR[browse/page.tsx]
-        CT[category/page.tsx]
-        OP[op/slug/page.tsx]
+        HP[page.tsx - Browse Home]
+        OP[o/slug/page.tsx]
+        SP[search/page.tsx]
+        FP[favorites/page.tsx]
         JN[join/page.tsx]
         LG[auth/login/page.tsx]
         PO[portal/layout.tsx]
         PD[portal/page.tsx]
         PE[portal/edit/page.tsx]
         AD[admin/page.tsx]
+        AO[admin/operators/page.tsx]
+        ADET[admin/operators/[id]/page.tsx]
+        AC[admin/categories/page.tsx]
         NF[not-found.tsx]
     end
 
@@ -82,18 +77,18 @@ graph TB
         BP[browse-page.tsx]
         OC[operator-card.tsx]
         OPR[operator-profile.tsx]
-        SC[search-command.tsx]
         UI[ui/*.tsx - shadcn]
     end
 
     subgraph Lib [Library Layer]
         A[auth.ts]
-        DB[db.ts]
-        U[upload.ts]
+        CL[cloudinary.ts]
+        OW[openwa.ts]
         RE[resend.ts]
+        S3[s3.ts]
+        LOC[location.ts]
+        GH[ghats.ts]
         UT[utils.ts]
-        CO[constants.ts]
-        WH[whatsapp.ts]
     end
 
     subgraph Types [Types]
@@ -105,30 +100,24 @@ graph TB
         MIG[migrate.ts]
     end
 
-    BR --> BP
-    CT --> OC
+    HP --> BP
     OP --> OPR
-    JN --> A
+    SP --> OC
+    FP --> OC
+    JN --> UT
     LG --> A
     PD --> A
-    PD --> DB
-    PE --> A
-    PE --> DB
-    PE --> U
+    PE --> UT
     AD --> A
-    AD --> DB
 
     BP --> OC
     BP --> UI
     OPR --> UI
-    OPR --> WH
 
     A --> NA[NextAuth]
     A --> DZ[Drizzle]
-    A --> RE
-    DB --> DZ
-    U --> CL[Cloudinary SDK]
     RE --> R[Resend SDK]
+    CL --> C[Cloudinary SDK]
 
     SCHEMA --> DZ
     MIG --> NEON[@neondatabase/serverless]
@@ -145,13 +134,11 @@ sequenceDiagram
     participant DB as PostgreSQL
     participant Cloudinary
     participant Resend
-    participant WhatsApp
+    participant OpenWA
 
     Note over Browser,NextJS: Server Components (RSC)
-    Browser->>NextJS: Request /browse (initial load)
+    Browser->>NextJS: Request / (initial load)
     NextJS->>NextJS: Server Component renders
-    NextJS->>DB: SELECT operators (via Drizzle)
-    DB-->>NextJS: rows
     NextJS-->>Browser: SSR HTML + RSC payload
 
     Note over Browser,NextJS: Client Components (later interactions)
@@ -164,20 +151,20 @@ sequenceDiagram
     NextJS-->>Browser: JSON
 
     Note over Browser,NextJS: Auth Flow
-    Browser->>NextJS: Sign in with Google
+    Browser->>NextJS: POST /api/auth/send-otp { email }
     NextJS->>Resend: Send OTP email
-    NextJS->>WhatsApp: Send OTP message
+    Resend-->>NextJS: sent
+    NextJS-->>Browser: { ok: true }
+    Browser->>NextJS: POST /api/auth/verify { email, otp }
     NextJS->>DB: Verify OTP
     DB-->>NextJS: verified
     NextJS-->>Browser: JWT session cookie
 
     Note over Browser,NextJS: Photo Upload
-    Browser->>Cloudinary: Upload image (CldUploadButton)
-    Cloudinary-->>Browser: secure_url
-    Browser->>NextJS: PATCH /api/operators/[slug] { photos: [...] }
-    NextJS->>DB: UPDATE operators SET photos
-    DB-->>NextJS: success
-    NextJS-->>Browser: 200
+    Browser->>NextJS: POST /api/upload/photo (multipart)
+    NextJS->>Cloudinary: Upload buffer
+    Cloudinary-->>NextJS: { url, publicId }
+    NextJS-->>Browser: { url, key }
 ```
 
 ---
@@ -198,15 +185,11 @@ flowchart TD
 ```
 
 **Implementation:** `src/proxy.ts`
-- Runs as middleware (should be `middleware.ts` per Next.js convention — current filename may prevent automatic execution)
+- Runs as middleware (file is `proxy.ts`, not `middleware.ts` — may need renaming per Next.js convention)
 - Uses `matcher: ['/admin/:path*', '/portal/:path*']`
 - Calls `auth()` (NextAuth) to get session
 - For `/admin`: checks `session.user.is_admin === true`
 - For `/portal`: checks `session` exists
-
-**Client-side redundant checks:**
-- `/admin` page re-checks `session?.user?.is_admin` in useEffect and redirects if not admin
-- `/portal` layout re-checks session
 
 ---
 
@@ -221,7 +204,7 @@ flowchart TD
 | URL state | `useSearchParams` for browse filters |
 | Session | NextAuth's `useSession()` hook (React Context) |
 | Form state | Local component state |
-| Toasts | Sonner (global toast context in root layout) |
+| Toasts | Sonner (global toast context) |
 
 ---
 
@@ -229,21 +212,20 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    U[User clicks Upload] --> W[CldUploadButton opens]
-    W --> P[User selects file]
-    P --> CU[Cloudinary Upload API]
-    CU --> UU[Upload to Cloudinary CDN]
-    UU --> CU
-    CU --> CB[JavaScript callback]
-    CB --> S[Save URL to operator.photos array]
+    U[User clicks Upload] --> P[File input onChange]
+    P --> C[Compress via browser-image-compression]
+    C --> F[POST /api/upload/photo multipart/form-data]
+    F --> N[Next.js API Route]
+    N --> CL[Upload to Cloudinary]
+    CL --> CLR[Return { url, publicId }]
+    CLR --> S[Save URL to operator.photos array]
     S --> D[PATCH API -> DB]
 ```
 
 **Key Points:**
-- Cloudinary widget (`CldUploadButton` from `next-cloudinary`) handles client-side upload
-- No server-side upload processing
-- URLs stored as TEXT[] array in `operators.photos`
-- Backup S3 upload is INFERRED (env vars exist but no code path found)
+- Upload via custom API route, not client-side widget
+- Server validates MIME type (jpeg/png/webp) and size (max 5MB)
+- Images compressed client-side before upload
 
 ---
 
@@ -253,7 +235,7 @@ flowchart LR
 flowchart LR
     U[User clicks Near Me] --> G[Browser Geolocation API]
     G --> GL[Gets lat/lng]
-    GL --> R[Builds URL: /api/operators?lat=...&lng=...&radius=5000]
+    GL --> R[Builds URL: /api/operators?lat=...&lng=...&radius=10000]
     R --> Q[(PostgreSQL Query)]
     Q --> E[earth_distance ll_to_earth]
     E --> I[GiST Index Scan]
@@ -263,7 +245,6 @@ flowchart LR
 **Performance:**
 - GiST index on `ll_to_earth(lat, lng)` enables fast radius searches
 - Index only works when both `lat` and `lng` are non-null
-- Query pattern: `SELECT * FROM operators WHERE earth_distance(ll_to_earth(lat, lng), ll_to_earth($1, $2)) <= $3`
 
 ---
 
@@ -286,7 +267,7 @@ flowchart TD
         P1 -->|OAuth callback| JWT
         P2 -->|OTP verify| JWT
         P3 -->|OTP verify| JWT
-        JWT -->|Add operator_id, is_admin, user_role| T[Enriched JWT]
+        JWT -->|Add operator_id, is_admin| T[Enriched JWT]
         T -->|Store in cookie| C[Session Cookie]
         C -->|Session callback| S
         S -->|Inject into session| SS[Session with user.operator_id, user.is_admin]
@@ -297,7 +278,7 @@ flowchart TD
         E -->|No| FALLBACK[Look up operator by user.id]
         LOOK --> FOUND{Operator found?}
         FALLBACK --> FOUND
-        FOUND -->|Yes| ADD[Add operator_id, is_admin, user_role to token]
+        FOUND -->|Yes| ADD[Add operator_id, is_admin to token]
         FOUND -->|No| ADMIN{Is admin email?}
         ADMIN -->|Yes| SET_ADMIN[Set is_admin = true]
         ADMIN -->|No| SKIP[Skip enrichment]
@@ -310,9 +291,7 @@ flowchart TD
 
 ```
 src/app/page.tsx
-  ├── next/link
-  ├── lucide-react (icons)
-  └── @/components/ui/*
+  └── @/components/browse-page
 
 src/components/browse-page.tsx
   ├── next/navigation (useSearchParams, useRouter)
@@ -332,24 +311,15 @@ src/components/operator-profile.tsx
   ├── next/navigation (useParams)
   ├── react (useState, useEffect)
   ├── @/lib/utils (cn)
-  ├── @/lib/whatsapp
   ├── @/types
   ├── lucide-react
-  ├── sonner
-  ├── react-leaflet (MapContainer, TileLayer, Marker, Popup)
-  └── leaflet (icon)
+  └── sonner
 
 src/lib/auth.ts
-  ├── next-auth/adapters
   ├── @auth/core (NextAuth v5 beta)
   ├── next-auth/providers/google
-  ├── next-auth/providers/resend (INFERRED — or custom credentials)
-  ├── @/lib/db (Drizzle instance)
+  ├── @/db (Drizzle instance)
   └── @/db/schema (operators table)
-
-src/lib/db.ts
-  ├── @neondatabase/serverless (neon)
-  └── drizzle-orm/neon-http (drizzle)
 ```
 
 ---
@@ -363,21 +333,15 @@ graph TB
         DB_DEV[Neon Development DB]
     end
 
-    subgraph CI [CI/CD - Not Implemented]
-        GH[GitHub]
-        LINT[ESLint]
-        BUILD[Next Build]
-    end
-
     subgraph Prod [Production - Target]
         VERCEL[Vercel Deployment]
         DB_PROD[Neon Production DB]
         CL_PROD[Cloudinary Production]
         RESEND_PROD[Resend Production]
+        OWA[OpenWA Docker Container]
     end
 
-    Dev -->|git push| GH
-    GH -->|manual deploy| VERCEL
+    Dev -->|git push| VERCEL
     VERCEL --> DB_PROD
     VERCEL --> CL_PROD
     VERCEL --> RESEND_PROD
@@ -385,7 +349,5 @@ graph TB
 
 **Current State:**
 - No CI/CD pipeline configured
-- No Docker configuration
+- OpenWA WhatsApp gateway runs via Docker (`docker-compose.openwa.yml`)
 - Deployment is manual (vercel CLI or git push to Vercel)
-- Development uses local `next dev` on port 3000
-- Production target is Vercel (Next.js optimization is configured)

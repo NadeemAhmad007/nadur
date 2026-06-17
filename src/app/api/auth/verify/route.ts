@@ -1,9 +1,14 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/db';
-import { emailVerifications } from '@/db/schema';
-import { and, eq, gt } from 'drizzle-orm';
+import { verifyEmailOtp } from '@/lib/otp';
+import { rateLimit } from '@/lib/rate-limit';
 
 export async function POST(req: Request) {
+  const ip = req.headers.get('x-forwarded-for') || 'anon';
+  const { allowed } = rateLimit(`verify-otp:${ip}`, 5, 60000);
+  if (!allowed) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   try {
     const { email, otp } = await req.json();
 
@@ -11,24 +16,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Email and OTP are required' }, { status: 400 });
     }
 
-    const record = await db.query.emailVerifications.findFirst({
-      where: and(
-        eq(emailVerifications.email, email),
-        eq(emailVerifications.otp, otp),
-        eq(emailVerifications.verified, false),
-        gt(emailVerifications.expires_at, new Date()),
-      ),
-      orderBy: (ev, { desc }) => [desc(ev.created_at)],
-    });
-
-    if (!record) {
-      return NextResponse.json({ error: 'Invalid or expired OTP' }, { status: 401 });
+    const result = await verifyEmailOtp(email, otp);
+    if (!result.success) {
+      return NextResponse.json({ error: result.error }, { status: 401 });
     }
-
-    await db
-      .update(emailVerifications)
-      .set({ verified: true })
-      .where(eq(emailVerifications.id, record.id));
 
     return NextResponse.json({ success: true });
   } catch (error) {

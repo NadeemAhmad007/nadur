@@ -1,127 +1,214 @@
 'use client';
-
-import { useState, useEffect } from 'react';
-import { signOut, useSession } from 'next-auth/react';
+import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Shield, Users, Clock, CheckCircle, XCircle } from 'lucide-react';
 import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { Table } from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import {
+  Building2, Users, Clock, CheckCircle, XCircle, Eye, EyeOff,
+  Star, PhoneCall, TrendingUp, Search, ArrowUpRight, Filter
+} from 'lucide-react';
 
-export default function AdminPage() {
+interface Operator {
+  id: string;
+  name: string;
+  slug: string;
+  category: string;
+  status: string;
+  plan: string;
+  hidden: boolean;
+  verified: boolean;
+  email: string | null;
+  whatsapp: string;
+  lead_month: number;
+  created_at: string;
+}
+
+interface LeadStats {
+  operator_id: string;
+  name: string;
+  count: number;
+}
+
+export default function AdminDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [stats, setStats] = useState({ pending: 0, approved: 0, rejected: 0, total: 0 });
-  const [operators, setOperators] = useState<any[]>([]);
+  const [operators, setOperators] = useState<Operator[]>([]);
+  const [leadStats, setLeadStats] = useState<LeadStats[]>([]);
+  const [totalLeads, setTotalLeads] = useState(0);
+  const [todayLeads, setTodayLeads] = useState(0);
+  const [search, setSearch] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/auth/login');
   }, [status, router]);
 
   useEffect(() => {
-    fetch('/api/admin/operators')
-      .then((r) => r.json())
-      .then((data) => {
-        setOperators(data);
-        setStats({
-          pending: data.filter((o: any) => o.status === 'pending').length,
-          approved: data.filter((o: any) => o.status === 'approved').length,
-          rejected: data.filter((o: any) => o.status === 'rejected').length,
-          total: data.length,
-        });
-      });
+    fetch('/api/admin/operators').then(r => r.json()).then(setOperators).catch(() => {});
+    fetch('/api/admin/leads').then(r => r.json()).then(d => {
+      setTotalLeads(d.total ?? 0);
+      setTodayLeads(d.today ?? 0);
+      setLeadStats(d.byOperator ?? []);
+    }).catch(() => {});
   }, []);
 
-  if (status === 'loading') {
-    return <div className="min-h-screen flex items-center justify-center">
-      <div className="animate-spin w-8 h-8 border-2 border-[#2C5F8A] border-t-transparent rounded-full" />
-    </div>;
+  const filtered = operators.filter((op) => {
+    const q = search.toLowerCase();
+    const matchSearch = !q || op.name.toLowerCase().includes(q) || op.whatsapp.includes(q) || (op.email?.toLowerCase() || '').includes(q);
+    const matchStatus = !filterStatus || op.status === filterStatus;
+    return matchSearch && matchStatus;
+  });
+
+  const stats = [
+    { label: 'Total Operators', value: operators.length, icon: Building2, color: 'text-primary', bg: 'bg-primary/10' },
+    { label: 'Pending', value: operators.filter(o => o.status === 'pending').length, icon: Clock, color: 'text-warning', bg: 'bg-warning/10' },
+    { label: 'Approved', value: operators.filter(o => o.status === 'approved').length, icon: CheckCircle, color: 'text-success', bg: 'bg-success/10' },
+    { label: 'Rejected', value: operators.filter(o => o.status === 'rejected').length, icon: XCircle, color: 'text-danger', bg: 'bg-danger/10' },
+    { label: 'Pro Plan', value: operators.filter(o => o.plan === 'pro').length, icon: Star, color: 'text-accent', bg: 'bg-accent/10' },
+    { label: 'Hidden', value: operators.filter(o => o.hidden).length, icon: EyeOff, color: 'text-muted-foreground', bg: 'bg-muted' },
+    { label: 'Total Leads', value: totalLeads, icon: PhoneCall, color: 'text-info', bg: 'bg-info/10' },
+    { label: 'Today\'s Leads', value: todayLeads, icon: TrendingUp, color: 'text-success', bg: 'bg-success/10' },
+  ];
+
+  const isAdmin = (session?.user as any)?.is_admin;
+  if (status === 'loading' || !isAdmin) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="Nadurr" className="w-5 h-5" />
-            <h1 className="font-semibold">Admin Dashboard</h1>
+    <div className="space-y-8">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">Admin Dashboard</h1>
+        <p className="text-muted-foreground mt-1">Manage operators, approvals, and platform analytics</p>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        {stats.map((stat) => (
+          <Card key={stat.label}>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${stat.bg}`}>
+                  <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                  <p className="text-xs text-muted-foreground">{stat.label}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Operators Table */}
+      <Card>
+        <CardHeader className="p-4 border-b border-border">
+          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+            <h2 className="text-lg font-semibold">Operators</h2>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <div className="relative flex-1 sm:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  placeholder="Search operators..."
+                  className="w-full pl-9 pr-3 h-9 rounded-lg border border-input bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+              </div>
+              <div className="flex gap-1">
+                {['', 'pending', 'approved', 'rejected', 'suspended'].map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setFilterStatus(s)}
+                    className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
+                      filterStatus === s
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                    }`}
+                  >
+                    {s || 'All'}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          <button onClick={() => signOut({ callbackUrl: '/auth/login' })} className="text-xs text-gray-500 hover:text-red-600">
-            Logout
-          </button>
-        </div>
-      </header>
+        </CardHeader>
+        <CardContent className="p-0">
+          <Table
+            columns={[
+              { key: 'name', header: 'Name', render: (op: Operator) => (
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-foreground">{op.name}</span>
+                  {op.plan === 'pro' && <Badge variant="accent" size="sm">PRO</Badge>}
+                  {op.hidden && <Badge variant="outline" size="sm">Hidden</Badge>}
+                </div>
+              )},
+              { key: 'category', header: 'Category', render: (op: Operator) => (
+                <span className="capitalize text-muted-foreground">{op.category}</span>
+              )},
+              { key: 'status', header: 'Status', render: (op: Operator) => {
+                const variants: Record<string, 'warning' | 'success' | 'danger' | 'default'> = {
+                  pending: 'warning', approved: 'success', rejected: 'danger', suspended: 'default',
+                };
+                return <Badge variant={variants[op.status] || 'default'}>{op.status}</Badge>;
+              }},
+              { key: 'lead_month', header: 'Leads', render: (op: Operator) => (
+                <span className="text-muted-foreground">{op.lead_month}</span>
+              )},
+              { key: 'created_at', header: 'Date', render: (op: Operator) => (
+                <span className="text-muted-foreground text-xs">
+                  {new Date(op.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                </span>
+              )},
+              { key: 'actions', header: '', render: (op: Operator) => (
+                <Link
+                  href={`/admin/operators/${op.id}`}
+                  className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-light"
+                >
+                  Manage <ArrowUpRight className="h-3 w-3" />
+                </Link>
+              )},
+            ]}
+            data={filtered}
+            keyExtractor={(op) => op.id}
+            emptyMessage="No operators found matching your filters"
+          />
+        </CardContent>
+      </Card>
 
-      <main className="max-w-4xl mx-auto px-4 py-6">
-        <div className="grid grid-cols-4 gap-3 mb-6">
-          <Card>
-            <CardContent className="p-4 text-center">
-              <Clock className="w-5 h-5 text-amber-500 mx-auto mb-1" />
-              <p className="text-2xl font-bold">{stats.pending}</p>
-              <p className="text-xs text-gray-500">Pending</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <CheckCircle className="w-5 h-5 text-green-500 mx-auto mb-1" />
-              <p className="text-2xl font-bold">{stats.approved}</p>
-              <p className="text-xs text-gray-500">Approved</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <XCircle className="w-5 h-5 text-red-500 mx-auto mb-1" />
-              <p className="text-2xl font-bold">{stats.rejected}</p>
-              <p className="text-xs text-gray-500">Rejected</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <Users className="w-5 h-5 text-[#2C5F8A] mx-auto mb-1" />
-              <p className="text-2xl font-bold">{stats.total}</p>
-              <p className="text-xs text-gray-500">Total</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="flex gap-2 mb-4">
-          <Link href="/admin/operators?status=pending">
-            <Button size="sm" variant={stats.pending > 0 ? 'primary' : 'outline'}>
-              Pending ({stats.pending})
-            </Button>
-          </Link>
-          <Link href="/admin/operators?status=approved">
-            <Button size="sm" variant="outline">Approved</Button>
-          </Link>
-          <Link href="/admin/operators">
-            <Button size="sm" variant="outline">All</Button>
-          </Link>
-          <Link href="/admin/categories">
-            <Button size="sm" variant="outline">Categories</Button>
-          </Link>
-        </div>
-
-        <div className="space-y-2">
-          {operators.filter((o) => o.status === 'pending').slice(0, 10).map((op: any) => (
-            <Link key={op.id} href={`/admin/operators/${op.id}`}>
-              <Card className="hover:shadow-md transition-shadow">
-                <CardContent className="p-4 flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-sm">{op.name}</p>
-                    <p className="text-xs text-gray-500">{op.category} • {new Date(op.created_at).toLocaleDateString()}</p>
-                  </div>
-                  <span className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
-                    Pending
-                  </span>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-          {stats.pending === 0 && (
-            <p className="text-center text-gray-500 text-sm py-8">No pending operators</p>
-          )}
-        </div>
-      </main>
+      {/* Top Leads */}
+      {leadStats.length > 0 && (
+        <Card>
+          <CardHeader className="p-4 border-b border-border">
+            <h2 className="text-lg font-semibold">Top Operators by Leads</h2>
+          </CardHeader>
+          <CardContent className="p-0">
+            <Table
+              columns={[
+                { key: 'name', header: 'Operator', render: (ls: LeadStats) => (
+                  <span className="font-medium text-foreground">{ls.name}</span>
+                )},
+                { key: 'count', header: 'Leads', render: (ls: LeadStats) => (
+                  <Badge variant="info">{ls.count}</Badge>
+                )},
+              ]}
+              data={leadStats.slice(0, 15)}
+              keyExtractor={(ls) => ls.operator_id}
+            />
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

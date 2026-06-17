@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/db';
 import { operators } from '@/db/schema';
 import { eq } from 'drizzle-orm';
+import { auth } from '@/lib/auth';
 
 export async function GET(req: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -18,8 +19,30 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
 }
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ slug: string }> }) {
+  const session = await auth();
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const { slug } = await params;
   const body = await req.json();
+
+  const existing = await db.query.operators.findFirst({
+    where: eq(operators.slug, slug),
+    columns: { id: true },
+  });
+
+  if (!existing) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
+
+  const sUser = session.user as unknown as Record<string, unknown>;
+  const operatorId = sUser?.operator_id;
+  const isAdmin = sUser?.is_admin;
+
+  if (operatorId !== existing.id && !isAdmin) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
   const updateData: Record<string, unknown> = {};
 
@@ -49,8 +72,14 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ slug: 
     updateData.artisan_details = body.artisan_details;
     updateData.status = 'pending';
   }
-  if (body.lat !== undefined) updateData.lat = body.lat;
-  if (body.lng !== undefined) updateData.lng = body.lng;
+  if (body.lat !== undefined) {
+    updateData.lat = body.lat;
+    updateData.status = 'pending';
+  }
+  if (body.lng !== undefined) {
+    updateData.lng = body.lng;
+    updateData.status = 'pending';
+  }
 
   const result = await db
     .update(operators)

@@ -37,13 +37,13 @@ Each operator gets a **public profile page** with photos, contact info, pricing,
 - Dashboard with profile completion score and lead statistics
 - Edit own profile (name, description, photos, pricing, contact info)
 - Category-specific fields (houseboat_details, shikara_details, artisan_details)
-- Upload photos to Cloudinary
+- Upload photos via API route to Cloudinary
 - View leads received
 
 ### For Admin
 - View all operators in a master list
 - Approve/reject/suspend operator registrations
-- View all leads data (INFERRED — admin leaderboard shows leads per operator)
+- Verify/unverify operators, change plans, reset lead counters
 - Hardcoded admin: nadeemkolu22@gmail.com
 
 ---
@@ -60,11 +60,11 @@ Each operator gets a **public profile page** with photos, contact info, pricing,
 | ORM         | Drizzle ORM 0.45.2                           |
 | Auth        | NextAuth v5 beta (@auth/core 0.41.2)        |
 | Email       | Resend                                       |
-| File Upload | Cloudinary (via CldUploadButton)             |
-| Maps        | Leaflet (react-leaflet) + OpenStreetMap tiles|
+| File Upload | Cloudinary (via custom API route)            |
 | Icons       | Lucide React                                 |
-| Storage     | S3-compatible (credentials in env)           |
+| Storage     | S3-compatible (credentials in env, unused)   |
 | Linting     | ESLint 9.x (flat config)                     |
+| WhatsApp    | OpenWA (self-hosted gateway)                 |
 
 ---
 
@@ -73,74 +73,68 @@ Each operator gets a **public profile page** with photos, contact info, pricing,
 ```
 nadur/
 ├── .env / .env.example            # Environment variables
-├── next.config.ts                 # Next.js config (images, rewrites, webpack)
+├── next.config.ts                 # Next.js config (images, experimental)
 ├── drizzle.config.ts              # Drizzle ORM config (Neon connection)
 ├── tsconfig.json                  # TypeScript config (strict mode, path aliases)
 ├── package.json                   # Dependencies & scripts
 ├── eslint.config.mjs              # ESLint flat config
 ├── postcss.config.mjs             # PostCSS (Tailwind v4)
+├── docker-compose.openwa.yml      # OpenWA WhatsApp gateway
 │
-├── public/                        # Static assets (favicon, pics, etc.)
+├── public/                        # Static assets (favicon, manifest, icons)
 │
 ├── src/
-│   ├── middleware.ts              # (present in some commands; NOT present on disk; proxy.ts exists instead)
 │   ├── proxy.ts                   # Route guard for /admin and /portal
 │   │
 │   ├── app/                       # Next.js App Router pages
-│   │   ├── layout.tsx             # Root layout (imports globals.css, Geist font)
-│   │   ├── page.tsx               # Landing page (hero, steps, categories grid, testimonials)
+│   │   ├── layout.tsx             # Root layout (SessionProvider, fonts)
+│   │   ├── page.tsx               # Browse page (home)
 │   │   ├── globals.css            # Tailwind directives + custom CSS
 │   │   ├── not-found.tsx          # 404 page
 │   │   │
-│   │   ├── browse/                # /browse — public operator directory
+│   │   ├── o/[slug]/              # /o/[slug] — public operator profile
+│   │   ├── search/                # /search — search results
+│   │   ├── favorites/             # /favorites — saved operators
 │   │   ├── join/                  # /join — operator sign-up
 │   │   ├── admin/                 # /admin — admin dashboard
 │   │   ├── portal/                # /portal — operator dashboard
-│   │   │   ├── page.tsx           # Dashboard home
-│   │   │   ├── layout.tsx         # Portal shell with sidebar
-│   │   │   └── edit/              # /portal/edit — edit profile
 │   │   ├── auth/                  # /auth/login — authentication
 │   │   ├── api/                   # API route handlers
-│   │   ├── [category]/            # Category listing pages (5 category dirs)
-│   │   └── op/                    # /op/[slug] — public operator profile
+│   │   ├── privacy/               # Privacy policy
+│   │   ├── terms/                 # Terms of service
+│   │   ├── offline/               # PWA offline fallback
+│   │   └── suspended/             # Suspended profile page
 │   │
 │   ├── components/                # Shared React components
 │   │   ├── browse-page.tsx        # Full browse page component
 │   │   ├── operator-card.tsx      # Operator card (grid)
 │   │   ├── operator-profile.tsx   # Public profile page component
-│   │   ├── search-command.tsx     # Search command palette (INFERRED from import)
 │   │   └── ui/                    # shadcn/ui components
 │   │       ├── button.tsx
-│   │       ├── card.tsx
-│   │       ├── badge.tsx
-│   │       ├── input.tsx
-│   │       ├── dialog.tsx
-│   │       ├── sheet.tsx
-│   │       ├── textarea.tsx
-│   │       └── skeleton.tsx
+│   │       └── card.tsx
 │   │
 │   ├── lib/                       # Library / utility code
 │   │   ├── auth.ts                # NextAuth config (providers, callbacks)
-│   │   ├── db.ts                  # Drizzle client (Neon)
-│   │   ├── upload.ts              # Cloudinary / S3 upload utilities
+│   │   ├── cloudinary.ts          # Cloudinary upload utilities
+│   │   ├── openwa.ts              # OpenWA WhatsApp client
 │   │   ├── resend.ts              # Resend email client
-│   │   ├── utils.ts               # Misc utilities (cn, slug generation)
-│   │   ├── constants.ts           # App-wide constants
-│   │   └── whatsapp.ts            # WhatsApp link / message utilities
+│   │   ├── s3.ts                  # S3-compatible storage client (unused)
+│   │   ├── ghats.ts               # Dal Lake ghats coordinates
+│   │   ├── location.ts            # Google Maps URL parser
+│   │   └── utils.ts               # Misc utilities (cn, slug generation)
 │   │
 │   ├── db/                        # Database layer
 │   │   ├── schema.ts              # Drizzle table definitions
+│   │   ├── index.ts               # Drizzle client initialization
 │   │   └── migrate.ts             # SQL migration script (raw SQL via neon)
 │   │
 │   └── types/                     # TypeScript types
 │       └── index.ts               # All shared types & interfaces
 │
-├── scripts/
-│   ├── seed-artisans.mjs          # Seed script (171 artisans from spreadsheet)
-│   ├── assign_coords.mjs          # Assign lat/lng to operators
-│   ├── check_hyperlinks.mjs       # Validate hyperlinks in data
-│   ├── check_xlsx.mjs             # Validate XLSX spreadsheet
-│   └── test_operator.mjs          # Test operator data
+├── assign_coords.mjs              # Assign lat/lng to operators
+├── check_hyperlinks.mjs           # Validate hyperlinks in data
+├── check_xlsx.mjs                 # Validate XLSX spreadsheet
+├── test_operator.mjs              # Test operator data
 │
 └── docs/                          # Documentation (this directory)
 ```
@@ -169,16 +163,15 @@ See [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md) for full details.
 - **Framework:** NextAuth v5 beta (@auth/core v0.41.2)
 - **Three providers:**
   1. **Google OAuth** — standard OAuth sign-in
-  2. **Email OTP** — magic link via Resend (6-digit code sent to email)
-  3. **WhatsApp OTP** — SMS-like one-time password via WhatsApp (INFERRED — requires WhatsApp Business API integration)
+  2. **Email OTP** — 6-digit code sent via Resend
+  3. **WhatsApp OTP** — 6-digit code sent via OpenWA
 - **Session strategy:** JWT (no database sessions)
 - **Callbacks:**
-  - `jwt()` — enriches token with `operator_id`, `is_admin`, `user_role`
+  - `jwt()` — enriches token with `operator_id`, `is_admin`
   - `session()` — injects enriched fields into session object
 - **Route protection:** `proxy.ts` middleware (runs on `/admin/*` and `/portal/*`)
   - `/admin/*` requires `is_admin === true`
   - `/portal/*` requires any valid session
-- **Stale session handling:** Login page checks for missing `operator_id` in session and calls `signOut()` to clear invalid tokens (fixed in current code)
 
 ---
 
@@ -186,14 +179,15 @@ See [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md) for full details.
 
 | Flow                    | Path                        |
 |------------------------|-----------------------------|
-| Browse operators       | `/browse`                   |
-| View category listing  | `/[category]`               |
-| View operator profile  | `/op/[slug]`                |
+| Browse operators       | `/`                         |
+| Search operators       | `/search`                   |
+| View operator profile  | `/o/[slug]`                 |
 | Register as operator   | `/join`                     |
 | Login                  | `/auth/login`               |
 | Operator dashboard     | `/portal`                   |
 | Edit profile           | `/portal/edit`              |
 | Admin panel            | `/admin`                    |
+| Favorites              | `/favorites`                |
 
 See [USER_FLOWS.md](./USER_FLOWS.md) for detailed flow diagrams.
 
@@ -207,20 +201,19 @@ See [USER_FLOWS.md](./USER_FLOWS.md) for detailed flow diagrams.
 | POST   | `/api/operators`              | Create operator           |
 | GET    | `/api/operators/[slug]`       | Get single operator       |
 | PATCH  | `/api/operators/[slug]`       | Update operator           |
-| GET    | `/api/leads`                  | List leads (admin)        |
+| GET    | `/api/leads`                  | List leads (by operator)  |
 | POST   | `/api/leads`                  | Submit lead               |
-| GET    | `/api/auth/session`           | Get current session (NextAuth) |
-| POST   | `/api/auth/signin`            | Sign in (NextAuth)        |
-| POST   | `/api/auth/signout`           | Sign out (NextAuth)       |
-| POST   | `/api/auth/callback/*`        | OAuth/OTP callbacks       |
-| POST   | `/api/auth/otp/send`          | Send OTP (email/whatsapp) |
-| POST   | `/api/auth/otp/verify`        | Verify OTP                |
-| POST   | `/api/upload`                 | Upload photo              |
+| POST   | `/api/upload/photo`           | Upload photo to Cloudinary|
+| GET    | `/api/qr/[slug]`              | Generate QR code          |
 | GET    | `/api/admin/operators`        | List all operators (admin)|
-| PATCH  | `/api/admin/operators/[id]`   | Update operator status    |
-| GET    | `/api/admin/leads`            | All leads (admin)         |
-| GET    | `/api/favorites`              | List favorites            |
-| POST   | `/api/favorites`              | Toggle favorite           |
+| POST   | `/api/admin/operators/[id]`   | Admin actions (approve/reject/suspend/verify/change_plan/reset_leads) |
+| POST   | `/api/auth/send-otp`          | Send email OTP            |
+| POST   | `/api/auth/verify`            | Verify email OTP          |
+| POST   | `/api/auth/send-otp-whatsapp` | Send WhatsApp OTP         |
+| POST   | `/api/auth/verify-whatsapp`   | Verify WhatsApp OTP       |
+| POST   | `/api/auth/phone-login`       | Legacy phone login        |
+| POST   | `/api/auth/lookup-email`      | Lookup email by phone     |
+| POST   | `/api/auth/verify-email`      | Verify email + update operator |
 
 See [API_SPEC.md](./API_SPEC.md) for full request/response schemas.
 
@@ -231,28 +224,23 @@ See [API_SPEC.md](./API_SPEC.md) for full request/response schemas.
 | Service       | Purpose                        | Env Vars Needed                          |
 |--------------|--------------------------------|------------------------------------------|
 | Neon         | PostgreSQL database            | `DATABASE_URL`                           |
-| Cloudinary   | Image upload & CDN             | `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` |
+| Cloudinary   | Image upload & CDN             | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` |
 | Resend       | Transactional emails           | `RESEND_API_KEY`                         |
 | Google       | OAuth authentication           | `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`   |
-| S3-compatible| File storage (INFERRED backup) | `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_BUCKET_NAME`, `S3_ENDPOINT` |
-| WhatsApp     | OTP / contact (INFERRED)       | `WHATSAPP_API_KEY` (REQUIRES VERIFICATION)|
-| Leaflet/OSM  | Maps (free, no API key needed)| None                                     |
+| OpenWA       | WhatsApp messaging gateway     | `OPENWA_API_URL`, `OPENWA_API_KEY`, `OPENWA_SESSION` |
+| S3-compatible| File storage (unused)          | `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_BUCKET`, `S3_ENDPOINT` |
 
 ---
 
 ## 10. Known Gaps & Risks
 
-- **Payment:** No Stripe or billing integration. The `plan` field exists but is never checked/enforced.
-- **Middleware:** The `proxy.ts` file exists but it's unclear if it's registered as Next.js middleware (filename vs `middleware.ts` convention).
-- **Admin guard:** `/admin` page checks `is_admin` on the client side only; the real guard is in `proxy.ts`.
-- **No proper logout:** No dedicated sign-out endpoint; handled by NextAuth's built-in `signOut()`.
-- **Lead limit not enforced:** Free plan allows 3 leads/month, but no code enforces this limit.
+- **Payment:** No Stripe or billing integration. The `plan` field exists but payment is not implemented.
+- **Middleware naming:** The `proxy.ts` file should be `middleware.ts` for automatic Next.js discovery.
 - **No rate limiting:** API endpoints have no throttling.
 - **No CSP headers:** Content Security Policy not configured.
 - **S3 credentials present but unused:** `S3_*` vars exist in env but no S3 upload code path found.
-- **Geospatial index:** `operators_earth_idx` uses `ll_to_earth(lat, lng)` but some operators may have null lat/lng.
 - **No tests:** Zero test files found in the codebase.
-- **Drizzle schema out of sync:** `src/db/schema.ts` references columns added via raw migration (lat, lng, category_details) but may not match exactly.
+- **OTP limits:** `attempts` and `expires_at` columns exist but are not strictly enforced in verify routes.
 
 ---
 
@@ -278,12 +266,7 @@ graph TB
         I[Cloudinary CDN]
         J[Resend Email]
         K[Google OAuth]
-        L[WhatsApp API]
-        M[OSM / Leaflet Tiles]
-    end
-
-    subgraph Storage [File Storage]
-        N[S3-compatible Storage]
+        L[OpenWA WhatsApp]
     end
 
     A --> D
@@ -295,8 +278,6 @@ graph TB
     G --> L
     E --> H
     E --> I
-    A --> M
-    E --> N
 ```
 
 ---
@@ -308,13 +289,9 @@ graph TB
 | `dev`             | `next dev` (port 3000)              |
 | `build`           | `next build`                        |
 | `start`           | `next start`                        |
-| `lint`            | `next lint`                         |
-| `db:generate`     | `drizzle-kit generate`              |
+| `lint`            | `eslint`                            |
 | `db:migrate`      | `npx tsx src/db/migrate.ts`         |
-| `db:push`         | `drizzle-kit push`                  |
 | `db:studio`       | `drizzle-kit studio`                |
-| `seed:artisans`   | `node scripts/seed-artisans.mjs`    |
-| `assign:coords`   | `node scripts/assign_coords.mjs`    |
 
 ---
 
@@ -327,40 +304,40 @@ graph TB
 | `AUTH_GOOGLE_ID`                   | Yes      | Google OAuth client ID             |
 | `AUTH_GOOGLE_SECRET`               | Yes      | Google OAuth client secret         |
 | `RESEND_API_KEY`                   | Yes      | Resend API key for emails          |
-| `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`| Yes      | Cloudinary cloud name              |
+| `CLOUDINARY_CLOUD_NAME`            | Yes      | Cloudinary cloud name              |
 | `CLOUDINARY_API_KEY`               | Yes      | Cloudinary API key                 |
 | `CLOUDINARY_API_SECRET`            | Yes      | Cloudinary API secret              |
+| `OPENWA_API_URL`                   | No       | OpenWA API URL (default: http://localhost:2785/api) |
+| `OPENWA_API_KEY`                   | No       | OpenWA API key                     |
+| `OPENWA_SESSION`                   | No       | OpenWA session name (default: nadur-bot) |
 | `S3_ACCESS_KEY_ID`                 | No       | S3 access key (unused in code)     |
 | `S3_SECRET_ACCESS_KEY`             | No       | S3 secret key (unused in code)     |
-| `S3_BUCKET_NAME`                   | No       | S3 bucket name (unused in code)    |
+| `S3_BUCKET`                        | No       | S3 bucket name (unused in code)    |
 | `S3_ENDPOINT`                      | No       | S3 endpoint URL (unused in code)   |
-| `WHATSAPP_API_KEY`                 | INFERRED | WhatsApp Business API key          |
-| `NEXT_PUBLIC_URL`                  | INFERRED | Base URL for the app               |
-| `NEXT_PUBLIC_EMAIL_FROM`           | INFERRED | From address for emails            |
+| `NEXT_PUBLIC_APP_URL`              | No       | Base URL for the app               |
 
 ---
 
 ## 14. Development Status
 
 ```
-🚧 Landing Page        ✅ Complete
-🚧 Browse Page         ✅ Complete
-🚧 Category Pages      ✅ Complete (5 categories)
-🚧 Operator Profile    ✅ Complete
-🚧 Operator Join       ✅ Complete
-🚧 Auth System         ✅ Complete (3 providers)
-🚧 Operator Dashboard  ✅ Complete
-🚧 Operator Edit       ✅ Complete
-🚧 Admin Panel         ✅ Complete (basic)
-🚧 Geospatial Search   ✅ Complete
-🚧 Lead Capture        ✅ Complete
-🚧 Photo Upload        ✅ Complete
-🚧 Seed Data           ✅ Complete (171 artisans)
-🚧 Payment/Billing     ❌ Not started
-🚧 Testing             ❌ Not started
-🚧 Rate Limiting       ❌ Not started
-🚧 Analytics           ❌ Not started
-🚧 i18n/Hindi          ❌ Not started
-🚧 PWA                 ❌ Not started
-🚧 SEO                 ⚠️ Basic (metadata in layout)
+Browse              ✅ Complete
+Search              ✅ Complete
+Operator Profile    ✅ Complete
+Operator Join       ✅ Complete
+Auth System         ✅ Complete (3 providers)
+Operator Dashboard  ✅ Complete
+Operator Edit       ✅ Complete
+Admin Panel         ✅ Complete
+Geospatial Search   ✅ Complete
+Lead Capture        ✅ Complete
+Photo Upload        ✅ Complete
+QR Code             ✅ Complete
+PWA                 ✅ Complete (manifest, offline page)
+Seed Data           ✅ Complete (171 artisans)
+Payment/Billing     ❌ Not started
+Testing             ❌ Not started
+Rate Limiting       ❌ Not started
+Analytics           ❌ Not started
+i18n/Hindi          ❌ Not started
 ```

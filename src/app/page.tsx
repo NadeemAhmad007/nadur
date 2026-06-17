@@ -1,4 +1,4 @@
-import { BrowsePage } from '@/components/browse-page';
+import BrowsePage from '@/components/browse-page';
 
 export const dynamic = 'force-dynamic';
 

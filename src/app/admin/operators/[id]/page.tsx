@@ -1,286 +1,367 @@
 'use client';
-
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Shield, BadgeCheck, XCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
+import {
+  ArrowLeft, Mail, Phone, MapPin, Star, Eye, EyeOff, Trash2,
+  CheckCircle, XCircle, AlertTriangle, RefreshCw, Globe, User,
+  Building2, Clock
+} from 'lucide-react';
+
+interface Lead {
+  id: string; created_at: string; source: string;
+  visitor_name: string; visitor_phone: string;
+}
+
+interface Operator {
+  id: string; name: string; slug: string; category: string;
+  short_desc: string | null; long_desc: string | null;
+  whatsapp: string; email: string | null;
+  pricing_note: string | null; status: string;
+  hidden: boolean; verified: boolean; plan: string;
+  lead_month: number; photos: string[];
+  tariffs: any; houseboat_details: any; shikara_details: any;
+  artisan_details: any; lat: number | null; lng: number | null;
+  created_at: string;
+}
 
 export default function OperatorDetailPage() {
-  const params = useParams();
+  const { data: session, status: authStatus } = useSession();
   const router = useRouter();
-  const [operator, setOperator] = useState<any>(null);
+  const params = useParams();
+  const [op, setOp] = useState<Operator | null>(null);
+  const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
-  const [rejectReason, setRejectReason] = useState('');
-  const [showReject, setShowReject] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [actionLoading, setActionLoading] = useState('');
 
-  useEffect(() => {
-    fetch(`/api/admin/operators?status=pending`)
-      .then((r) => r.json())
-      .then((ops) => {
-        const op = ops.find((o: any) => o.id === params.id) || null;
-        if (!op) {
-          fetch('/api/admin/operators')
-            .then((r) => r.json())
-            .then((all) => setOperator(all.find((o: any) => o.id === params.id) || null));
-        } else {
-          setOperator(op);
-        }
-      })
-      .finally(() => setLoading(false));
-  }, [params.id]);
-
-  const handleAction = async (action: string, extra?: Record<string, unknown>) => {
-    const res = await fetch(`/api/admin/operators/${params.id}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action, ...extra }),
-    });
-    if (res.ok) {
-      router.push('/admin/operators');
+  const fetchOperator = async () => {
+    const data = await fetch(`/api/admin/operators?q=${params.id}`).then(r => r.json());
+    const found = data.find((o: any) => o.id === params.id);
+    setOp(found || null);
+    if (found) {
+      fetch(`/api/admin/leads?operator_id=${params.id}`).then(r => r.json()).then(setLeads).catch(() => {});
     }
+    setLoading(false);
   };
 
-  if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">
-      <div className="animate-spin w-8 h-8 border-2 border-[#2C5F8A] border-t-transparent rounded-full" />
-    </div>;
+  useEffect(() => {
+    if (authStatus === 'unauthenticated') router.push('/auth/login');
+    else if (authStatus === 'authenticated') fetchOperator();
+  }, [authStatus]);
+
+  const doAction = async (action: string, extra: Record<string, any> = {}) => {
+    setActionLoading(action);
+    try {
+      await fetch(`/api/admin/operators/${params.id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, ...extra }),
+      });
+      await fetchOperator();
+    } catch (e) {
+      console.error(e);
+    }
+    setActionLoading('');
+  };
+
+  const isAdmin = (session?.user as any)?.is_admin;
+
+  if (authStatus === 'loading' || loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
   }
 
-  if (!operator) {
-    return <div className="min-h-screen flex items-center justify-center">
-      <p>Operator not found</p>
-    </div>;
+  if (!isAdmin || !op) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <p className="text-muted-foreground">Operator not found</p>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
-          <Link href="/admin/operators" className="p-1">
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
-          <img src="/logo.png" alt="Nadurr" className="w-5 h-5" />
-          <h1 className="font-semibold truncate">{operator.name}</h1>
-        </div>
-      </header>
-
-      <main className="max-w-3xl mx-auto px-4 py-6 space-y-6">
-        {operator.status === 'pending' && (
-          <div className="flex gap-3">
-            <Button onClick={() => handleAction('approve')} className="flex-1 gap-2 bg-green-600 hover:bg-green-700">
-              <BadgeCheck className="w-4 h-4" /> Approve
-            </Button>
-            <Button onClick={() => setShowReject(!showReject)} variant="danger" className="flex-1 gap-2">
-              <XCircle className="w-4 h-4" /> Reject
-            </Button>
+    <div className="space-y-8">
+      {/* Back + Header */}
+      <div className="flex items-center gap-4">
+        <Link href="/admin/operators" className="flex h-8 w-8 items-center justify-center rounded-lg border border-border hover:bg-muted transition-colors">
+          <ArrowLeft className="h-4 w-4" />
+        </Link>
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-foreground">{op.name}</h1>
+            {op.plan === 'pro' && <Badge variant="accent">PRO</Badge>}
+            <Badge variant={op.status === 'approved' ? 'success' : op.status === 'pending' ? 'warning' : op.status === 'rejected' ? 'danger' : 'default'}>
+              {op.status}
+            </Badge>
           </div>
-        )}
+          <p className="text-muted-foreground text-sm mt-0.5 capitalize">{op.category} · {op.slug}</p>
+        </div>
+      </div>
 
-        {showReject && (
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left: Details */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Info Card */}
           <Card>
-            <CardContent className="p-4 space-y-3">
-              <h3 className="text-sm font-semibold">Rejection Reason</h3>
-              <select
-                value={rejectReason}
-                onChange={(e) => setRejectReason(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-              >
-                <option value="">Select reason...</option>
-                <option value="insufficient_photos">Insufficient or low-quality photos</option>
-                <option value="invalid_info">Invalid or misleading business information</option>
-                <option value="wrong_category">Wrong category</option>
-                <option value="duplicate">Duplicate profile</option>
-                <option value="other">Other</option>
-              </select>
-              <Button
-                onClick={() => handleAction('reject', { reason: rejectReason })}
-                variant="danger"
-                className="w-full"
-                disabled={!rejectReason}
-              >
-                Confirm Rejection
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-
-        <div className="grid grid-cols-2 gap-3">
-          <Card>
-            <CardContent className="p-4 space-y-2">
-              <h3 className="text-sm font-semibold">Details</h3>
-              <div className="text-sm space-y-1">
-                <p><span className="text-gray-500">Category:</span> {operator.category}</p>
-                <p><span className="text-gray-500">WhatsApp:</span> {operator.whatsapp}</p>
-                <p><span className="text-gray-500">Email:</span> {operator.email || 'Not set'}</p>
-                <p><span className="text-gray-500">Email Verified:</span> {operator.email?.endsWith('@nadur.com') ? 'No (backfilled)' : operator.verified ? 'Yes' : 'No'}</p>
-                <p><span className="text-gray-500">Status:</span> {operator.status}</p>
-                <p><span className="text-gray-500">Plan:</span> {operator.plan}</p>
-                <p><span className="text-gray-500">Leads this month:</span> {operator.lead_month}</p>
-                <p><span className="text-gray-500">Submitted:</span> {new Date(operator.created_at).toLocaleDateString()}</p>
+            <CardHeader className="p-4 border-b border-border">
+              <div className="flex items-center gap-2">
+                <Building2 className="h-4 w-4 text-muted-foreground" />
+                <h2 className="font-semibold">Details</h2>
               </div>
+            </CardHeader>
+            <CardContent className="p-4 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs text-muted-foreground font-medium">WhatsApp</p>
+                  <p className="text-sm text-foreground mt-0.5">{op.whatsapp}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground font-medium">Email</p>
+                  <p className="text-sm text-foreground mt-0.5">{op.email || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground font-medium">Category</p>
+                  <p className="text-sm capitalize text-foreground mt-0.5">{op.category}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground font-medium">Plan</p>
+                  <p className="text-sm text-foreground mt-0.5 capitalize">{op.plan}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground font-medium">Leads This Month</p>
+                  <p className="text-sm text-foreground mt-0.5">{op.lead_month}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground font-medium">Submitted</p>
+                  <p className="text-sm text-foreground mt-0.5">
+                    {new Date(op.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </p>
+                </div>
+              </div>
+              {op.short_desc && (
+                <div>
+                  <p className="text-xs text-muted-foreground font-medium">Short Description</p>
+                  <p className="text-sm text-foreground mt-0.5">{op.short_desc}</p>
+                </div>
+              )}
+              {op.long_desc && (
+                <div>
+                  <p className="text-xs text-muted-foreground font-medium">Long Description</p>
+                  <p className="text-sm text-foreground mt-0.5 whitespace-pre-wrap">{op.long_desc}</p>
+                </div>
+              )}
+              {op.pricing_note && (
+                <div>
+                  <p className="text-xs text-muted-foreground font-medium">Pricing Note</p>
+                  <p className="text-sm text-foreground mt-0.5">{op.pricing_note}</p>
+                </div>
+              )}
+              {op.lat && op.lng && (
+                <div>
+                  <p className="text-xs text-muted-foreground font-medium">Location</p>
+                  <p className="text-sm text-foreground mt-0.5">{op.lat}, {op.lng}</p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
+          {/* Tariffs */}
+          {op.tariffs && (
+            <Card>
+              <CardHeader className="p-4 border-b border-border">
+                <div className="flex items-center gap-2">
+                  <Star className="h-4 w-4 text-muted-foreground" />
+                  <h2 className="font-semibold">Tariffs</h2>
+                </div>
+              </CardHeader>
+              <CardContent className="p-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {[
+                    { label: 'Double EP', key: 'double_ep' },
+                    { label: 'Double CP', key: 'double_cp' },
+                    { label: 'Double MAP', key: 'double_map' },
+                    { label: 'Double AP', key: 'double_ap' },
+                    { label: 'Single EP', key: 'single_ep' },
+                    { label: 'Single CP', key: 'single_cp' },
+                    { label: 'Single MAP', key: 'single_map' },
+                    { label: 'Single AP', key: 'single_ap' },
+                  ].map((t) => (
+                    <div key={t.key} className="rounded-lg bg-muted p-2 text-center">
+                      <p className="text-[10px] text-muted-foreground uppercase">{t.label}</p>
+                      <p className="text-sm font-semibold text-foreground">₹{(op.tariffs as any)[t.key] || '—'}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Photos */}
+          {op.photos && op.photos.length > 0 && (
+            <Card>
+              <CardHeader className="p-4 border-b border-border">
+                <h2 className="font-semibold">Photos ({op.photos.length})</h2>
+              </CardHeader>
+              <CardContent className="p-4">
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                  {op.photos.map((url, i) => (
+                    <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                      <div className="aspect-square rounded-lg bg-muted overflow-hidden">
+                        <img src={url} alt={`${op.name} photo ${i + 1}`} className="w-full h-full object-cover" />
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Leads */}
           <Card>
-            <CardContent className="p-4 space-y-3">
-              <h3 className="text-sm font-semibold">Actions</h3>
-              {operator.status === 'approved' && (
-                <Button
-                  onClick={() => handleAction('verify', { verified: !operator.verified })}
-                  variant={operator.verified ? 'outline' : 'primary'}
-                  size="sm"
-                  className="w-full"
-                >
-                  {operator.verified ? 'Remove Verified' : 'Mark Verified'}
-                </Button>
+            <CardHeader className="p-4 border-b border-border">
+              <h2 className="font-semibold">Leads ({leads.length})</h2>
+            </CardHeader>
+            <CardContent className="p-0">
+              {leads.length === 0 ? (
+                <div className="p-8 text-center text-muted-foreground text-sm">No leads yet</div>
+              ) : (
+                <div className="divide-y divide-border">
+                  {leads.map((lead) => (
+                    <div key={lead.id} className="p-4 flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium">{lead.visitor_name || 'Anonymous'}</p>
+                        <p className="text-xs text-muted-foreground">{lead.visitor_phone || 'No phone'}</p>
+                      </div>
+                      <div className="text-right">
+                        <Badge variant="outline" size="sm">{lead.source}</Badge>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {new Date(lead.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
-              {operator.status === 'approved' && (
-                <Button
-                  onClick={() => handleAction('suspend')}
-                  variant="danger"
-                  size="sm"
-                  className="w-full"
-                >
-                  Suspend
-                </Button>
-              )}
-              {operator.status === 'rejected' && (
-                <Button
-                  onClick={() => handleAction('approve')}
-                  size="sm"
-                  className="w-full"
-                >
-                  Re-approve
-                </Button>
-              )}
-              {operator.status === 'suspended' && (
-                <Button
-                  onClick={() => handleAction('approve')}
-                  size="sm"
-                  className="w-full"
-                >
-                  Unsuspend
-                </Button>
-              )}
-              <hr className="border-gray-200" />
-              <h4 className="text-xs font-semibold text-gray-500">Leads & Plan</h4>
-              <Button
-                onClick={() => handleAction('change_plan', { plan: operator.plan === 'free' ? 'pro' : 'free' })}
-                size="sm"
-                variant="outline"
-                className="w-full"
-              >
-                Switch to {operator.plan === 'free' ? 'Pro' : 'Free'}
-              </Button>
-              <Button
-                onClick={() => handleAction('reset_leads')}
-                size="sm"
-                variant="outline"
-                className="w-full text-amber-600 border-amber-300 hover:bg-amber-50"
-              >
-                Reset Lead Counter
-              </Button>
             </CardContent>
           </Card>
         </div>
 
-        {operator.short_desc && (
+        {/* Right: Actions */}
+        <div className="space-y-4">
           <Card>
-            <CardContent className="p-4">
-              <h3 className="text-sm font-semibold mb-2">Short Description</h3>
-              <p className="text-sm text-gray-700">{operator.short_desc}</p>
-            </CardContent>
-          </Card>
-        )}
+            <CardHeader className="p-4 border-b border-border">
+              <h2 className="font-semibold">Actions</h2>
+            </CardHeader>
+            <CardContent className="p-4 space-y-3">
+              {op.status === 'pending' && (
+                <div className="flex gap-2">
+                  <Button size="sm" className="flex-1" onClick={() => doAction('approve')} disabled={!!actionLoading}>
+                    <CheckCircle className="h-4 w-4 mr-1" /> Approve
+                  </Button>
+                  <Button size="sm" variant="danger" className="flex-1" onClick={() => doAction('reject')} disabled={!!actionLoading}>
+                    <XCircle className="h-4 w-4 mr-1" /> Reject
+                  </Button>
+                </div>
+              )}
 
-        {operator.long_desc && (
-          <Card>
-            <CardContent className="p-4">
-              <h3 className="text-sm font-semibold mb-2">Long Description</h3>
-              <p className="text-sm text-gray-700 whitespace-pre-line">{operator.long_desc}</p>
-            </CardContent>
-          </Card>
-        )}
+              <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => doAction('verify', { verified: !op.verified })} disabled={!!actionLoading}>
+                {op.verified ? <XCircle className="h-4 w-4 mr-2" /> : <CheckCircle className="h-4 w-4 mr-2" />}
+                {op.verified ? 'Remove Verified' : 'Mark Verified'}
+              </Button>
 
-        {operator.pricing_note && (
-          <Card>
-            <CardContent className="p-4">
-              <h3 className="text-sm font-semibold mb-2">Pricing</h3>
-              <p className="text-sm text-gray-700">{operator.pricing_note}</p>
-            </CardContent>
-          </Card>
-        )}
+              {op.status === 'approved' && (
+                <Button variant="outline" size="sm" className="w-full justify-start text-warning" onClick={() => doAction('suspend')} disabled={!!actionLoading}>
+                  <AlertTriangle className="h-4 w-4 mr-2" /> Suspend
+                </Button>
+              )}
+              {op.status === 'suspended' && (
+                <Button variant="outline" size="sm" className="w-full justify-start text-success" onClick={() => doAction('approve')} disabled={!!actionLoading}>
+                  <CheckCircle className="h-4 w-4 mr-2" /> Unsuspend
+                </Button>
+              )}
+              {op.status === 'rejected' && (
+                <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => doAction('approve')} disabled={!!actionLoading}>
+                  <CheckCircle className="h-4 w-4 mr-2" /> Re-approve
+                </Button>
+              )}
 
-        {operator.houseboat_details && operator.category === 'houseboat' && (
-          <Card>
-            <CardContent className="p-4">
-              <h3 className="text-sm font-semibold mb-2">Houseboat Details</h3>
-              <div className="text-sm space-y-1">
-                {operator.houseboat_details.owner && <p><span className="text-gray-500">Owner:</span> {operator.houseboat_details.owner}</p>}
-                {operator.houseboat_details.address && <p><span className="text-gray-500">Address:</span> {operator.houseboat_details.address}</p>}
-                {operator.houseboat_details.contact && <p><span className="text-gray-500">Contact:</span> {operator.houseboat_details.contact}</p>}
-                {operator.houseboat_details.contact2 && <p><span className="text-gray-500">Contact 2:</span> {operator.houseboat_details.contact2}</p>}
-                {operator.houseboat_details.email && <p><span className="text-gray-500">Email:</span> {operator.houseboat_details.email}</p>}
-                {operator.houseboat_details.grade && <p><span className="text-gray-500">Grade:</span> {operator.houseboat_details.grade}</p>}
-                {operator.houseboat_details.google_maps && <p><span className="text-gray-500">Location:</span> <a href={operator.houseboat_details.google_maps} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">View on Map</a></p>}
+              <Separator />
+
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground">Plan</p>
+                <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => doAction('change_plan', { plan: op.plan === 'free' ? 'pro' : 'free' })} disabled={!!actionLoading}>
+                  <Star className="h-4 w-4 mr-2" />
+                  Switch to {op.plan === 'free' ? 'Pro' : 'Free'}
+                </Button>
               </div>
-            </CardContent>
-          </Card>
-        )}
 
-        {operator.tariffs && operator.category === 'houseboat' && (
-          <Card>
-            <CardContent className="p-4">
-              <h3 className="text-sm font-semibold mb-2">Tariffs (₹)</h3>
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                {[
-                  ['double_ep', 'Double Bed (EP)'],
-                  ['double_cp', 'Double Bed (CP)'],
-                  ['double_map', 'Double Bed (MAP)'],
-                  ['double_ap', 'Double Bed (AP)'],
-                  ['single_ep', 'Single Bed (EP)'],
-                  ['single_cp', 'Single Bed (CP)'],
-                  ['single_map', 'Single Bed (MAP)'],
-                  ['single_ap', 'Single Bed (AP)'],
-                ].map(([key, label]) => {
-                  const val = operator.tariffs?.[key];
-                  if (!val) return null;
-                  return (
-                    <div key={key} className="flex justify-between">
-                      <span className="text-gray-500">{label}</span>
-                      <span className="font-medium">₹{val}</span>
-                    </div>
-                  );
-                })}
+              <Separator />
+
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground">Visibility</p>
+                <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => doAction('toggle_hidden', { hidden: !op.hidden })} disabled={!!actionLoading}>
+                  {op.hidden ? <Eye className="h-4 w-4 mr-2" /> : <EyeOff className="h-4 w-4 mr-2" />}
+                  {op.hidden ? 'Make Visible' : 'Hide from Browse'}
+                </Button>
               </div>
-              {operator.tariffs?.note && (
-                <p className="text-xs text-gray-500 mt-2">{operator.tariffs.note}</p>
+
+              <Separator />
+
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground">Email</p>
+                <div className="flex gap-2">
+                  <input
+                    value={newEmail}
+                    onChange={e => setNewEmail(e.target.value)}
+                    placeholder="new@email.com"
+                    className="flex-1 h-9 rounded-lg border border-input bg-card px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                  <Button size="sm" variant="outline" onClick={() => { doAction('update_email', { email: newEmail }); setNewEmail(''); }} disabled={!newEmail || !!actionLoading}>
+                    Update
+                  </Button>
+                </div>
+              </div>
+
+              <Separator />
+
+              <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => doAction('reset_leads')} disabled={!!actionLoading}>
+                <RefreshCw className="h-4 w-4 mr-2" /> Reset Leads Counter
+              </Button>
+
+              <Separator />
+
+              {!deleteConfirm ? (
+                <Button variant="danger" size="sm" className="w-full justify-start" onClick={() => setDeleteConfirm(true)}>
+                  <Trash2 className="h-4 w-4 mr-2" /> Delete Operator
+                </Button>
+              ) : (
+                <div className="space-y-2 p-3 rounded-lg bg-danger/10 border border-danger/20">
+                  <p className="text-xs font-medium text-danger">Are you sure? This is permanent.</p>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="danger" className="flex-1" onClick={() => { doAction('delete'); setDeleteConfirm(false); }} disabled={!!actionLoading}>
+                      Delete
+                    </Button>
+                    <Button size="sm" variant="outline" className="flex-1" onClick={() => setDeleteConfirm(false)}>
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>
-        )}
-
-        {operator.photos?.length > 0 && (
-          <Card>
-            <CardContent className="p-4">
-              <h3 className="text-sm font-semibold mb-3">Photos ({operator.photos.length})</h3>
-              <div className="grid grid-cols-3 gap-2">
-                {operator.photos.map((url: string, i: number) => (
-                  <a key={i} href={url} target="_blank" rel="noreferrer">
-                    <img
-                      src={url}
-                      alt={`Photo ${i + 1}`}
-                      className="w-full aspect-square object-cover rounded-lg"
-                    />
-                  </a>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </main>
+        </div>
+      </div>
     </div>
   );
 }

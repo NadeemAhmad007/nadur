@@ -3,10 +3,23 @@ import { db } from '@/db';
 import { operators, leads } from '@/db/schema';
 import { eq, sql, and, gte } from 'drizzle-orm';
 import { notifyLead } from '@/lib/openwa';
+import { auth } from '@/lib/auth';
+import { rateLimit } from '@/lib/rate-limit';
 
 export async function POST(req: Request) {
+  const ip = req.headers.get('x-forwarded-for') || 'anon';
+  const { allowed } = rateLimit(`lead-create:${ip}`, 10, 60000);
+  if (!allowed) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   try {
-    const { operator_id, source } = await req.json();
+    const { operator_id, source, visitor_name, visitor_phone } = await req.json();
+
+    if (!operator_id) {
+      return NextResponse.json({ error: 'operator_id is required' }, { status: 400 });
+    }
+
     const session_id = req.headers.get('x-session-id') || crypto.randomUUID();
 
     const op = await db.query.operators.findFirst({
@@ -36,34 +49,61 @@ export async function POST(req: Request) {
       return NextResponse.json({ blocked: true });
     }
 
-    await db.insert(leads).values({ operator_id, session_id, source: source || 'profile' });
+    await db.insert(leads).values({ operator_id, session_id, source: source || 'profile', visitor_name, visitor_phone });
     await db.update(operators).set({ lead_month: monthCount + 1 }).where(eq(operators.id, operator_id));
 
-    notifyLead(op.whatsapp, op.name).catch((err) => {
+    notifyLead(op.whatsapp, op.name, visitor_name, visitor_phone).catch((err) => {
       console.error(`[leads] Failed to notify operator ${op.name} (${op.whatsapp}):`, err);
     });
+
+    const adminNotify = process.env.KASHMIR360_ADMIN_WHATSAPP;
+    if (adminNotify && adminNotify !== op.whatsapp) {
+      notifyLead(adminNotify, op.name, visitor_name, visitor_phone, true).catch((err) => {
+        console.error(`[leads] Failed to notify admin:`, err);
+      });
+    }
 
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error('leads POST error:', error);
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ error: 'Failed to submit lead' }, { status: 500 });
   }
 }
 
 export async function GET(req: Request) {
+  const session = await auth();
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const sUser = session.user as unknown as Record<string, unknown>;
+  const operatorId = sUser?.operator_id;
+  const isAdmin = sUser?.is_admin;
+
   const { searchParams } = new URL(req.url);
   const operator_id = searchParams.get('operator_id');
 
-  if (!operator_id) {
+  const targetOperatorId = operator_id || (operatorId as string);
+
+  if (!targetOperatorId) {
     return NextResponse.json({ error: 'operator_id required' }, { status: 400 });
   }
 
-  const result = await db
-    .select({ id: leads.id, created_at: leads.created_at, source: leads.source })
-    .from(leads)
-    .where(eq(leads.operator_id, operator_id))
-    .orderBy(leads.created_at)
-    .limit(50);
+  if (!isAdmin && targetOperatorId !== operatorId) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
-  return NextResponse.json(result);
+  try {
+    const result = await db
+      .select({ id: leads.id, created_at: leads.created_at, source: leads.source, visitor_name: leads.visitor_name, visitor_phone: leads.visitor_phone })
+      .from(leads)
+      .where(eq(leads.operator_id, targetOperatorId))
+      .orderBy(leads.created_at)
+      .limit(50);
+
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error('[leads GET]', error);
+    return NextResponse.json({ error: 'Failed to fetch leads' }, { status: 500 });
+  }
 }

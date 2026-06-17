@@ -1,23 +1,13 @@
-version: '3.8'
-
 services:
   openwa:
-    image: ghcr.io/rmyndharis/openwa:latest
+    image: openwa-fixed:latest
     container_name: nadur-openwa
     restart: unless-stopped
     ports:
       - "2785:2785"   # REST API
       - "2886:2886"   # Web dashboard
     environment:
-      # Database: SQLite (default) — swap to PostgreSQL for prod
-      # DB_TYPE=postgresql
-      # DATABASE_URL=postgresql://user:pass@host:5432/openwa
-      #
-      # API key for authenticating requests from Nadurr
-      API_KEY: ${OPENWA_API_KEY:-nadur-dev-key}
-      #
-      # Optional: Redis for caching
-      # REDIS_URL=redis://redis:6379
+      API_KEY: ${OPENWA_API_KEY:-kashmir360-dev-key}
     volumes:
       - openwa-data:/app/data
     healthcheck:

@@ -1,7 +1,12 @@
 import { auth } from '@/lib/auth';
 import { NextResponse } from 'next/server';
 
-export async function proxy(request: Request) {
+const ALLOWED_ORIGINS = [
+  process.env.NEXT_PUBLIC_APP_URL,
+  'http://localhost:3000',
+].filter(Boolean) as string[];
+
+export async function middleware(request: Request) {
   const url = new URL(request.url);
   const { pathname } = url;
 

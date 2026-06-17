@@ -1,140 +1,112 @@
 # Screen Inventory
 
-## 1. Landing Page (`/`)
+## 1. Browse Page (Home) (`/`)
 
 | Property | Value |
 |----------|-------|
-| **File** | `src/app/page.tsx` |
-| **Type** | Server Component (no `"use client"`) |
-| **Auth Required** | No |
-| **Sections** | 1. Hero (title, subtitle, CTA buttons: Browse, Join) |
-| | 2. "How It Works" (3-step diagram) |
-| | 3. Categories grid (5 cards with icons, links to /[category]) |
-| | 4. Testimonials carousel (hardcoded or from DB — INFERRED) |
-| | 5. Footer |
-| **SEO** | Basic metadata in root layout |
-| **State** | Static (no data fetching) |
-
----
-
-## 2. Browse Page (`/browse`)
-
-| Property | Value |
-|----------|-------|
-| **File** | `src/components/browse-page.tsx` (client component imported by `src/app/browse/page.tsx`) |
-| **Type** | Client Component |
+| **File** | `src/app/page.tsx` (renders `src/components/browse-page.tsx`) |
+| **Type** | Server Component wrapper, client component for BrowsePage |
 | **Auth Required** | No |
 | **Features** | - Search bar (full-text) |
-| | - Category filter buttons |
-| | - "Near Me" button (geolocation) |
-| | - Radius slider (when Near Me active) |
-| | - Result grid of operator cards |
-| | - Loading skeleton |
-| | - Empty state ("No operators found") |
-| **Data Source** | `GET /api/operators` with query params: `search`, `category`, `lat`, `lng`, `radius` |
+| | - Category filter pills (All/Houseboats/Shikara Rides/Artisans & Crafts/Local Guides/Floating Vendors) |
+| | - "Near Me" button (geolocation with 10km hardcoded radius) |
+| | - Infinite-scroll "Load More" pagination |
+| | - Loading skeleton grid (6 cards) |
+| | - Empty state with "No operators found" |
+| **Data Source** | `GET /api/operators` with query params: `q`, `category`, `lat`, `lng` |
 | **State** | - Loading: skeleton grid |
 | | - Empty: "No operators found" message |
-| | - Error: error message (INFERRED) |
+| | - Error: error toast |
 | | - Geolocation prompt (browser permission) |
-| **Query Params** | `?category=`, `?search=`, `?lat=`, `?lng=`, `?radius=` (URL-driven state) |
 
 ---
 
-## 3. Category Listing Pages (`/[category]`)
+## 2. Search Page (`/search`)
 
 | Property | Value |
 |----------|-------|
-| **Files** | `src/app/[category]/page.tsx` (5 dynamic routes) |
-| **Type** | Server Component |
+| **File** | `src/app/search/page.tsx` |
+| **Type** | Client Component (Suspense-based) |
 | **Auth Required** | No |
-| **Categories** | `houseboat`, `shikara`, `artisan`, `guide`, `vendor` |
-| **Features** | - Category title |
-| | - Description/intro |
-| | - Operator cards grid |
-| **Data Source** | `GET /api/operators?category={slug}` |
-| **Note** | Each category may have custom intro text (hardcoded per file) |
+| **Features** | - Reads `?q=` query param |
+| | - Fetches `/api/operators?q=...` |
+| | - Renders OperatorCard grid |
+| **Data Source** | `GET /api/operators?q={query}` |
 
 ---
 
-## 4. Operator Profile Page (`/op/[slug]`)
+## 3. Operator Profile Page (`/o/[slug]`)
 
 | Property | Value |
 |----------|-------|
-| **File** | `src/components/operator-profile.tsx` (client component imported by `src/app/op/[slug]/page.tsx`) |
-| **Type** | Client Component |
+| **File** | `src/app/o/[slug]/page.tsx` (renders `src/components/operator-profile.tsx`) |
+| **Type** | Server Component (force-dynamic), client component for profile |
 | **Auth Required** | No |
-| **Sections** | 1. Hero: name, category badge, short_desc |
-| | 2. Photo gallery (Cloudinary images, carousel) |
+| **Sections** | 1. Hero: name, category badge, short_desc, verified badge |
+| | 2. Photo gallery (prev/next arrows, dot indicators, optional heart/favorite toggle + share button) |
 | | 3. Long description |
-| | 4. Category-specific section (houseboat_details, shikara_details) |
+| | 4. Category-specific section (houseboat_details, shikara_details, artisan_details) |
 | | 5. Pricing / tariffs |
-| | 6. Map (Leaflet with marker) |
-| | 7. Contact: WhatsApp button, lead form |
-| **Data Source** | `GET /api/operators/[slug]` |
-| **State** | - Loading: spinner/skeleton |
-| | - Not found: 404 message |
-| | - Error: error message |
+| | 6. Contact: WhatsApp deep link button (also tracks lead via POST /api/leads) |
+| **Data Source** | Direct DB query by slug, then client renders operator-profile |
+| **State** | - Not found: 404 redirect |
+| | - WhatsApp lead: shows blocked state if free-plan limit reached |
 | **WhatsApp** | Deep link: `https://wa.me/{whatsapp}?text={encoded_message}` |
 
 ---
 
-## 5. Join Page (`/join`)
+## 4. Join Page (`/join`)
 
 | Property | Value |
 |----------|-------|
 | **File** | `src/app/join/page.tsx` |
 | **Type** | Client Component |
 | **Auth Required** | No |
-| **Features** | - Multi-field form |
-| | - Name, WhatsApp number, Email, Category (dropdown: houseboat/shikara/artisan/guide/vendor) |
-| | - Short description, Long description, Pricing note |
-| | - Slug auto-generation from name |
-| | - Terms acceptance checkbox |
-| | - Submit button |
+| **Features** | - 5-step multi-step registration wizard |
+| | - Steps: Email → Business → Description → Photos → Review |
+| | - Supports 3 categories: houseboat, shikara, artisan |
+| | - Email OTP verification during registration |
+| | - `browser-image-compression` before upload |
+| | - Submits to `POST /api/operators` |
 | **Validation** | - Required: name, whatsapp, category |
-| | - WhatsApp: phone format (INFERRED validation) |
-| **On Success** | Redirect to `/auth/login` with success message |
-| **On Error** | Display error message from API |
+| | - WhatsApp: phone format validation |
+| **On Success** | Redirect to login with success message |
 
 ---
 
-## 6. Login Page (`/auth/login`)
+## 5. Login Page (`/auth/login`)
 
 | Property | Value |
 |----------|-------|
 | **File** | `src/app/auth/login/page.tsx` |
-| **Type** | Client Component (contains `"use client"`) |
+| **Type** | Client Component |
 | **Auth Required** | No (redirects if already authenticated) |
-| **Tabs** | 1. **Google OAuth** — "Sign in with Google" button |
-| | 2. **Email OTP** — email input + "Send OTP" + OTP input |
-| | 3. **WhatsApp OTP** — phone input + "Send OTP" + OTP input |
-| **Edge Cases** | - Stale session detection: if session exists but lacks `operator_id`, calls `signOut()` then redirects to login |
-| | - Rate-limited OTP resend (60-second cooldown — INFERRED) |
-| | - Auto-submit OTP on 6 digits entered |
+| **Tabs** | 1. **Email OTP** — email input + "Send OTP" + OTP input (6 digits) |
+| | 2. **WhatsApp OTP** — phone input + "Send OTP" + OTP input |
+| **Additional** | Google OAuth button, "forgot email" lookup link |
+| **Edge Cases** | Stale session detection: if session exists but lacks `operator_id`, calls `signOut()` then redirects to login |
 
 ---
 
-## 7. Operator Dashboard (`/portal`)
+## 6. Operator Dashboard (`/portal`)
 
 | Property | Value |
 |----------|-------|
 | **File** | `src/app/portal/page.tsx` |
 | **Type** | Client Component |
 | **Auth Required** | Yes (guarded by `proxy.ts`) |
-| **Fetches** | - `/api/operators?email={email}` (or fallback by `operator_id`) |
-| | - `/api/leads?operator_id={id}` (INFERRED) |
-| **Sections** | 1. Welcome header with operator name |
-| | 2. Profile completion score (progress bar: 0-100%) |
-| | 3. Completion checklist (missing fields) |
-| | 4. Leads count badge |
-| | 5. Recent leads list (name, message, date) |
-| | 6. "Edit Profile" button → `/portal/edit` |
-| | 7. "View Public Profile" link → `/op/[slug]` |
-| **Profile Completion** | Calculated fields: name, short_desc, long_desc, photos, category details, tariffs, lat/lng (each field = partial %) |
+| **Fetches** | Operator data by session, leads by operator_id |
+| **Sections** | 1. Profile completion score with missing fields checklist |
+| | 2. Lead counters (this month / total), trend (this week vs last week) |
+| | 3. Quick actions (Edit Profile, QR Code) |
+| | 4. Recent leads list |
+| | 5. Upgrade-to-pro prompt |
+| | 6. Free-plan lead limit warning (3/month) |
+| **Profile Completion** | 8 fields at 12.5% each: name, short_desc, long_desc, photos, tariffs, category_details, lat, lng |
 
 ---
 
-## 8. Edit Profile (`/portal/edit`)
+## 7. Edit Profile (`/portal/edit`)
 
 | Property | Value |
 |----------|-------|
@@ -142,20 +114,26 @@
 | **Type** | Client Component |
 | **Auth Required** | Yes |
 | **Fetches** | `GET /api/operators/[slug]` (by operator's slug) |
-| **Form Sections** | 1. **Basic Info:** name, slug (auto), short_desc, long_desc |
-| | 2. **Contact:** whatsapp, email |
+| **Form Sections** | 1. **Basic Info:** name, slug (auto), short_desc, long_desc, pricing_note |
+| | 2. **Contact:** whatsapp, email (with re-verify OTP) |
 | | 3. **Category-specific:** |
-| | - houseboat: rooms, amenities, check_in, check_out |
-| | - shikara: routes, durations, capacities |
-| | - artisan: craft type, materials, custom_quote |
-| | 4. **Pricing:** tariffs JSON (dynamic key-value pairs) |
-| | 5. **Photos:** Cloudinary upload widget, sortable gallery |
-| | 6. **Location:** lat/lng (manual input or map picker) |
-| **Save** | `PATCH /api/operators/[slug]` with all form fields |
-| **Validation** | - Name required (min 2 chars) |
-| | - WhatsApp required (valid phone) |
-| | - Slug: auto-generated, must be unique |
-| **Photo Upload** | Via `CldUploadButton` (Cloudinary) — opens file picker, uploads directly to Cloudinary, returns secure_url |
+| | - houseboat: owner, address, contact, contact2, email, grade, google_maps, lat/lng, boat_ghat, amenities, rooms |
+| | - shikara: full_name, mobile_number, whatsapp_number, shikara_number, ghat_number, operating_areas, years_experience, languages, services, tour_duration, registered_shikara, registration_number |
+| | - artisan: business_type, specialties, business_scale, owner_name, contact_number, whatsapp_number, email_address, website, gst_number, export_license, years_in_business, google_maps |
+| | 4. **Tariffs:** houseboat tariff table (double/single EP/CP/MAP/AP) |
+| | 5. **Photos:** custom file upload → `/api/upload/photo` → Cloudinary, max 5 photos |
+| **Save** | `PATCH /api/operators/[slug]`; changing photos/tariffs/details resets status to `pending` |
+
+---
+
+## 8. Favorites Page (`/favorites`)
+
+| Property | Value |
+|----------|-------|
+| **File** | `src/app/favorites/page.tsx` |
+| **Type** | Client Component |
+| **Auth Required** | No (uses localStorage) |
+| **Data Source** | Reads `nadur-favorites` from localStorage, fetches operator names by ID for display |
 
 ---
 
@@ -167,73 +145,82 @@
 | **Type** | Client Component |
 | **Auth Required** | Yes + `is_admin` check (client-side and proxy) |
 | **Fetches** | `GET /api/admin/operators` |
-| **Sections** | 1. Operators table (columns: name, category, status, leads count, created date) |
-| | 2. Action buttons per row: Approve, Reject, Suspend |
-| | 3. Status filter: All / Pending / Approved / Rejected / Suspended |
-| | 4. Leaderboard: operators sorted by lead count descending |
-| **Actions** | `PATCH /api/admin/operators/[id]` with `{ status }` |
-| **Admin Email** | Hardcoded: `nadeemkolu22@gmail.com` |
+| **Sections** | 1. Stat cards (pending/approved/rejected/total counts) |
+| | 2. Link buttons to filtered operator lists |
+| | 3. Latest 10 pending operators list |
+| **Actions** | Navigate to `/admin/operators` for full management |
 
 ---
 
-## 10. 404 Page (`/not-found`)
+## 10. Admin Operators List (`/admin/operators`)
 
 | Property | Value |
 |----------|-------|
-| **File** | `src/app/not-found.tsx` |
-| **Type** | Server Component |
-| **Content** | - "Page not found" heading |
-| | - Description text |
-| | - "Go Home" button linking to / |
+| **File** | `src/app/admin/operators/page.tsx` |
+| **Type** | Client Component (Suspense) |
+| **Auth Required** | Yes + admin |
+| **Features** | - Filter by `?status=` and `?verified=` |
+| | - Status and email-verified badges |
+| | - Links to operator detail page |
 
 ---
 
-## 11. Portal Layout (`/portal` layout)
+## 11. Admin Operator Detail (`/admin/operators/[id]`)
 
 | Property | Value |
 |----------|-------|
-| **File** | `src/app/portal/layout.tsx` |
+| **File** | `src/app/admin/operators/[id]/page.tsx` |
 | **Type** | Client Component |
-| **Features** | - Sidebar navigation |
-| | - Nav items: Dashboard, Edit Profile, View Profile, Logout |
-| | - Responsive: sidebar collapses on mobile (Sheet drawer) |
+| **Auth Required** | Yes + admin |
+| **Actions** | Approve, Reject (with reason dropdown), Suspend, Verify/Unverify, Change Plan, Reset Lead Counter |
+| **Data** | Full operator data: photos, tariffs, category details |
 
 ---
 
-## 12. Root Layout (`/` layout)
+## 12. Admin Categories (`/admin/categories`)
 
 | Property | Value |
 |----------|-------|
-| **File** | `src/app/layout.tsx` |
-| **Type** | Server Component |
-| **Features** | - Imports `globals.css` |
-| | - Geist font via `next/font/google` |
-| | - Metadata: title template "%s | Nadurr", description |
-| | - Children wrapper |
-| | - SessionProvider (NextAuth) wrapping children |
-| | - Toaster (Sonner) component |
+| **File** | `src/app/admin/categories/page.tsx` |
+| **Type** | Client Component |
+| **Auth Required** | Yes + admin |
+| **Content** | Lists 5 hardcoded categories (houseboat, shikara, artisan, guide, vendor) |
 
 ---
 
-## 13. Shared Components
+## 13. Other Pages
+
+| Page | File | Notes |
+|------|------|-------|
+| Privacy Policy | `src/app/privacy/page.tsx` | Static server component |
+| Terms of Service | `src/app/terms/page.tsx` | Static server component |
+| Offline (PWA) | `src/app/offline/page.tsx` | Server component |
+| Suspended | `src/app/suspended/page.tsx` | Shown when profile is suspended |
+| 404 | `src/app/not-found.tsx` | Custom 404 with compass icon |
+
+---
+
+## 14. Shared Components
 
 ### operator-card.tsx
-- Props: `operator` object
-- Renders: Photo thumbnail, name, category badge, short_desc, rating stars (INFERRED), "View Profile" + "WhatsApp" buttons
-- Used in: Browse page, category pages
+- Props: `operator: Operator`
+- Renders: Photo (aspect 4:3, or "No photo" placeholder), name, category badge, verified badge, truncated short_desc, action buttons: "Open in Maps" (Google Maps), "Chat on WhatsApp" (wa.me), "View Profile"
+- Used in: Browse page (home), Search page, Favorites page
 
 ### browse-page.tsx
-- Self-contained browse experience
-- Contains search, filter, Near Me, results grid, pagination (INFERRED)
-- States: loading, empty, error, geolocation-prompt
+- Self-contained browse experience with search, category pills, Near Me, infinite-scroll load more
+- States: loading (6 skeleton cards), empty ("No operators found"), error toast
 
 ### operator-profile.tsx
-- Self-contained profile view
-- Contains gallery, details, map, lead form
+- Self-contained profile view with photo gallery, details, favorite toggle, share, WhatsApp lead button
 - States: loading, not-found, error
-- Lead form: POST /api/leads, shows success toast
+- Lead tracking: POST /api/leads, shows blocked state if free-plan limit reached
 
-### ui/*.tsx (shadcn/ui components)
-- button.tsx, card.tsx, badge.tsx, input.tsx, dialog.tsx, sheet.tsx
-- textarea.tsx, skeleton.tsx
-- Standard shadcn/ui v4 variants with Tailwind CSS
+### ui/button.tsx
+- 6 variants: primary, secondary, outline, ghost, danger, accent
+- 4 sizes: sm, md, lg, icon
+- Uses `cn()` for Tailwind class merging
+
+### ui/card.tsx
+- `Card`, `CardHeader`, `CardContent` with forwardRef
+- Standard shadcn/ui card styling (rounded-xl, border, shadow)

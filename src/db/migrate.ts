@@ -95,6 +95,12 @@ const run = async () => {
   `;
 
   await sql`
+    ALTER TABLE leads ADD COLUMN IF NOT EXISTS visitor_name TEXT
+  `;
+  await sql`
+    ALTER TABLE leads ADD COLUMN IF NOT EXISTS visitor_phone TEXT
+  `;
+  await sql`
     CREATE INDEX IF NOT EXISTS leads_operator_created_idx
     ON leads (operator_id, created_at DESC)
   `;
@@ -146,8 +152,31 @@ const run = async () => {
 
   // Backfill email for existing operators where email is null
   await sql`
-    UPDATE operators SET email = lower(regexp_replace(whatsapp, '\D', '', 'g')) || '@nadur.com'
+    UPDATE operators SET email = lower(regexp_replace(whatsapp, '\D', '', 'g')) || '@kashmir360.com'
     WHERE email IS NULL AND whatsapp IS NOT NULL
+  `;
+
+  // Backfill email from houseboat_details / artisan_details JSON columns
+  // These take priority over the synthetic @kashmir360.com fallback
+  await sql`
+    UPDATE operators
+    SET email = LOWER(TRIM(houseboat_details->>'email'))
+    WHERE (email IS NULL OR email LIKE '%@kashmir360.com')
+      AND houseboat_details IS NOT NULL
+      AND houseboat_details->>'email' IS NOT NULL
+      AND houseboat_details->>'email' != ''
+  `;
+  await sql`
+    UPDATE operators
+    SET email = LOWER(TRIM(artisan_details->>'email'))
+    WHERE (email IS NULL OR email LIKE '%@kashmir360.com')
+      AND artisan_details IS NOT NULL
+      AND artisan_details->>'email' IS NOT NULL
+      AND artisan_details->>'email' != ''
+  `;
+
+  await sql`
+    ALTER TABLE operators ADD COLUMN IF NOT EXISTS hidden BOOLEAN DEFAULT false
   `;
 
   console.log('Migration completed successfully');

@@ -2,7 +2,7 @@ import { neon } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-http';
 import * as schema from './src/db/schema.js';
 
-const sql = neon('postgresql://neondb_owner:npg_aVrZX4e0NwMP@ep-patient-cake-aof26mzr-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require');
+const sql = neon(process.env.DATABASE_URL || 'postgresql://user:password@localhost/db');
 
 const db = drizzle(sql, { schema });
 

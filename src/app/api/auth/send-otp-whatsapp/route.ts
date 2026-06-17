@@ -2,16 +2,24 @@ import { NextResponse } from 'next/server';
 import { db } from '@/db';
 import { phoneVerifications } from '@/db/schema';
 import { sendOtp } from '@/lib/openwa';
+import { hashOtp } from '@/lib/otp';
+import { rateLimit } from '@/lib/rate-limit';
 
 function generateOtp(): string {
   return String(Math.floor(100000 + Math.random() * 900000));
 }
 
 export async function POST(req: Request) {
+  const ip = req.headers.get('x-forwarded-for') || 'anon';
+  const { allowed } = rateLimit(`send-otp-whatsapp:${ip}`, 3, 60000);
+  if (!allowed) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   try {
     const { phone } = await req.json();
 
-    if (!phone) {
+    if (!phone || typeof phone !== 'string') {
       return NextResponse.json({ error: 'Phone number is required' }, { status: 400 });
     }
 
@@ -19,7 +27,7 @@ export async function POST(req: Request) {
 
     await db.insert(phoneVerifications).values({
       phone,
-      otp,
+      otp: await hashOtp(otp),
       expires_at: new Date(Date.now() + 5 * 60 * 1000),
     });
 
@@ -29,7 +37,7 @@ export async function POST(req: Request) {
       console.log(`[DEV] Fallback — OTP for ${phone}: ${otp}`);
     }
 
-    return NextResponse.json({ sent: true, devOtp: process.env.NODE_ENV === 'development' ? otp : undefined });
+    return NextResponse.json({ sent: true });
   } catch (error) {
     console.error('send-otp-whatsapp error:', error);
     return NextResponse.json({ error: 'Failed to send OTP' }, { status: 500 });

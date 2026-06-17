@@ -1,6 +1,8 @@
 const BASE_URL = process.env.OPENWA_API_URL || 'http://localhost:2785/api';
 const API_KEY = process.env.OPENWA_API_KEY;
-const SESSION_NAME = process.env.OPENWA_SESSION || 'nadur-bot';
+const SESSION_NAME = process.env.OPENWA_SESSION || 'kashmir360-bot';
+
+let sessionUuid: string | null = null;
 
 interface OpenWAResponse {
   success?: boolean;
@@ -32,33 +34,86 @@ async function request(method: string, path: string, body?: unknown): Promise<Op
   }
 }
 
+async function resolveSessionUuid(): Promise<string | null> {
+  if (sessionUuid) return sessionUuid;
+  const res = await request('GET', '/sessions');
+  if (res.error || !Array.isArray(res)) {
+    console.error('[OpenWA] Failed to list sessions');
+    return null;
+  }
+  const session = (res as any[]).find((s: any) => s.name === SESSION_NAME);
+  if (!session) {
+    console.error(`[OpenWA] Session "${SESSION_NAME}" not found`);
+    return null;
+  }
+  sessionUuid = session.id;
+  return sessionUuid;
+}
+
 function normalizePhone(phone: string): string {
   return phone.replace(/[^0-9]/g, '');
 }
 
 export async function sendText(phone: string, text: string): Promise<OpenWAResponse> {
+  const uuid = await resolveSessionUuid();
+  if (!uuid) return { error: 'Session not found' };
   const chatId = `${normalizePhone(phone)}@c.us`;
-  return request('POST', `/sessions/${SESSION_NAME}/messages/send-text`, { chatId, text });
+  return request('POST', `/sessions/${uuid}/messages/send-text`, { chatId, text });
 }
 
 export async function sendOtp(phone: string, otp: string): Promise<OpenWAResponse> {
-  const message = `Your Nadur OTP code is: ${otp}\nValid for 5 minutes.`;
+  const message = `Your Kashmir360 OTP code is: ${otp}\nValid for 5 minutes.`;
   return sendText(phone, message);
 }
 
-export async function notifyLead(operatorPhone: string, operatorName: string, visitorName?: string): Promise<OpenWAResponse> {
-  let message = `*New Inquiry on Nadurr!*\n\nYou have received a new lead from a visitor interested in your services.\n\n`;
-  if (visitorName) {
-    message += `From: ${visitorName}\n`;
+export async function notifyLead(operatorPhone: string, operatorName: string, visitorName?: string, visitorPhone?: string, isAdmin = false): Promise<OpenWAResponse> {
+  const prefix = isAdmin ? `*New Lead: ${operatorName}*` : `*New Inquiry on Kashmir360!*`;
+  let message = `${prefix}\n\n`;
+  if (!isAdmin) {
+    message += `A visitor has contacted *${operatorName}*.\n\n`;
   }
-  message += `\nLogin to your dashboard to view details:\n${process.env.NEXT_PUBLIC_APP_URL || 'https://nadurr.com'}/portal`;
-  return sendText(operatorPhone, message);
+  if (visitorName) {
+    message += `Name: ${visitorName}\n`;
+  }
+  if (visitorPhone) {
+    message += `Phone: ${visitorPhone}\n`;
+  }
+  message += `\nLogin to your dashboard to view details:\n${process.env.NEXT_PUBLIC_APP_URL || 'https://kashmir360.com'}${isAdmin ? '/admin' : '/portal'}`;
+  const result = await sendText(operatorPhone, message);
+  if (result.error) {
+    throw new Error(result.error);
+  }
+  return result;
 }
 
 export async function getSessionStatus(): Promise<OpenWAResponse> {
-  return request('GET', `/sessions/${SESSION_NAME}`);
+  const uuid = await resolveSessionUuid();
+  if (!uuid) return { error: 'Session not found' };
+  return request('GET', `/sessions/${uuid}`);
 }
 
 export async function getQR(): Promise<OpenWAResponse> {
-  return request('GET', `/sessions/${SESSION_NAME}/qr`);
+  const uuid = await resolveSessionUuid();
+  if (!uuid) return { error: 'Session not found' };
+  return request('GET', `/sessions/${uuid}/qr`);
+}
+
+export async function getSessions(): Promise<OpenWAResponse> {
+  return request('GET', '/sessions');
+}
+
+export async function createSession(name: string): Promise<OpenWAResponse> {
+  return request('POST', '/sessions', { name });
+}
+
+export async function startSession(uuid: string): Promise<OpenWAResponse> {
+  return request('POST', `/sessions/${uuid}/start`);
+}
+
+export async function stopSession(uuid: string): Promise<OpenWAResponse> {
+  return request('POST', `/sessions/${uuid}/stop`);
+}
+
+export function clearSessionUuid(): void {
+  sessionUuid = null;
 }

@@ -1,7 +1,7 @@
 import { db } from '@/db';
 import { operators } from '@/db/schema';
 import { eq } from 'drizzle-orm';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { OperatorProfile } from '@/components/operator-profile';
 
 export const dynamic = 'force-dynamic';
@@ -13,7 +13,15 @@ export default async function OperatorPage({ params }: { params: Promise<{ slug:
     where: eq(operators.slug, slug),
   });
 
-  if (!op || (op.status !== 'approved' && op.status !== 'pending')) {
+  if (!op) {
+    notFound();
+  }
+
+  if (op.status === 'suspended') {
+    redirect('/suspended');
+  }
+
+  if (op.status !== 'approved' && op.status !== 'pending') {
     notFound();
   }
 

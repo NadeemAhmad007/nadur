@@ -314,9 +314,14 @@ export default function JoinPage() {
           <p className="text-sm text-gray-600 mt-2">
             Your profile is under review. We will WhatsApp you within 24 hours.
           </p>
-          <Link href="/">
-            <Button className="mt-6">Back to Home</Button>
-          </Link>
+          <div className="flex flex-col gap-2 mt-6">
+            <Link href="/auth/login">
+              <Button className="w-full">Go to Login →</Button>
+            </Link>
+            <Link href="/">
+              <Button variant="outline" className="w-full">Back to Home</Button>
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -329,7 +334,7 @@ export default function JoinPage() {
           <Link href="/" className="p-1">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <img src="/logo.png" alt="Nadurr" className="w-5 h-5" />
+          <img src="/logo.png" alt="Kashmir360" className="w-5 h-5" />
           <span className="font-semibold text-sm">Register Your Business</span>
         </div>
       </header>

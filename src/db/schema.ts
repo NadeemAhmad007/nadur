@@ -15,6 +15,7 @@ export const operators = pgTable('operators', {
   email: text('email'),
   pricing_note: text('pricing_note'),
   status: text('status', { enum: ['pending', 'approved', 'rejected', 'suspended'] }).default('pending'),
+  hidden: boolean('hidden').default(false),
   verified: boolean('verified').default(false),
   plan: text('plan', { enum: ['free', 'pro'] }).default('free'),
   lead_month: integer('lead_month').default(0),
@@ -36,6 +37,8 @@ export const leads = pgTable('leads', {
   operator_id: uuid('operator_id').notNull().references(() => operators.id, { onDelete: 'cascade' }),
   session_id: text('session_id').notNull(),
   source: text('source', { enum: ['profile', 'qr', 'search'] }).default('profile'),
+  visitor_name: text('visitor_name'),
+  visitor_phone: text('visitor_phone'),
 }, (table) => [
   index('leads_operator_created_idx').on(table.operator_id, table.created_at),
 ]);

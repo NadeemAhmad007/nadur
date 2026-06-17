@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
 import { operators } from '@/db/schema';
-import { eq, like, or, sql } from 'drizzle-orm';
+import { eq, and, like, or, sql } from 'drizzle-orm';
+import { auth } from '@/lib/auth';
+import { rateLimit } from '@/lib/rate-limit';
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -23,14 +25,27 @@ export async function GET(req: Request) {
       .from(operators)
       .$dynamic();
 
+    const session = await auth();
+    const sUser = session?.user as unknown as Record<string, unknown> | undefined;
+    const isAuthenticated = !!session;
+
     if (id) {
+      if (!isAuthenticated) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
       query = query.where(eq(operators.id, id));
     } else if (user_id) {
+      if (!isAuthenticated) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
       query = query.where(eq(operators.id, user_id));
     } else if (email) {
+      if (!isAuthenticated) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
       query = query.where(eq(operators.email, email));
     } else {
-      query = query.where(eq(operators.status, 'approved'));
+      query = query.where(and(eq(operators.status, 'approved'), eq(operators.hidden, false)));
     }
 
     if (category) {
@@ -83,7 +98,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ data: result, hasMore });
   } catch (error) {
     console.error('API error:', error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch operators' }, { status: 500 });
   }
 }
 
@@ -98,9 +113,19 @@ function distance(lat1: number, lng1: number, lat2: number, lng2: number): numbe
 }
 
 export async function POST(req: Request) {
+  const ip = req.headers.get('x-forwarded-for') || 'anon';
+  const { allowed } = rateLimit(`create-op:${ip}`, 3, 3600000);
+  if (!allowed) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   try {
     const body = await req.json();
     const { name, category, short_desc, long_desc, whatsapp, email, pricing_note, photos, tariffs, houseboat_details, shikara_details, artisan_details, lat, lng } = body;
+
+    if (!name || !category || !whatsapp) {
+      return NextResponse.json({ error: 'Name, category, and WhatsApp are required' }, { status: 400 });
+    }
 
     const slug = name
       .toLowerCase()

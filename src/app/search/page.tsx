@@ -37,7 +37,7 @@ function SearchContent() {
             <Link href="/" className="p-1">
               <ArrowLeft className="w-5 h-5" />
             </Link>
-            <img src="/logo.png" alt="Nadurr" className="w-5 h-5" />
+            <img src="/logo.png" alt="Kashmir360" className="w-5 h-5" />
             <form onSubmit={handleSubmit} className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input

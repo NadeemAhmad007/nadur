@@ -27,13 +27,13 @@
 | `pricing_note` | `TEXT` | | `NULL` | Free-form pricing info |
 | `status` | `TEXT` | `DEFAULT 'pending'`, `CHECK (status IN ('pending','approved','rejected','suspended'))` | `'pending'` | Moderation status |
 | `verified` | `BOOLEAN` | `DEFAULT false` | `false` | Verification badge |
-| `plan` | `TEXT` | `DEFAULT 'free'`, `CHECK (plan IN ('free','pro'))` | `'free'` | Subscription tier (not enforced) |
-| `lead_month` | `INTEGER` | `DEFAULT 0` | `0` | Leads used this month (INFERRED — not decremented in code) |
+| `plan` | `TEXT` | `DEFAULT 'free'`, `CHECK (plan IN ('free','pro'))` | `'free'` | Subscription tier |
+| `lead_month` | `INTEGER` | `DEFAULT 0` | `0` | Leads used this month |
 | `photos` | `TEXT[]` | | `NULL` | Array of Cloudinary URLs |
 | `tariffs` | `JSONB` | | `NULL` | Pricing table (key-value pairs) |
-| `houseboat_details` | `JSONB` | | `NULL` | Houseboat-specific fields (rooms, amenities, etc.) |
-| `shikara_details` | `JSONB` | | `NULL` | Shikara-specific fields (routes, durations, etc.) |
-| `artisan_details` | `JSONB` | | `NULL` | Artisan-specific fields (craft type, materials, etc.) |
+| `houseboat_details` | `JSONB` | | `NULL` | Houseboat-specific fields |
+| `shikara_details` | `JSONB` | | `NULL` | Shikara-specific fields |
+| `artisan_details` | `JSONB` | | `NULL` | Artisan-specific fields |
 | `lat` | `DOUBLE PRECISION` | | `NULL` | Latitude (for geospatial search) |
 | `lng` | `DOUBLE PRECISION` | | `NULL` | Longitude (for geospatial search) |
 
@@ -46,7 +46,7 @@
 | `operators_earth_idx` | GiST | `ll_to_earth(lat, lng)` | Geospatial distance queries |
 
 **Extensions Required:**
-- `pg_trgm` (trigram text search — INFERRED for fuzzy search support)
+- `pg_trgm` (trigram text search)
 - `cube` (dependency for earthdistance)
 - `earthdistance` (geospatial distance calculation)
 
@@ -62,9 +62,7 @@
 | `created_at` | `TIMESTAMPTZ` | | `now()` | Submission timestamp |
 | `operator_id` | `UUID` | `REFERENCES operators(id) ON DELETE CASCADE` | `NULL` | Target operator |
 | `session_id` | `TEXT` | `NOT NULL` | | Anonymous visitor session |
-| `source` | `TEXT` | | `'profile'` | Lead source (profile, browse, etc.) |
-| `name` | `TEXT` | | `NULL` | Visitor's name |
-| `message` | `TEXT` | | `NULL` | Visitor's message |
+| `source` | `TEXT` | | `'profile'` | Lead source: `profile`, `qr`, or `search` |
 
 **Indexes:**
 | Index Name | Type | Columns | Description |
@@ -81,7 +79,7 @@
 |--------|------|-------------|---------|-------------|
 | `slug` | `TEXT` | `PRIMARY KEY` | | Category identifier (e.g., 'houseboat') |
 | `label` | `TEXT` | `NOT NULL` | | English label (e.g., 'Houseboats') |
-| `label_hi` | `TEXT` | | `NULL` | Hindi label (for i18n — not used) |
+| `label_hi` | `TEXT` | | `NULL` | Hindi label (for i18n) |
 | `icon` | `TEXT` | | `NULL` | Icon identifier (e.g., 'IconHome') |
 | `active` | `BOOLEAN` | `DEFAULT true` | `true` | Whether category is active |
 | `sort_order` | `INTEGER` | `DEFAULT 0` | `0` | Display order |
@@ -149,53 +147,52 @@
 ## 7. Drizzle Schema Definition (`src/db/schema.ts`)
 
 ```typescript
-// INFERRED STRUCTURE (from import usage across the codebase)
-// The actual schema.ts file uses `pgTable`, `uuid`, `text`, `boolean`,
-// `timestamp`, `integer`, `jsonb`, `doublePrecision`, `primaryKey()`,
-// `defaultNow()`, `uniqueIndex()`, `index()`, `Check` constraints
-
-import { pgTable, uuid, text, boolean, timestamp, integer, jsonb, doublePrecision, index, uniqueIndex } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, integer, boolean, doublePrecision, json, uniqueIndex, index } from 'drizzle-orm/pg-core';
+import type { Tariffs, HouseboatDetails, ShikaraDetails, ArtisanDetails } from '@/types';
 
 export const operators = pgTable('operators', {
   id: uuid('id').defaultRandom().primaryKey(),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
-  userId: uuid('user_id'),
+  created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updated_at: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+  user_id: uuid('user_id'),
   slug: text('slug').notNull().unique(),
   name: text('name').notNull(),
-  category: text('category').notNull(),
-  shortDesc: text('short_desc'),
-  longDesc: text('long_desc'),
+  category: text('category', { enum: ['houseboat', 'shikara', 'artisan', 'guide', 'vendor'] }).notNull(),
+  short_desc: text('short_desc'),
+  long_desc: text('long_desc'),
   whatsapp: text('whatsapp').notNull(),
   email: text('email'),
-  pricingNote: text('pricing_note'),
-  status: text('status').default('pending'),
+  pricing_note: text('pricing_note'),
+  status: text('status', { enum: ['pending', 'approved', 'rejected', 'suspended'] }).default('pending'),
   verified: boolean('verified').default(false),
-  plan: text('plan').default('free'),
-  leadMonth: integer('lead_month').default(0),
+  plan: text('plan', { enum: ['free', 'pro'] }).default('free'),
+  lead_month: integer('lead_month').default(0),
   photos: text('photos').array(),
-  tariffs: jsonb('tariffs'),
-  houseboatDetails: jsonb('houseboat_details'),
-  shikaraDetails: jsonb('shikara_details'),
-  artisanDetails: jsonb('artisan_details'),
+  tariffs: json('tariffs').$type<Tariffs | null>(),
+  houseboat_details: json('houseboat_details').$type<HouseboatDetails | null>(),
+  shikara_details: json('shikara_details').$type<ShikaraDetails | null>(),
+  artisan_details: json('artisan_details').$type<ArtisanDetails | null>(),
   lat: doublePrecision('lat'),
   lng: doublePrecision('lng'),
-}, (table) => ({
-  slugIdx: uniqueIndex('operators_slug_idx').on(table.slug),
-  categoryStatusIdx: index('operators_category_status_idx').on(table.category, table.status),
-  searchIdx: index('operators_search_idx').using('gin', ...),
-  earthIdx: index('operators_earth_idx').using('gist', ...),
-}));
+}, (table) => [
+  index('operators_category_status_idx').on(table.category, table.status),
+  uniqueIndex('operators_slug_idx').on(table.slug),
+]);
 
 export const leads = pgTable('leads', {
   id: uuid('id').defaultRandom().primaryKey(),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-  operatorId: uuid('operator_id').references(() => operators.id, { onDelete: 'cascade' }),
-  sessionId: text('session_id').notNull(),
-  source: text('source').default('profile'),
-  name: text('name'),
-  message: text('message'),
-});
+  created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  operator_id: uuid('operator_id').notNull().references(() => operators.id, { onDelete: 'cascade' }),
+  session_id: text('session_id').notNull(),
+  source: text('source', { enum: ['profile', 'qr', 'search'] }).default('profile'),
+}, (table) => [
+  index('leads_operator_created_idx').on(table.operator_id, table.created_at),
+]);
+
+export const favorites = pgTable('favorites', { /* ... */ });
+export const emailVerifications = pgTable('email_verifications', { /* ... */ });
+export const phoneVerifications = pgTable('phone_verifications', { /* ... */ });
+export const categories = pgTable('categories', { /* ... */ });
 ```
 
 ---
@@ -239,8 +236,6 @@ erDiagram
         uuid operator_id FK
         text session_id
         text source
-        text name
-        text message
     }
     
     favorites {
@@ -285,17 +280,8 @@ erDiagram
 ## 9. Migration Notes
 
 - Migration is run via raw SQL (`src/db/migrate.ts`) using `@neondatabase/serverless`, NOT via Drizzle Kit migrations
-- Several columns were added via `ALTER TABLE ADD COLUMN IF NOT EXISTS` in the migration script (not in the initial CREATE TABLE):
-  - `tariffs` (JSONB)
-  - `houseboat_details` (JSONB)
-  - `shikara_details` (JSONB)
-  - `artisan_details` (JSONB)
-  - `lat` (DOUBLE PRECISION)
-  - `lng` (DOUBLE PRECISION)
-  - `email` (TEXT)
-- The migration also backfills `email` for existing operators where `email IS NULL` using: `lower(regexp_replace(whatsapp, '\D', '', 'g')) || '@nadur.com'`
+- Migration is idempotent (uses `CREATE TABLE IF NOT EXISTS`, `ADD COLUMN IF NOT EXISTS`)
 - Drizzle Kit is configured (`drizzle.config.ts`) for schema generation but the primary migration path is the raw SQL script
-- **REQUIRES VERIFICATION:** Drizzle schema (`schema.ts`) may be out of sync with actual DB state since raw ALTER TABLE commands were run outside Drizzle's tracking
 
 ---
 
@@ -326,8 +312,4 @@ SELECT * FROM leads
 WHERE operator_id = 'some-uuid'
 ORDER BY created_at DESC
 LIMIT 50;
-
--- Profile completion score (application-level logic)
--- Fields: name, short_desc, long_desc, photos (non-empty), tariffs, category_details, lat, lng
--- Each field contributes ~12.5% to a 100% scale
 ```

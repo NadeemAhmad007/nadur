@@ -6,7 +6,7 @@
 The core discovery feature allowing visitors to browse, search, and filter operators on Dal Lake.
 
 ### Technical Implementation
-- **Page:** `/browse` — uses `src/components/browse-page.tsx` (Client Component)
+- **Page:** `/` — uses `src/components/browse-page.tsx` (Client Component)
 - **Data:** `GET /api/operators` with query parameters
 - **State management:** URL search params (`useSearchParams`)
 
@@ -14,24 +14,25 @@ The core discovery feature allowing visitors to browse, search, and filter opera
 
 | State | Trigger | UI |
 |-------|---------|-----|
-| **Loading** | Initial page load or new search | Grid of skeleton cards (8x `animate-pulse` rectangles) |
-| **Empty** | No operators match filters | Centered illustration + "No operators found" message + "Clear filters" button |
-| **Error** | API returns error | Error toast via Sonner + retry button (INFERRED) |
-| **Geolocation Prompt** | User clicks "Near Me" | Browser permission dialog; shows "Enable location" on denial |
+| **Loading** | Initial page load or new search | Grid of 6 skeleton cards (`animate-pulse`) |
+| **Empty** | No operators match filters | "No operators found" message |
+| **Error** | API returns error | Error toast via Sonner |
+| **Geolocation Prompt** | User clicks "Near Me" | Browser permission dialog |
 | **Results** | Operators found | Grid of operator cards with photo, name, badge, short_desc, CTAs |
-| **Results + Near Me** | Geolocation active | Same grid with distance indicator on each card |
+| **Results + Near Me** | Geolocation active | Same grid (no distance indicator) |
 
 ### Filter Behavior
-- **Category filter:** URL-driven (`?category=houseboat`). Clicking a category button sets param; "All" clears it.
-- **Search:** Debounced input (300ms INFERRED). Updates `?search=query` in URL.
-- **Near Me:** Requests geolocation, sets `?lat=...&lng=...&radius=5000`. Radius adjustable via slider.
+- **Category filter:** URL-driven (`?category=houseboat`). Clicking a category pill sets param; "All" clears it.
+- **Search:** Debounced input (300ms). Updates `?q=query` in URL.
+- **Near Me:** Requests geolocation, sets `?lat=...&lng=...` with 10km hardcoded radius.
 - **Combined filters:** All active params applied simultaneously (AND logic).
+- **Load More:** Fetches next page with `offset` param.
 
 ### Edge Cases
 - **Geolocation denied:** Show error toast, fall back to non-geo search
 - **Geolocation unavailable:** Show "Location not available" message
-- **Empty search results:** "No operators found matching 'query'"
-- **Rapid filter changes:** Debounce search input; cancel in-flight requests
+- **Empty search results:** "No operators found" empty state
+- **Rapid filter changes:** Debounce search input
 
 ---
 
@@ -41,38 +42,34 @@ The core discovery feature allowing visitors to browse, search, and filter opera
 Public profile page for each operator, showing all relevant information with category-specific sections.
 
 ### Technical Implementation
-- **Page:** `/op/[slug]` — uses `src/components/operator-profile.tsx` (Client Component)
-- **Data:** `GET /api/operators/[slug]`
+- **Page:** `/o/[slug]` — uses `src/components/operator-profile.tsx` (Client Component)
+- **Data:** Server-side fetch by slug
 
 ### Sections
 
 | Section | Content | Conditional? |
 |---------|---------|--------------|
 | Hero | Name, category badge, short_desc, verified badge | No |
-| Photo Gallery | Image carousel from `photos[]` | Yes — only if photos exist |
+| Photo Gallery | Image carousel with prev/next arrows and dot indicators | Yes — only if photos exist |
 | Description | `long_desc` | Yes — only if set |
-| Houseboat Details | Rooms, amenities, check-in/out | Yes — only if category = houseboat |
-| Shikara Details | Routes, durations, capacity | Yes — only if category = shikara |
-| Artisan Details | Craft type, materials, custom orders | Yes — only if category = artisan |
+| Houseboat Details | Owner, address, grade, amenities, rooms | Yes — only if category = houseboat |
+| Shikara Details | Full name, shikara number, ghat, operating areas, languages | Yes — only if category = shikara |
+| Artisan Details | Business type, specialties, years in business | Yes — only if category = artisan |
 | Tariffs/Pricing | Key-value pricing table | Yes — only if tariffs exist |
-| Map | Leaflet map with marker | Yes — only if lat/lng set |
-| Contact | WhatsApp button (deep link) | No |
-| Lead Form | Name + Message + Submit | No |
+| Contact | WhatsApp button (deep link + lead tracking) | No |
+| Favorite | Heart toggle (localStorage-based) | No |
 
-### Lead Form Behavior
-1. Visitor fills name + message
-2. Clicks "Send Inquiry"
-3. `POST /api/leads` with operator_id, session_id, source='profile'
-4. On success: toast "Inquiry sent!" + form reset
-5. On error: toast error message
+### WhatsApp Lead Behavior
+1. Visitor clicks "Chat on WhatsApp"
+2. `POST /api/leads` with operator_id, source='profile'
+3. If free-plan limit reached (3/month): show "Blocked" state
+4. Otherwise: open WhatsApp deep link with encoded message
 
 ### Edge Cases
 - **Slug not found:** 404 page
-- **No photos:** Gallery section hidden
-- **No lat/lng:** Map section hidden
-- **WhatsApp missing:** Contact button disabled
+- **No photos:** "No photos available" placeholder shown
+- **WhatsApp missing:** Button disabled
 - **Category-specific details missing:** Section hidden
-- **Invalid slug format:** 404 page
 
 ---
 
@@ -85,31 +82,22 @@ Self-registration flow for operators to create their profile on the platform.
 - **Page:** `/join` (Client Component)
 - **Data:** `POST /api/operators`
 
-### Form Fields
+### Registration Wizard (5 Steps)
 
-| Field | Type | Required | Validation |
-|-------|------|----------|------------|
-| name | Text input | Yes | Min 2 characters |
-| whatsapp | Tel input | Yes | Must include country code |
-| email | Email input | No | Valid email format |
-| category | Select dropdown | Yes | Must be one of 5 valid categories |
-| short_desc | Textarea | No | Max 500 chars |
-| long_desc | Textarea | No | Max 2000 chars |
-| pricing_note | Text input | No | Free text |
-| terms | Checkbox | Yes | Must be checked |
+| Step | Fields |
+|------|--------|
+| **Email** | Email input + OTP send/verify |
+| **Business** | Name, Category (houseboat/shikara/artisan), WhatsApp |
+| **Description** | Short description, Long description, Pricing note |
+| **Photos** | File upload + compression (up to 5 photos) |
+| **Review** | Summary of all entered data + terms checkbox + submit |
 
 ### Flow
-1. User fills form
-2. Slug auto-generated from name on blur (INFERRED)
-3. User submits
-4. `POST /api/operators` creates record with `status='pending'`
-5. On success: redirect to `/auth/login` with toast "Registration submitted! Login to manage your profile."
-6. On error: show validation error on form
-
-### Edge Cases
-- **Duplicate slug:** Auto-retry with random suffix; if still fails, show error
-- **Network error:** toast "Something went wrong. Please try again."
-- **Invalid phone:** Show inline validation error
+1. User fills email, verifies via OTP (sent by Resend)
+2. Fills business details, uploads photos (client-side compression)
+3. Submits → `POST /api/operators` creates record with `status='pending'`
+4. Slug auto-generated from name with random suffix
+5. On success: redirect to login with success message
 
 ---
 
@@ -121,51 +109,46 @@ Multi-provider authentication system supporting Google OAuth, Email OTP, and Wha
 ### Technical Implementation
 - **Config:** `src/lib/auth.ts`
 - **Pages:** `/auth/login` (Client Component)
-- **Providers:** Google (OAuth), Email (Resend-based OTP), WhatsApp (custom credentials)
+- **Providers:** Google (OAuth), Email (Resend-based OTP), WhatsApp (OpenWA-based OTP)
 
 ### Provider Details
 
 **Google OAuth:**
 - Standard OAuth 2.0 flow
 - Requires `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET`
-- Callback creates/updates NextAuth user
-- JWT callback looks up operator by email
 
 **Email OTP:**
-- User enters email → `POST /api/auth/otp/send { email }`
+- User enters email → `POST /api/auth/send-otp { email }`
 - 6-digit OTP generated, stored in `email_verifications` table
 - OTP sent via Resend email API
-- User enters OTP → `POST /api/auth/otp/verify { email, otp }`
-- On success: NextAuth credentials provider creates session
-- On failure: "Invalid code" error, increment attempts
+- User enters OTP → `POST /api/auth/verify { email, otp }`
+- Backfilled `@nadur.com` emails return OTP directly in response
 
 **WhatsApp OTP:**
-- User enters phone → `POST /api/auth/otp/send { phone }`
+- User enters phone → `POST /api/auth/send-otp-whatsapp { phone }`
 - 6-digit OTP generated, stored in `phone_verifications` table
-- OTP sent via WhatsApp API (INFERRED — actual integration unclear)
-- User enters OTP → `POST /api/auth/otp/verify { phone, otp }`
-- On success: NextAuth credentials provider creates session
+- OTP sent via OpenWA WhatsApp gateway
+- User enters OTP → `POST /api/auth/verify-whatsapp { phone, otp }`
 
 ### JWT Callback Logic
 ```
 if token has user.email:
     lookup operator by email
     if found:
-        add operator_id, is_admin (from operator), user_role to token
+        add operator_id, is_admin to token
     else:
         if email == 'nadeemkolu22@gmail.com':
             set is_admin = true
 else:
     lookup operator by user.id (fallback for OTP users without email)
     if found:
-        add operator_id, user_role to token
+        add operator_id to token
 ```
 
 ### Edge Cases
 - **Stale session:** Login page detects missing `operator_id`, calls `signOut()`, redirects to login
 - **OTP expired:** User must request new code
-- **Too many OTP attempts:** OTP invalidated after 3-5 failed attempts
-- **Concurrent OTP requests:** New OTP invalidates old one (overwrite by phone/email)
+- **Concurrent OTP requests:** New OTP overwrites old one (by phone/email)
 
 ---
 
@@ -176,29 +159,29 @@ Personal dashboard for operators showing profile completion status and lead acti
 
 ### Technical Implementation
 - **Page:** `/portal` (Client Component, wrapped in portal layout)
-- **Data:** `GET /api/operators?email=...` (or by operator_id fallback), `GET /api/leads?operator_id=...`
+- **Data:** Session-based operator lookup, leads by operator_id
 
 ### Dashboard Sections
 
 **Profile Completion Card:**
-- Circular or linear progress bar showing completion %
-- Checklist of missing fields with "Add Now" links
+- Progress bar showing completion %
+- Checklist of missing fields
 - Fields checked: name, short_desc, long_desc, photos, tariffs, category_details, lat, lng
 
 **Leads Summary Card:**
-- Total leads count (large number)
-- Recent leads list (5 most recent): name, message excerpt, date
-- "View All" link (INFERRED — may not exist)
+- Total leads count (this month + all time)
+- Trend comparison (this week vs last week)
+- Recent leads list (source, date)
+- Free-plan lead limit warning (3/month)
 
 **Quick Actions:**
 - "Edit Profile" button → `/portal/edit`
-- "View Public Profile" link → `/op/[slug]`
+- "View QR Code" → `/portal/qr`
+- "View Public Profile" → `/o/[slug]`
 
 ### Edge Cases
-- **Session missing operator_id:** Fallback lookup by operator_id from session
-- **Email empty for operator:** Fallback to operator_id-based lookup
-- **No leads yet:** "No inquiries yet" empty state
-- **Profile 100% complete:** "Your profile is complete!" message
+- **No leads yet:** Empty state
+- **Profile 100% complete:** Success message
 
 ---
 
@@ -214,63 +197,42 @@ Full profile editor for operators to manage all aspects of their listing.
 ### Form Sections
 
 **Basic Information:**
-- Name (text input)
-- Slug (text input, auto-generated, shows uniqueness check)
-- Short description (textarea, char counter, max 500)
-- Long description (textarea, char counter, max 2000)
-- WhatsApp (tel input)
-- Email (email input)
-- Pricing note (text input)
+- Name, Slug (auto-generated), Short description (max 500), Long description (max 2000), Pricing note
+- WhatsApp, Email (with verification OTP)
 
 **Category-Specific Fields (conditional):**
 
 *Houseboat:*
-- Rooms (number)
-- Amenities (multi-select or tag input)
-- Check-in time (time input)
-- Check-out time (time input)
-- Has electricity (toggle)
-- Has attached bathroom (toggle)
+- Owner, Address, Contact, Contact 2, Email, Grade
+- Google Maps URL (auto-parses lat/lng)
+- Boat Ghat, Room types with pricing (double/single EP/CP/MAP/AP)
 
 *Shikara:*
-- Routes (dynamic list of {name, duration, capacity, price})
-- Max capacity (number)
-- Has shade (toggle)
+- Full Name, Mobile, WhatsApp, Shikara Number, Ghat Number
+- Operating Areas, Years Experience, Languages, Services
+- Tour Duration, Registration status & number
 
 *Artisan:*
-- Craft type (text/select)
-- Materials (tag input)
-- Custom orders (toggle)
-- Delivery available (toggle)
+- Business Type, Specialties, Scale
+- Owner Name, Contact, WhatsApp, Email
+- Website, GST Number, Export License
+- Years in Business, Google Maps URL
 
 **Tariffs:**
-- Dynamic key-value pairs (add/remove rows)
-- Each row: label (text), price (text)
-- Stored as JSONB
+- Houseboat tariff table: double/single EP/CP/MAP/AP
 
 **Photos:**
-- Current photos displayed as thumbnail grid
-- "Add Photo" button → opens Cloudinary widget
-- Uploaded photo URL added to array
+- Current photos displayed as thumbnail grid (max 5)
+- "Add photo" button → file input → compress → upload to `/api/upload/photo`
+- Changing photos resets status to pending
 
 **Location:**
-- Latitude (number input, -90 to 90)
-- Longitude (number input, -180 to 180)
-- Map preview with draggable marker (INFERRED)
+- Latitude / Longitude (parsed from Google Maps URL)
 
 ### Save Behavior
-- "Save Changes" button
-- Validates all fields client-side before submit
-- `PATCH /api/operators/[slug]` with all changed fields
-- On success: toast "Profile updated!" + update displayed data
-- On error: toast error message, keep form state
-
-### Edge Cases
-- **User not authorized for this profile:** Redirect to dashboard
-- **Concurrent edits:** Last save wins (no merge strategy)
-- **Cloudinary upload fails:** Widget shows error; form state preserved
-- **Invalid coordinates:** Client-side validation before submit
-- **Slug already taken:** Show "Slug is taken" error inline
+- "Save Changes" button validates and submits
+- `PATCH /api/operators/[slug]`
+- Changing photos, tariffs, or details resets status to `pending`
 
 ---
 
@@ -280,21 +242,25 @@ Full profile editor for operators to manage all aspects of their listing.
 Administrative interface for managing operators and viewing platform data.
 
 ### Technical Implementation
-- **Page:** `/admin` (Client Component)
-- **Data:** `GET /api/admin/operators`, `PATCH /api/admin/operators/[id]`
+- **Pages:** `/admin` (dashboard), `/admin/operators` (list), `/admin/operators/[id]` (detail), `/admin/categories`
+- **Data:** `GET /api/admin/operators`, `POST /api/admin/operators/[id]`
 
-### Sections
+### Admin Pages
 
-**Operators Table:**
-- Columns: Name, Category, Status, Lead Count, Created Date
+**Dashboard (`/admin`):**
+- Stat cards: pending/approved/rejected/total counts
+- Latest 10 pending operators
+
+**Operators List (`/admin/operators`):**
+- Filterable by `?status=` and `?verified=`
 - Status badges: Pending (yellow), Approved (green), Rejected (red), Suspended (orange)
-- Action buttons per row: Approve, Reject, Suspend (context-dependent)
-- Status filter tabs: All / Pending / Approved / Rejected / Suspended
-- Search input to filter table
 
-**Lead Leaderboard:**
-- Operators sorted by lead count descending
-- Shows: Rank, Name, Lead Count, Category
+**Operator Detail (`/admin/operators/[id]`):**
+- Full operator data display
+- Actions: Approve, Reject (with reason), Suspend, Verify, Change Plan, Reset Leads
+
+**Categories (`/admin/categories`):**
+- Lists all 5 categories (read-only)
 
 ### Status Action Matrix
 
@@ -304,12 +270,6 @@ Administrative interface for managing operators and viewing platform data.
 | Approved | Suspend |
 | Rejected | Approve (re-activate) |
 | Suspended | Approve (re-activate) |
-
-### Edge Cases
-- **Non-admin user accesses /admin:** Redirect to login (proxy.ts) or show "Access denied"
-- **Action fails:** Toast error "Failed to update status"
-- **No operators:** "No operators registered yet" empty state
-- **All leads viewed:** Leaderboard shows operators with 0 leads too
 
 ---
 
@@ -321,31 +281,29 @@ Anonymous lead submission system allowing visitors to express interest in an ope
 ### Technical Implementation
 - **Endpoints:** `POST /api/leads` (create), `GET /api/leads` (read)
 - **Client tracking:** `session_id` generated via `crypto.randomUUID()` stored in localStorage
+- **Lead notification:** OpenWA sends WhatsApp message to operator on new lead
 
 ### Lead Record Structure
 ```
 {
   id: UUID,
   operator_id: UUID,    // FK to operators
-  session_id: string,   // anonymous visitor identifier
-  source: string,       // 'profile' | 'browse' | 'card'
-  name: string | null,  // visitor's name (optional)
-  message: string | null, // visitor's message (optional)
+  session_id: string,   // anonymous visitor identifier (from header or auto-generated)
+  source: string,       // 'profile' | 'qr' | 'search'
   created_at: timestamp
 }
 ```
 
 ### Visitor Session Tracking
 1. On first visit: generate UUID, store in `localStorage.setItem('session_id', uuid)`
-2. On lead submission: include `session_id` in request body
+2. On lead submission: send `x-session-id` header
 3. Same visitor can submit multiple leads (one per operator)
-4. No lead limit enforced per session
+4. Free-plan limit: 3 leads/month per operator (enforced)
 
 ### Edge Cases
 - **Duplicate submission (same visitor, same operator):** Allowed (no dedup)
 - **Invalid operator_id:** 400 "Operator not found"
-- **Missing session_id:** 400 "Session ID required"
-- **Rate limiting:** Not implemented — visitor could spam leads
+- **Free plan limit reached:** `{ blocked: true }` response
 
 ---
 
@@ -357,7 +315,7 @@ Location-based filtering that shows operators within a configurable radius of th
 ### Technical Implementation
 - **DB:** PostgreSQL `earthdistance` extension with GiST index
 - **Client:** Browser Geolocation API
-- **Parameter:** `?lat=34.09&lng=74.79&radius=5000`
+- **Parameter:** `?lat=34.09&lng=74.79` (radius hardcoded at 10,000m)
 
 ### Query Logic
 ```sql
@@ -368,54 +326,47 @@ WHERE status = 'approved'
   AND earth_distance(
     ll_to_earth(lat, lng),
     ll_to_earth(:userLat, :userLng)
-  ) <= :radius
+  ) <= 10000
 ORDER BY earth_distance(
   ll_to_earth(lat, lng),
   ll_to_earth(:userLat, :userLng)
 ) ASC;
 ```
 
-### Radius Presets (INFERRED)
-- 1 km (walking distance)
-- 3 km
-- 5 km (default)
-- 10 km
-- 20 km (entire Dal Lake area)
-
 ### Edge Cases
 - **Location permission denied:** Show toast "Enable location to use Near Me"
 - **Location unavailable (GPS timeout):** Show toast "Could not get your location"
-- **No operators nearby:** "No operators found near your location. Try increasing the radius."
-- **Old browser (no Geolocation API):** Hide Near Me button
+- **No operators nearby:** "No operators found" empty state
 
 ---
 
 ## Feature 10: Photo Upload
 
 ### Overview
-Image upload for operator profiles using Cloudinary.
+Image upload for operator profiles using Cloudinary via server-side API route.
 
 ### Technical Implementation
-- **Library:** `next-cloudinary` (`CldUploadButton`)
-- **Widget:** Cloudinary Upload Widget (opens in browser)
+- **API:** `POST /api/upload/photo` (multipart form data)
+- **Library:** `browser-image-compression` (client-side), `sharp` (server-side not used), Cloudinary SDK
 - **Storage:** Cloudinary CDN
-- **Integration:** URL returned by widget stored in `operators.photos[]`
 
 ### Upload Flow
-1. Operator clicks "Add Photo" in edit page
-2. Cloudinary widget opens (file picker)
-3. User selects image file
-4. Widget uploads directly to Cloudinary (client-side)
-5. Cloudinary returns `{ secure_url, public_id }` in callback
-6. URL added to local photos array
-7. On "Save", entire photos array sent in PATCH request
+1. Operator clicks "Add photo" in edit page
+2. File input opened (accept: jpeg/png/webp)
+3. Client-side compression via `browser-image-compression`
+4. File sent as FormData to `POST /api/upload/photo`
+5. Server validates MIME type and size (max 5MB)
+6. Server uploads buffer to Cloudinary
+7. Cloudinary returns `{ url, publicId }`
+8. URL added to local photos array
+9. On "Save", entire photos array sent in PATCH request
 
-### Configuration (INFERRED from env vars)
-- Cloud name: `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`
-- Upload preset: unsigned or signed (depends on config)
+### Configuration
+- Cloud name: `CLOUDINARY_CLOUD_NAME`
+- Max 5 photos per operator
 
 ### Edge Cases
-- **File too large:** Cloudinary widget shows error (max ~10MB by default)
-- **Wrong file type:** Widget validates image types (jpg, png, webp)
-- **Upload failure:** Widget shows error; operator can retry
+- **File too large:** Server returns 400
+- **Wrong file type:** Server returns 400 "Invalid file type"
+- **Upload failure:** Server returns 500
 - **Remove photo:** Not implemented; operator can only add

@@ -243,7 +243,7 @@ export default function EditProfilePage() {
           <Link href="/portal" className="p-1">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <img src="/logo.png" alt="Nadurr" className="w-5 h-5" />
+          <img src="/logo.png" alt="Kashmir360" className="w-5 h-5" />
           <h1 className="text-lg font-semibold">Edit Profile</h1>
         </div>
       </header>

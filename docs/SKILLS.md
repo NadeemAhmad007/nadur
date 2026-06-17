@@ -10,7 +10,6 @@
 - **Stack:** Next.js 16 App Router + React 19 + Drizzle ORM + Neon PostgreSQL
 - **Auth:** NextAuth v5 beta with 3 providers (Google, Email OTP, WhatsApp OTP)
 - **Agent Instructions:** See `AGENTS.md` for Next.js framework notes
-- **Agent Model Note:** See `CLAUDE.md` for model-specific notes
 
 ---
 
@@ -19,29 +18,35 @@
 | Purpose | Path |
 |---------|------|
 | Root layout | `src/app/layout.tsx` |
-| Landing page | `src/app/page.tsx` |
-| Browse page | `src/components/browse-page.tsx` |
-| Category pages | `src/app/[category]/page.tsx` |
-| Operator profile | `src/components/operator-profile.tsx` |
+| Browse page (home) | `src/app/page.tsx` (renders `src/components/browse-page.tsx`) |
+| Search page | `src/app/search/page.tsx` |
+| Operator profile | `src/components/operator-profile.tsx` (route: `/o/[slug]`) |
 | Operator card | `src/components/operator-card.tsx` |
 | Login page | `src/app/auth/login/page.tsx` |
 | Join page | `src/app/join/page.tsx` |
 | Portal dashboard | `src/app/portal/page.tsx` |
 | Portal layout | `src/app/portal/layout.tsx` |
 | Edit profile | `src/app/portal/edit/page.tsx` |
-| Admin panel | `src/app/admin/page.tsx` |
+| QR code page | `src/app/portal/qr/page.tsx` |
+| Admin dashboard | `src/app/admin/page.tsx` |
+| Admin operators list | `src/app/admin/operators/page.tsx` |
+| Admin operator detail | `src/app/admin/operators/[id]/page.tsx` |
+| Admin categories | `src/app/admin/categories/page.tsx` |
+| Favorites page | `src/app/favorites/page.tsx` |
 | 404 page | `src/app/not-found.tsx` |
 | Auth config | `src/lib/auth.ts` |
 | DB schema | `src/db/schema.ts` |
 | DB migration | `src/db/migrate.ts` |
-| DB client | `src/lib/db.ts` |
+| DB client | `src/db/index.ts` |
 | Route guard | `src/proxy.ts` (should be middleware.ts) |
 | Types | `src/types/index.ts` |
 | Utils | `src/lib/utils.ts` |
-| Constants | `src/lib/constants.ts` |
-| WhatsApp utils | `src/lib/whatsapp.ts` |
-| Upload utils | `src/lib/upload.ts` |
-| Resend utils | `src/lib/resend.ts` |
+| Cloudinary upload | `src/lib/cloudinary.ts` |
+| OpenWA WhatsApp | `src/lib/openwa.ts` |
+| Resend email | `src/lib/resend.ts` |
+| S3 client | `src/lib/s3.ts` |
+| Location parser | `src/lib/location.ts` |
+| Ghats data | `src/lib/ghats.ts` |
 
 ---
 
@@ -52,13 +57,13 @@
 1. Create file: `src/app/api/{resource}/route.ts`
 2. Export named functions: `GET`, `POST`, `PATCH`, `DELETE`
 3. Use `auth()` from `@/lib/auth` for protected routes
-4. Use `db` from `@/lib/db` for database access
+4. Use `db` from `@/db` for database access
 5. Return `NextResponse.json(data, { status })`
 
 **Pattern:**
 ```typescript
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { db } from '@/db';
 import { auth } from '@/lib/auth';
 
 export async function GET(request: Request) {
@@ -77,7 +82,7 @@ export async function GET(request: Request) {
 1. Create directory under `src/app/{path}/`
 2. Create `page.tsx` (Server Component by default)
 3. Use `"use client"` directive if client-side state is needed
-4. Pages in `/portal` and `/admin` are automatically route-guarded by middleware
+4. Pages in `/portal` and `/admin` are automatically route-guarded by proxy.ts
 
 ### 3.3 Database Changes
 
@@ -97,7 +102,7 @@ export async function GET(request: Request) {
 1. Edit `src/lib/auth.ts`
 2. Import provider from `next-auth/providers/*` or `@auth/core/providers/*`
 3. Add to `providers` array
-4. Handle OTP logic in API routes under `src/app/api/auth/otp/`
+4. Handle OTP logic in API routes under `src/app/api/auth/`
 
 ### 3.5 Modifying the Operator Schema (Adding Fields)
 
@@ -117,18 +122,16 @@ export async function GET(request: Request) {
 
 ### Naming Conventions
 - **Files:** `kebab-case.ts` (e.g., `operator-card.tsx`, `browse-page.tsx`)
-- **Directories:** `kebab-case/` (e.g., `[category]/`, `auth/login/`)
+- **Directories:** `kebab-case/` (e.g., `auth/login/`, `o/[slug]/`)
 - **Components:** PascalCase (e.g., `OperatorCard`, `BrowsePage`)
-- **Functions:** camelCase (e.g., `generateSlug`, `formatWhatsApp`)
 - **Database columns:** `snake_case` (e.g., `short_desc`, `created_at`)
-- **Drizzle schema fields:** camelCase mapped to snake_case columns
+- **Drizzle schema fields:** snake_case matching DB columns
 
 ### Component Patterns
 - Shared components in `src/components/`
 - Page-specific logic in page files or colocated components
 - UI primitives in `src/components/ui/` (shadcn)
 - Client Components use `"use client"` directive
-- Avoid deep prop drilling; compose components
 
 ### API Patterns
 - RESTful endpoints
@@ -140,7 +143,6 @@ export async function GET(request: Request) {
 - Use Drizzle ORM for queries
 - Use raw SQL in migration script only
 - Always parameterize queries (Drizzle does this automatically)
-- Index columns used in WHERE, JOIN, and ORDER BY clauses
 
 ---
 
@@ -153,64 +155,47 @@ AUTH_SECRET=<random-string>
 AUTH_GOOGLE_ID=...
 AUTH_GOOGLE_SECRET=...
 RESEND_API_KEY=...
-NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=...
+CLOUDINARY_CLOUD_NAME=...
 CLOUDINARY_API_KEY=...
 CLOUDINARY_API_SECRET=...
 
-# Optional / INFERRED
-WHATSAPP_API_KEY=...
+# Optional
+OPENWA_API_URL=http://localhost:2785/api
+OPENWA_API_KEY=...
+OPENWA_SESSION=nadur-bot
 S3_ACCESS_KEY_ID=...
 S3_SECRET_ACCESS_KEY=...
-S3_BUCKET_NAME=...
+S3_BUCKET=...
 S3_ENDPOINT=...
-NEXT_PUBLIC_URL=http://localhost:3000
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
 ---
 
-## 6. Data Seeding
-
-```bash
-# Seed 171 artisans from Dal_Lake_Artisans_wa.xlsx
-npm run seed:artisans
-
-# Assign lat/lng coordinates from address data
-npm run assign:coords
-```
-
-**Seed script location:** `scripts/seed-artisans.mjs`  
-**Seed data source:** `Dal_Lake_Artisans_wa.xlsx` (in project root)  
-
----
-
-## 7. Common Pitfalls
+## 6. Common Pitfalls
 
 | Pitfall | Description | Solution |
 |---------|-------------|----------|
 | Stale session redirect loop | Old JWT tokens lack `operator_id` | Login page detects and calls `signOut()` |
 | Email-based operator lookup fails | OTP users may not have email | Fallback to `user.id` lookup |
 | proxy.ts vs middleware.ts | Route guard file may not be auto-discovered | Rename to `middleware.ts` |
-| Tariffs inside houseboat_details | Edit page `PATCH` nested incorrectly | Send tariffs and email as top-level fields |
 | Drizzle schema out of sync | Raw SQL columns not in Drizzle definitions | Regenerate Drizzle schema |
 | No input validation | API inputs not validated | Add Zod schemas to all API routes |
 | OTP limits not enforced | `attempts` and `expires_at` not checked | Add WHERE conditions to OTP verification |
 
 ---
 
-## 8. Debugging Tips
+## 7. Debugging Tips
 
 - Check `session` object: `console.log(JSON.stringify(session, null, 2))`
 - Debug JWT callback: add `console.log('JWT callback:', { token, user })` in `src/lib/auth.ts`
 - Check middleware execution: add `console.log('Middleware running for:', pathname)` in proxy.ts
 - View actual DB state: `npm run db:studio` opens Drizzle Studio GUI
-- Check environment variables: `console.log(process.env.DATABASE_URL?.slice(0, 20))`
 - Debug API requests: use `curl` or browser devtools Network tab
-- Check OTP tables: query `SELECT * FROM email_verifications ORDER BY created_at DESC LIMIT 5`
-- Seed data issues: run `node scripts/check_xlsx.mjs` to validate spreadsheet
 
 ---
 
-## 9. Build & Deploy Commands
+## 8. Build & Deploy Commands
 
 ```bash
 # Development
@@ -220,13 +205,11 @@ npm run lint        # Run ESLint
 
 # Database
 npm run db:migrate  # Run SQL migration
-npm run seed:artisans  # Seed operator data
 
 # Production
 npm run build       # Build Next.js
 npm run start       # Start production server
 
-# Deploy
-vercel              # Deploy preview
-vercel --prod       # Deploy production
+# Docker (OpenWA WhatsApp gateway)
+docker compose -f docker-compose.openwa.yml up -d
 ```

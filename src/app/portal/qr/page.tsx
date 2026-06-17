@@ -12,7 +12,7 @@ export default function QRPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [operator, setOperator] = useState<any>(null);
-  const [qrSvg, setQrSvg] = useState('');
+  const [qrDataUrl, setQrDataUrl] = useState('');
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/auth/login');
@@ -28,7 +28,7 @@ export default function QRPage() {
             setOperator(op);
             const res = await fetch(`/api/qr/${op.slug}`);
             const svg = await res.text();
-            setQrSvg(svg);
+            setQrDataUrl(`data:image/svg+xml;base64,${btoa(svg)}`);
           }
         });
     }
@@ -56,7 +56,7 @@ export default function QRPage() {
           <Link href="/portal" className="p-1">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <img src="/logo.png" alt="Nadurr" className="w-5 h-5" />
+          <img src="/logo.png" alt="Kashmir360" className="w-5 h-5" />
           <h1 className="text-lg font-semibold">Your QR Code</h1>
         </div>
       </header>
@@ -64,15 +64,12 @@ export default function QRPage() {
       <main className="max-w-lg mx-auto px-4 py-6 text-center">
         <Card className="mb-6">
           <CardContent className="p-6 flex flex-col items-center">
-            {qrSvg && (
-              <div
-                className="w-64 h-64"
-                dangerouslySetInnerHTML={{ __html: qrSvg }}
-              />
+            {qrDataUrl && (
+              <img src={qrDataUrl} alt={`QR code for ${operator.name}`} className="w-64 h-64" />
             )}
             <p className="text-sm font-medium mt-3">{operator.name}</p>
             <p className="text-xs text-gray-500 mt-1">
-              {process.env.NEXT_PUBLIC_APP_URL || 'https://nadur.app'}/o/{operator.slug}
+              {process.env.NEXT_PUBLIC_APP_URL || 'https://kashmir360.app'}/o/{operator.slug}
             </p>
           </CardContent>
         </Card>
