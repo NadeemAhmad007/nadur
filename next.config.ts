@@ -4,6 +4,9 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
+        hostname: '*.s3.amazonaws.com',
+      },
+      {
         hostname: '*.s3.*.amazonaws.com',
       },
       {
@@ -26,7 +29,7 @@ const nextConfig: NextConfig = {
               "default-src 'self'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
               "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' data: blob: *.s3.*.amazonaws.com *.r2.cloudflarestorage.com res.cloudinary.com",
+              "img-src 'self' data: blob: *.amazonaws.com *.r2.cloudflarestorage.com res.cloudinary.com",
               "font-src 'self' data:",
               "connect-src 'self'",
               "frame-src 'none'",
