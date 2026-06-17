@@ -78,7 +78,7 @@ export default function BrowsePage() {
         <div className="max-w-5xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-3">
-              <img src="/logo.png" alt="Kashmir360" className="h-8 w-auto" />
+              <img src="/logo.png" alt="Kashmir360" className="h-10 w-auto" />
             </Link>
             <div className="flex items-center gap-2">
               <Link

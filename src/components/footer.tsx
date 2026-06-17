@@ -8,7 +8,7 @@ export function Footer() {
       <div className="max-w-5xl mx-auto px-4 py-8">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-2">
-            <img src="/logo.png" alt="Kashmir360" className="h-7 w-auto" />
+            <img src="/logo.png" alt="Kashmir360" className="h-10 w-auto" />
           </Link>
           <nav className="flex items-center gap-6 text-sm text-muted-foreground">
             <Link href="/" className="hover:text-foreground transition-colors">
