@@ -34,7 +34,7 @@ export default function AdminCategoriesPage() {
           <Link href="/admin" className="p-1">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <img src="/logo.png" alt="Kashmir360" className="h-10 w-auto" />
+          <img src="/logo.png" alt="Kashmir360" className="h-14 w-auto" />
           <h1 className="font-semibold">Categories</h1>
         </div>
       </header>

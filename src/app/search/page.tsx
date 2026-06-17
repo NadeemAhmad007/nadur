@@ -32,14 +32,14 @@ function SearchContent() {
   return (
     <div className="min-h-screen bg-white">
       <header className="sticky top-0 bg-white border-b border-gray-200 z-10">
-        <div className="max-w-lg mx-auto px-4 py-3">
+        <div className="max-w-lg mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
             <Link href="/" className="p-1">
               <ArrowLeft className="w-5 h-5" />
             </Link>
-            <img src="/logo.png" alt="Kashmir360" className="h-10 w-auto" />
+            <img src="/logo.png" alt="Kashmir360" className="h-14 w-auto" />
             <form onSubmit={handleSubmit} className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="search"
                 placeholder="Search operators..."

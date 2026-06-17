@@ -129,7 +129,7 @@ export default function LoginPage() {
         {/* Brand */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex flex-col items-center gap-2">
-            <img src="/logo.png" alt="Kashmir360" className="h-12 w-auto" />
+            <img src="/logo.png" alt="Kashmir360" className="h-32 w-auto" />
           </Link>
           <p className="text-sm text-muted-foreground mt-2">Sign in to your account</p>
         </div>
