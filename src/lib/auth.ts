@@ -151,7 +151,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (user.email && adminEmails.includes(user.email)) {
           token.is_admin = true;
         }
-        if (user.email) {
+        if (!token.is_admin && user.email) {
           const op = await db.query.operators.findFirst({
             where: eq(operators.email, user.email),
             columns: { id: true },
@@ -160,7 +160,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             token.operator_id = op.id;
           }
         }
-        if (!token.operator_id && user.id) {
+        if (!token.is_admin && !token.operator_id && user.id) {
           const op = await db.query.operators.findFirst({
             where: eq(operators.id, user.id),
             columns: { id: true },
