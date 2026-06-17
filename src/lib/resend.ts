@@ -31,5 +31,6 @@ export async function sendOtpEmail(email: string, otp: string): Promise<void> {
   if (!res.ok) {
     const err = await res.text();
     console.error('Resend API error:', err);
+    throw new Error(`Resend API error (${res.status}): ${err}`);
   }
 }
