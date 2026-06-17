@@ -330,12 +330,11 @@ export default function JoinPage() {
   return (
     <div className="min-h-screen bg-white">
       <header className="border-b border-gray-200">
-        <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
+        <div className="max-w-lg mx-auto px-4 py-4 flex items-center gap-3">
           <Link href="/" className="p-1">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <img src="/logo.png" alt="Kashmir360" className="w-5 h-5" />
-          <span className="font-semibold text-sm">Register Your Business</span>
+          <img src="/logo.png" alt="Kashmir360" className="h-10 w-auto" />
         </div>
       </header>
 

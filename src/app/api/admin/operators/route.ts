@@ -19,6 +19,7 @@ export async function GET(req: Request) {
   }
 
   const { searchParams } = new URL(req.url);
+  const id = searchParams.get('id');
   const status = searchParams.get('status');
   const category = searchParams.get('category');
   const plan = searchParams.get('plan');
@@ -28,6 +29,9 @@ export async function GET(req: Request) {
   let query = db.select().from(operators).$dynamic();
   const filters: any[] = [];
 
+  if (id) {
+    filters.push(eq(operators.id, id));
+  }
   if (status) {
     filters.push(eq(operators.status, status as any));
   }

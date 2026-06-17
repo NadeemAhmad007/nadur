@@ -7,12 +7,9 @@ export function Footer() {
     <footer className="border-t border-border bg-muted/30 mt-auto">
       <div className="max-w-5xl mx-auto px-4 py-8">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-xs">
-              K
-            </div>
-            <span className="text-sm font-semibold text-foreground">Kashmir360</span>
-          </div>
+          <Link href="/" className="flex items-center gap-2">
+            <img src="/logo.png" alt="Kashmir360" className="h-7 w-auto" />
+          </Link>
           <nav className="flex items-center gap-6 text-sm text-muted-foreground">
             <Link href="/" className="hover:text-foreground transition-colors">
               Browse

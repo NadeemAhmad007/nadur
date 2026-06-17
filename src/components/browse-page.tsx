@@ -77,12 +77,9 @@ export default function BrowsePage() {
       <header className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-sm">
-                K
-              </div>
-              <span className="font-bold text-lg text-foreground">Kashmir360</span>
-            </div>
+            <Link href="/" className="flex items-center gap-3">
+              <img src="/logo.png" alt="Kashmir360" className="h-8 w-auto" />
+            </Link>
             <div className="flex items-center gap-2">
               <Link
                 href="/auth/login"

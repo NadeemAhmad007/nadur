@@ -43,10 +43,9 @@ export default function OperatorDetailPage() {
   const [actionLoading, setActionLoading] = useState('');
 
   const fetchOperator = async () => {
-    const data = await fetch(`/api/admin/operators?q=${params.id}`).then(r => r.json());
-    const found = data.find((o: any) => o.id === params.id);
-    setOp(found || null);
-    if (found) {
+    const data = await fetch(`/api/admin/operators?id=${params.id}`).then(r => r.json());
+    setOp(data[0] || null);
+    if (data[0]) {
       fetch(`/api/admin/leads?operator_id=${params.id}`).then(r => r.json()).then(setLeads).catch(() => {});
     }
     setLoading(false);
