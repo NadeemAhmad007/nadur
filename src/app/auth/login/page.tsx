@@ -71,8 +71,10 @@ export default function LoginPage() {
     try {
       const res = await fetch('/api/auth/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, otp: emailOtp }) });
       const data = await res.json();
-      if (data.success) await signIn('email-otp', { email, otp: emailOtp, redirect: false });
-      else setError(data.error || 'Verification failed');
+      if (data.success) {
+        const signInRes = await signIn('email-otp', { email, otp: emailOtp, redirect: false });
+        if (signInRes?.error) setError('Login failed. No account found with this email.');
+      } else setError(data.error || 'Verification failed');
     } catch { setError('Network error'); }
     setLoading(false);
   };

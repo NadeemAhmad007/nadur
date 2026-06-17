@@ -39,7 +39,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           orderBy: (ev, { desc }) => [desc(ev.created_at)],
         });
 
-        if (!verified) return null;
+        if (!verified) {
+          console.error(`[auth] email-otp: no verified record found for ${email}`);
+          return null;
+        }
 
         let stored = await db.query.operators.findFirst({
           where: eq(operators.email, email),
@@ -51,7 +54,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           });
         }
 
-        if (!stored) return null;
+        if (!stored) {
+          console.error(`[auth] email-otp: no operator found for ${email}`);
+          return null;
+        }
 
         return {
           id: stored.id,
@@ -85,14 +91,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             ),
             orderBy: (pv, { desc }) => [desc(pv.created_at)],
           });
-          if (!verified) return null;
+          if (!verified) {
+            console.error(`[auth] whatsapp-otp: no verified record for ${phone}`);
+            return null;
+          }
         }
 
         let stored = await db.query.operators.findFirst({
           where: eq(operators.whatsapp, phone),
         });
 
-        if (!stored) return null;
+        if (!stored) {
+          console.error(`[auth] whatsapp-otp: no operator found for ${phone}`);
+          return null;
+        }
 
         return {
           id: stored.id,
