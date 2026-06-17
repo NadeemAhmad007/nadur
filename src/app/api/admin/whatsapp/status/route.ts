@@ -55,7 +55,7 @@ export async function GET(req: Request) {
 
     const data = (statusRes.data || statusRes) as Record<string, unknown>;
     const status = (data.status as string) || 'unknown';
-    const isConnected = status === 'connected' || status === 'active';
+    const isConnected = status === 'connected' || status === 'active' || status === 'ready';
 
     const me = data.me as Record<string, unknown> | undefined;
     return NextResponse.json({

@@ -37,7 +37,7 @@ export async function POST(req: Request) {
 
     clearSessionUuid();
     const sessionId = ourSession.id || ourSession.sessionId;
-    const isStarted = ourSession.status === 'started' || ourSession.status === 'qr_ready' || ourSession.status === 'connected' || ourSession.status === 'active';
+    const isStarted = ourSession.status === 'started' || ourSession.status === 'qr_ready' || ourSession.status === 'ready' || ourSession.status === 'connected' || ourSession.status === 'active';
 
     if (!isStarted) {
       const result = await startSession(sessionId);
