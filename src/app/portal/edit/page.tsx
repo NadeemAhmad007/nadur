@@ -187,6 +187,21 @@ export default function EditProfilePage() {
         registered_shikara: form.registered_shikara || null,
         registration_number: form.registration_number || null,
       } : undefined;
+      const taxiPayload = operator.category === 'taxi' ? {
+        driver_name: form.driver_name || null,
+        vehicle_type: form.vehicle_type || null,
+        vehicle_model: form.vehicle_model || null,
+        registration_number: form.registration_number || null,
+        operating_areas: form.operating_areas || null,
+        languages: form.languages || null,
+        tour_types: form.tour_types || null,
+        price_per_km: form.price_per_km || null,
+        price_per_day: form.price_per_day || null,
+        airport_flat_rate: form.airport_flat_rate || null,
+        extra_per_km: form.extra_per_km || null,
+        years_experience: form.years_experience || null,
+        google_maps: form.taxi_google_maps || null,
+      } : undefined;
       const artisanPayload = operator.category === 'artisan' ? {
         business_type: form.business_type || null,
         specialties: form.specialties || null,
@@ -218,6 +233,7 @@ export default function EditProfilePage() {
           houseboat_details: houseboatPayload,
           shikara_details: shikaraPayload,
           artisan_details: artisanPayload,
+          taxi_details: taxiPayload,
           lat: coords?.lat ?? null,
           lng: coords?.lng ?? null,
         }),
@@ -723,6 +739,99 @@ export default function EditProfilePage() {
               <div>
                 <label className="text-xs font-medium">Google Map Link</label>
                 <input value={form.artisan_google_maps || ''} onChange={(e) => setForm({ ...form, artisan_google_maps: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
+              </div>
+            </div>
+          </>
+        )}
+
+        {operator.category === 'taxi' && (
+          <>
+            <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+              <h3 className="text-sm font-semibold">Vehicle & Driver Details</h3>
+              <div>
+                <label className="text-xs font-medium">Driver Name</label>
+                <input value={form.driver_name || ''} onChange={(e) => setForm({ ...form, driver_name: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+              </div>
+              <div>
+                <label className="text-xs font-medium">Vehicle Type</label>
+                <select value={form.vehicle_type || ''} onChange={(e) => setForm({ ...form, vehicle_type: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                  <option value="">Select</option>
+                  <option value="sedan">Sedan</option>
+                  <option value="suv">SUV</option>
+                  <option value="tempo">Tempo Traveller</option>
+                  <option value="van">Van</option>
+                  <option value="auto">Auto Rickshaw</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium">Vehicle Model</label>
+                <input value={form.vehicle_model || ''} onChange={(e) => setForm({ ...form, vehicle_model: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. Dzire, Innova" />
+              </div>
+              <div>
+                <label className="text-xs font-medium">Registration Number</label>
+                <input value={form.registration_number || ''} onChange={(e) => setForm({ ...form, registration_number: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="JK01AB1234" />
+              </div>
+              <div>
+                <label className="text-xs font-medium">Operating Areas</label>
+                <div className="mt-1 space-y-1">
+                  {['Srinagar Airport', 'Dal Lake', 'Gulmarg', 'Pahalgam', 'Sonamarg', 'Yusmarg', 'Doodhpathri', 'Kokernag', 'Patnitop', 'Leh'].map((area) => (
+                    <label key={area} className="flex items-center gap-2 text-sm">
+                      <input type="checkbox" checked={(form.operating_areas || []).includes(area)} onChange={(e) => setForm({ ...form, operating_areas: e.target.checked ? [...(form.operating_areas || []), area] : (form.operating_areas || []).filter((a: string) => a !== area) })} className="rounded" />
+                      {area}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium">Languages Spoken</label>
+                <div className="mt-1 space-y-1">
+                  {['Kashmiri', 'Urdu', 'Hindi', 'English', 'Arabic', 'Pashto'].map((lang) => (
+                    <label key={lang} className="flex items-center gap-2 text-sm">
+                      <input type="checkbox" checked={(form.languages || []).includes(lang)} onChange={(e) => setForm({ ...form, languages: e.target.checked ? [...(form.languages || []), lang] : (form.languages || []).filter((l: string) => l !== lang) })} className="rounded" />
+                      {lang}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+              <h3 className="text-sm font-semibold">Pricing & Tours</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-medium">Price per Km (₹)</label>
+                  <input value={form.price_per_km || ''} onChange={(e) => setForm({ ...form, price_per_km: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="₹" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Price per Day (₹)</label>
+                  <input value={form.price_per_day || ''} onChange={(e) => setForm({ ...form, price_per_day: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="₹ (8hrs/80km)" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Airport Flat Rate (₹)</label>
+                  <input value={form.airport_flat_rate || ''} onChange={(e) => setForm({ ...form, airport_flat_rate: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="₹" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Extra per Km (₹)</label>
+                  <input value={form.extra_per_km || ''} onChange={(e) => setForm({ ...form, extra_per_km: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="₹" />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium">Tour Types</label>
+                <div className="mt-1 space-y-1">
+                  {['Airport Transfer', 'Local Sightseeing', 'Day Trip', 'Multi-Day Tour', 'Pilgrimage', 'Adventure'].map((type) => (
+                    <label key={type} className="flex items-center gap-2 text-sm">
+                      <input type="checkbox" checked={(form.tour_types || []).includes(type)} onChange={(e) => setForm({ ...form, tour_types: e.target.checked ? [...(form.tour_types || []), type] : (form.tour_types || []).filter((t: string) => t !== type) })} className="rounded" />
+                      {type}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium">Years of Experience</label>
+                <input value={form.years_experience || ''} onChange={(e) => setForm({ ...form, years_experience: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+              </div>
+              <div>
+                <label className="text-xs font-medium">Google Map Link</label>
+                <input value={form.taxi_google_maps || ''} onChange={(e) => setForm({ ...form, taxi_google_maps: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
               </div>
             </div>
           </>

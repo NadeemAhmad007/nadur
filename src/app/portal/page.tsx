@@ -50,7 +50,16 @@ const categoryFields: Record<string, FieldDef[]> = {
     { key: 'artisan_details.contact_number', label: 'Contact number' },
     { key: 'artisan_details.years_in_business', label: 'Years in business' },
   ],
-  guide: [], vendor: [],
+  guide: [], vendor: [], taxi: [
+    { key: 'taxi_details.driver_name', label: 'Driver name' },
+    { key: 'taxi_details.vehicle_type', label: 'Vehicle type' },
+    { key: 'taxi_details.vehicle_model', label: 'Vehicle model' },
+    { key: 'taxi_details.registration_number', label: 'Registration' },
+    { key: 'taxi_details.operating_areas', label: 'Operating areas', check: (v) => Array.isArray(v) && v.length > 0 },
+    { key: 'taxi_details.languages', label: 'Languages', check: (v) => Array.isArray(v) && v.length > 0 },
+    { key: 'taxi_details.price_per_km', label: 'Price per km' },
+    { key: 'taxi_details.price_per_day', label: 'Price per day' },
+  ],
 };
 
 export default function PortalPage() {

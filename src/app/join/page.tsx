@@ -62,6 +62,22 @@ type ShikaraFormFields = {
   registration_number: string;
 };
 
+type TaxiFormFields = {
+  driver_name: string;
+  vehicle_type: string;
+  vehicle_model: string;
+  registration_number: string;
+  operating_areas: string[];
+  languages: string[];
+  tour_types: string[];
+  price_per_km: string;
+  price_per_day: string;
+  airport_flat_rate: string;
+  extra_per_km: string;
+  years_experience: string;
+  google_maps: string;
+};
+
 type ArtisanFormFields = {
   business_type: string;
   specialties: string[];
@@ -95,7 +111,24 @@ type FormData = {
   tariffs: TariffFields;
   shikara: ShikaraFormFields;
   artisan: ArtisanFormFields;
+  taxi: TaxiFormFields;
   boat_ghat: string;
+};
+
+const defaultTaxi: TaxiFormFields = {
+  driver_name: '',
+  vehicle_type: '',
+  vehicle_model: '',
+  registration_number: '',
+  operating_areas: [],
+  languages: [],
+  tour_types: [],
+  price_per_km: '',
+  price_per_day: '',
+  airport_flat_rate: '',
+  extra_per_km: '',
+  years_experience: '',
+  google_maps: '',
 };
 
 const defaultTariffs: TariffFields = {
@@ -173,6 +206,7 @@ export default function JoinPage() {
     tariffs: { ...defaultTariffs },
     shikara: { ...defaultShikara },
     artisan: { ...defaultArtisan },
+    taxi: { ...defaultTaxi },
     boat_ghat: '',
   });
 
@@ -257,6 +291,21 @@ export default function JoinPage() {
         registered_shikara: form.shikara.registered_shikara || null,
         registration_number: form.shikara.registration_number || null,
       } : null;
+      const taxiPayload = form.category === 'taxi' ? {
+        driver_name: form.taxi.driver_name || null,
+        vehicle_type: form.taxi.vehicle_type || null,
+        vehicle_model: form.taxi.vehicle_model || null,
+        registration_number: form.taxi.registration_number || null,
+        operating_areas: form.taxi.operating_areas.length > 0 ? form.taxi.operating_areas : null,
+        languages: form.taxi.languages.length > 0 ? form.taxi.languages : null,
+        tour_types: form.taxi.tour_types.length > 0 ? form.taxi.tour_types : null,
+        price_per_km: form.taxi.price_per_km || null,
+        price_per_day: form.taxi.price_per_day || null,
+        airport_flat_rate: form.taxi.airport_flat_rate || null,
+        extra_per_km: form.taxi.extra_per_km || null,
+        years_experience: form.taxi.years_experience || null,
+        google_maps: form.taxi.google_maps || null,
+      } : null;
       const artisanPayload = form.category === 'artisan' ? {
         business_type: form.artisan.business_type || null,
         specialties: form.artisan.specialties.length > 0 ? form.artisan.specialties : null,
@@ -288,6 +337,7 @@ export default function JoinPage() {
           houseboat_details: houseboatPayload,
           shikara_details: shikaraPayload,
           artisan_details: artisanPayload,
+          taxi_details: taxiPayload,
           lat: coords?.lat ?? null,
           lng: coords?.lng ?? null,
         }),
@@ -494,6 +544,7 @@ export default function JoinPage() {
                 <option value="artisan">Artisan & Craft</option>
                 <option value="guide">Local Guide</option>
                 <option value="vendor">Floating Vendor</option>
+                <option value="taxi">Taxi & Transfers</option>
               </select>
             </div>
             <div>
@@ -654,6 +705,56 @@ export default function JoinPage() {
                           className="accent-[#2C5F8A]"
                         />
                         {s}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+            {form.category === 'taxi' && (
+              <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+                <h3 className="text-sm font-semibold">Vehicle & Driver Details</h3>
+                <div>
+                  <label className="text-xs font-medium">Driver Name</label>
+                  <input value={form.taxi.driver_name} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, driver_name: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Vehicle Type</label>
+                  <select value={form.taxi.vehicle_type} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, vehicle_type: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                    <option value="">Select vehicle type</option>
+                    <option value="sedan">Sedan</option>
+                    <option value="suv">SUV</option>
+                    <option value="tempo">Tempo Traveller</option>
+                    <option value="van">Van</option>
+                    <option value="auto">Auto Rickshaw</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Vehicle Model</label>
+                  <input value={form.taxi.vehicle_model} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, vehicle_model: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. Dzire, Innova, Ertiga" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Registration Number</label>
+                  <input value={form.taxi.registration_number} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, registration_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. JK01AB1234" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Operating Areas</label>
+                  <div className="mt-1 space-y-1">
+                    {['Srinagar Airport', 'Dal Lake', 'Gulmarg', 'Pahalgam', 'Sonamarg', 'Yusmarg', 'Doodhpathri', 'Kokernag', 'Patnitop', 'Leh'].map((area) => (
+                      <label key={area} className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={form.taxi.operating_areas.includes(area)} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, operating_areas: e.target.checked ? [...prev.taxi.operating_areas, area] : prev.taxi.operating_areas.filter((a) => a !== area) } }))} className="rounded" />
+                        {area}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Languages Spoken</label>
+                  <div className="mt-1 space-y-1">
+                    {['Kashmiri', 'Urdu', 'Hindi', 'English', 'Arabic', 'Pashto'].map((lang) => (
+                      <label key={lang} className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={form.taxi.languages.includes(lang)} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, languages: e.target.checked ? [...prev.taxi.languages, lang] : prev.taxi.languages.filter((l) => l !== lang) } }))} className="rounded" />
+                        {lang}
                       </label>
                     ))}
                   </div>
@@ -872,6 +973,48 @@ export default function JoinPage() {
                   </div>
               </div>
             )}
+            {form.category === 'taxi' && (
+              <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+                <h3 className="text-sm font-semibold">Pricing & Tours</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-medium">Price per Km (₹)</label>
+                    <input value={form.taxi.price_per_km} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, price_per_km: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="₹" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium">Price per Day (₹)</label>
+                    <input value={form.taxi.price_per_day} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, price_per_day: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="₹ (8hrs/80km)" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium">Airport Flat Rate (₹)</label>
+                    <input value={form.taxi.airport_flat_rate} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, airport_flat_rate: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="₹" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium">Extra per Km (₹)</label>
+                    <input value={form.taxi.extra_per_km} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, extra_per_km: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="₹" />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Tour Types</label>
+                  <div className="mt-1 space-y-1">
+                    {['Airport Transfer', 'Local Sightseeing', 'Day Trip', 'Multi-Day Tour', 'Pilgrimage', 'Adventure'].map((type) => (
+                      <label key={type} className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={form.taxi.tour_types.includes(type)} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, tour_types: e.target.checked ? [...prev.taxi.tour_types, type] : prev.taxi.tour_types.filter((t) => t !== type) } }))} className="rounded" />
+                        {type}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Years of Experience</label>
+                  <input value={form.taxi.years_experience} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, years_experience: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. 5 years" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Google Map Link</label>
+                  <input value={form.taxi.google_maps} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, google_maps: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
+                </div>
+              </div>
+            )}
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setStep(1)} className="flex-1">
                 <ArrowLeft className="w-4 h-4 mr-1" /> Back
@@ -997,6 +1140,21 @@ export default function JoinPage() {
                   {form.artisan.gst_number && <div><strong>GST:</strong> {form.artisan.gst_number}</div>}
                   {form.artisan.export_license && <div><strong>Export License:</strong> {form.artisan.export_license}</div>}
                   {form.artisan.years_in_business && <div><strong>Years in Business:</strong> {form.artisan.years_in_business}</div>}
+                </>
+              )}
+              {form.category === 'taxi' && (
+                <>
+                  <div><strong>Driver:</strong> {form.taxi.driver_name || '—'}</div>
+                  <div><strong>Vehicle:</strong> {form.taxi.vehicle_type || '—'} {form.taxi.vehicle_model ? `(${form.taxi.vehicle_model})` : ''}</div>
+                  <div><strong>Registration:</strong> {form.taxi.registration_number || '—'}</div>
+                  {form.taxi.operating_areas.length > 0 && <div><strong>Areas:</strong> {form.taxi.operating_areas.join(', ')}</div>}
+                  {form.taxi.languages.length > 0 && <div><strong>Languages:</strong> {form.taxi.languages.join(', ')}</div>}
+                  {form.taxi.tour_types.length > 0 && <div><strong>Tours:</strong> {form.taxi.tour_types.join(', ')}</div>}
+                  <div><strong>Per Km:</strong> {form.taxi.price_per_km ? `₹${form.taxi.price_per_km}` : '—'}</div>
+                  <div><strong>Per Day:</strong> {form.taxi.price_per_day ? `₹${form.taxi.price_per_day}` : '—'}</div>
+                  <div><strong>Airport:</strong> {form.taxi.airport_flat_rate ? `₹${form.taxi.airport_flat_rate}` : '—'}</div>
+                  <div><strong>Extra/Km:</strong> {form.taxi.extra_per_km ? `₹${form.taxi.extra_per_km}` : '—'}</div>
+                  {form.taxi.years_experience && <div><strong>Experience:</strong> {form.taxi.years_experience} years</div>}
                 </>
               )}
               <p><strong>Photos:</strong> {form.photos.length} uploaded</p>

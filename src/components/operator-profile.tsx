@@ -8,13 +8,14 @@ import type { Operator } from '@/types';
 import {
   ArrowLeft, BadgeCheck, Heart, Share2, MessageCircle,
   ChevronLeft, ChevronRight, Send, MapPin, Phone, Mail,
-  Star, User, Map, Clock, Globe, AlertCircle, X, TrendingUp
+  Star, User, Map, Clock, Globe, AlertCircle, X, TrendingUp,
+  Car, Hash
 } from 'lucide-react';
 import Link from 'next/link';
 
 const categoryLabels: Record<string, string> = {
   houseboat: 'Houseboat', shikara: 'Shikara Ride', artisan: 'Artisan',
-  guide: 'Local Guide', vendor: 'Floating Vendor',
+  guide: 'Local Guide', vendor: 'Floating Vendor', taxi: 'Taxi & Transfers',
 };
 
 export function OperatorProfile({ operator: op }: { operator: Operator }) {
@@ -262,6 +263,72 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
               )}
               {(op.artisan_details as any).google_maps && (
                 <a href={(op.artisan_details as any).google_maps} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+                  <Globe className="h-4 w-4" /> View on Google Maps
+                </a>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Taxi Details */}
+        {op.taxi_details && op.category === 'taxi' && (
+          <Card>
+            <CardContent className="p-5 space-y-4">
+              <h2 className="font-semibold flex items-center gap-2"><MapPin className="h-4 w-4 text-muted-foreground" /> Taxi Details</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                {op.taxi_details.driver_name && <DetailRow icon={User} label="Driver" value={op.taxi_details.driver_name} />}
+                {op.taxi_details.vehicle_type && <DetailRow icon={Car} label="Vehicle Type" value={op.taxi_details.vehicle_type} />}
+                {op.taxi_details.vehicle_model && <DetailRow icon={Car} label="Model" value={op.taxi_details.vehicle_model} />}
+                {op.taxi_details.registration_number && <DetailRow icon={Hash} label="Registration" value={op.taxi_details.registration_number} />}
+                {(op.taxi_details as any).operating_areas?.length > 0 && <DetailRow icon={MapPin} label="Areas" value={(op.taxi_details as any).operating_areas.join(', ')} />}
+                {(op.taxi_details as any).languages?.length > 0 && <DetailRow icon={Globe} label="Languages" value={(op.taxi_details as any).languages.join(', ')} />}
+                {op.taxi_details.years_experience && <DetailRow icon={Clock} label="Experience" value={`${op.taxi_details.years_experience} years`} />}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Pricing */}
+        {op.taxi_details && op.category === 'taxi' && (
+          <Card>
+            <CardContent className="p-5 space-y-4">
+              <h2 className="font-semibold flex items-center gap-2"><Star className="h-4 w-4 text-muted-foreground" /> Pricing (₹)</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {op.taxi_details.price_per_km && (
+                  <div className="rounded-xl bg-muted p-3 text-center">
+                    <p className="text-[10px] text-muted-foreground uppercase">Per Km</p>
+                    <p className="text-lg font-bold text-foreground mt-0.5">₹{op.taxi_details.price_per_km}</p>
+                  </div>
+                )}
+                {op.taxi_details.price_per_day && (
+                  <div className="rounded-xl bg-muted p-3 text-center">
+                    <p className="text-[10px] text-muted-foreground uppercase">Per Day</p>
+                    <p className="text-lg font-bold text-foreground mt-0.5">₹{op.taxi_details.price_per_day}</p>
+                  </div>
+                )}
+                {op.taxi_details.airport_flat_rate && (
+                  <div className="rounded-xl bg-muted p-3 text-center">
+                    <p className="text-[10px] text-muted-foreground uppercase">Airport</p>
+                    <p className="text-lg font-bold text-foreground mt-0.5">₹{op.taxi_details.airport_flat_rate}</p>
+                  </div>
+                )}
+                {op.taxi_details.extra_per_km && (
+                  <div className="rounded-xl bg-muted p-3 text-center">
+                    <p className="text-[10px] text-muted-foreground uppercase">Extra/Km</p>
+                    <p className="text-lg font-bold text-foreground mt-0.5">₹{op.taxi_details.extra_per_km}</p>
+                  </div>
+                )}
+              </div>
+              {(op.taxi_details as any).tour_types?.length > 0 && (
+                <div>
+                  <p className="text-xs text-muted-foreground font-medium">Tour Types</p>
+                  <div className="flex flex-wrap gap-1.5 mt-1">
+                    {(op.taxi_details as any).tour_types.map((t: string) => <Badge key={t} variant="outline" size="sm">{t}</Badge>)}
+                  </div>
+                </div>
+              )}
+              {op.taxi_details.google_maps && (
+                <a href={op.taxi_details.google_maps} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
                   <Globe className="h-4 w-4" /> View on Google Maps
                 </a>
               )}

@@ -104,7 +104,7 @@ function OperatorsContent() {
             <div className="w-px bg-border mx-1 hidden sm:block" />
             <div className="flex flex-wrap gap-1">
               <span className="text-xs font-medium text-muted-foreground self-center mr-1">Category:</span>
-              {['', 'houseboat', 'shikara', 'artisan', 'guide', 'vendor'].map((c) => (
+              {['', 'houseboat', 'shikara', 'artisan', 'guide', 'vendor', 'taxi'].map((c) => (
                 <button
                   key={c}
                   onClick={() => setCategoryFilter(c)}

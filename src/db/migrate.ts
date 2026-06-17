@@ -15,7 +15,7 @@ const run = async () => {
       user_id UUID,
       slug TEXT UNIQUE NOT NULL,
       name TEXT NOT NULL,
-      category TEXT NOT NULL CHECK (category IN ('houseboat','shikara','artisan','guide','vendor')),
+      category TEXT NOT NULL CHECK (category IN ('houseboat','shikara','artisan','guide','vendor','taxi')),
       short_desc TEXT CHECK (char_length(short_desc) <= 500),
       long_desc TEXT CHECK (char_length(long_desc) <= 2000),
       whatsapp TEXT NOT NULL,
@@ -29,6 +29,13 @@ const run = async () => {
       tariffs JSONB,
       houseboat_details JSONB
     )
+  `;
+  // Update CHECK constraint for existing tables
+  await sql`
+    ALTER TABLE operators DROP CONSTRAINT IF EXISTS operators_category_check
+  `;
+  await sql`
+    ALTER TABLE operators ADD CONSTRAINT operators_category_check CHECK (category IN ('houseboat','shikara','artisan','guide','vendor','taxi'))
   `;
 
   await sql`
@@ -118,7 +125,8 @@ const run = async () => {
         ('shikara', 'Shikara Rides', 'IconSailboat', 2),
         ('artisan', 'Artisans & Crafts', 'IconPalette', 3),
         ('guide', 'Local Guides', 'IconMapPin', 4),
-        ('vendor', 'Floating Vendors', 'IconShoppingBag', 5)
+        ('vendor', 'Floating Vendors', 'IconShoppingBag', 5),
+        ('taxi', 'Taxis & Transfers', 'IconCar', 6)
     `;
   }
 
@@ -134,6 +142,9 @@ const run = async () => {
   `;
   await sql`
     ALTER TABLE operators ADD COLUMN IF NOT EXISTS artisan_details JSONB
+  `;
+  await sql`
+    ALTER TABLE operators ADD COLUMN IF NOT EXISTS taxi_details JSONB
   `;
   await sql`
     ALTER TABLE operators ADD COLUMN IF NOT EXISTS lat DOUBLE PRECISION

@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   Search, MapPin, Navigation, Compass, Sparkles, Building2,
-  Ship, Palette, Menu as MenuIcon, Store, LogIn, UserPlus
+  Ship, Palette, Menu as MenuIcon, Store, LogIn, UserPlus, Car
 } from 'lucide-react';
 
 const CATEGORIES = [
@@ -19,6 +19,7 @@ const CATEGORIES = [
   { slug: 'artisan', label: 'Artisans', icon: Palette },
   { slug: 'guide', label: 'Guides', icon: Navigation },
   { slug: 'vendor', label: 'Vendors', icon: Store },
+  { slug: 'taxi', label: 'Taxis', icon: Car },
 ];
 
 export default function BrowsePage() {
