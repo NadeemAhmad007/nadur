@@ -14,9 +14,10 @@ const categoryLabels: Record<string, string> = {
   guide: 'Local Guide', vendor: 'Floating Vendor',
 };
 
-export function OperatorCard({ operator, className, onInquiry }: { operator: Operator; className?: string; onInquiry?: () => void }) {
+export function OperatorCard({ operator, className }: { operator: Operator; className?: string }) {
   const router = useRouter();
   const photo = operator.photos?.[0];
+  const [showLeadForm, setShowLeadForm] = useState(false);
 
   return (
     <Card className={cn('overflow-hidden hover:shadow-lg transition-all duration-300 group', className)}>
@@ -65,14 +66,14 @@ export function OperatorCard({ operator, className, onInquiry }: { operator: Ope
             size="sm"
             variant="outline"
             className="flex-1 text-xs"
-            onClick={() => window.open(`https://wa.me/${operator.whatsapp?.replace(/[^\d]/g, '')}?text=Hi! I found you on Kashmir360.`, '_blank')}
+            onClick={() => setShowLeadForm(true)}
           >
             <MessageCircle className="h-3.5 w-3.5 mr-1" /> WhatsApp
           </Button>
           <Button
             size="sm"
             className="flex-1 text-xs"
-            onClick={onInquiry}
+            onClick={() => setShowLeadForm(true)}
           >
             <Send className="h-3.5 w-3.5 mr-1" /> Inquire
           </Button>
@@ -86,6 +87,7 @@ export function OperatorCard({ operator, className, onInquiry }: { operator: Ope
           <ExternalLink className="h-3 w-3 mr-1" /> View Profile
         </Button>
       </CardContent>
+      {showLeadForm && <LeadFormModal operator={operator} onClose={() => setShowLeadForm(false)} />}
     </Card>
   );
 }
@@ -95,11 +97,30 @@ export function LeadFormModal({ operator, onClose }: { operator: Operator; onClo
   const [phone, setPhone] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [blocked, setBlocked] = useState(false);
-  const [done, setDone] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [otpSubmitting, setOtpSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
   const submit = async () => {
     if (!name || !phone) return;
     setSubmitting(true);
+    setError('');
+
+    if (operator.plan === 'pro') {
+      try {
+        const res = await fetch('/api/leads/send-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ operator_id: operator.id, visitor_name: name, visitor_phone: phone }),
+        });
+        if (!res.ok) { const d = await res.json(); setError(d.error || 'Failed to send OTP'); setSubmitting(false); return; }
+      } catch { setError('Failed to send OTP'); setSubmitting(false); return; }
+      setSubmitting(false);
+      setOtpSent(true);
+      return;
+    }
+
     try {
       const res = await fetch('/api/leads', {
         method: 'POST',
@@ -107,19 +128,40 @@ export function LeadFormModal({ operator, onClose }: { operator: Operator; onClo
         body: JSON.stringify({ operator_id: operator.id, source: 'profile', visitor_name: name, visitor_phone: phone }),
       });
       const data = await res.json();
-      if (data.blocked) setBlocked(true);
-      else setDone(true);
-    } catch (e) {
-      console.error(e);
-    }
+      if (!res.ok) { setError(data.error || 'Failed to submit'); setSubmitting(false); return; }
+      if (data.blocked) { setBlocked(true); setSubmitting(false); return; }
+    } catch { setSubmitting(false); return; }
     setSubmitting(false);
+    const waUrl = `https://wa.me/${operator.whatsapp}?text=${encodeURIComponent('Hi! I found you on Kashmir360.')}`;
+    window.open(waUrl, '_blank');
+    onClose();
+  };
+
+  const handleOtpSubmit = async () => {
+    if (!otp.trim()) return;
+    setOtpSubmitting(true);
+    setError('');
+    try {
+      const res = await fetch('/api/leads/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ operator_id: operator.id, visitor_name: name, visitor_phone: phone, otp: otp.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || 'Invalid OTP'); setOtpSubmitting(false); return; }
+      if (data.blocked) { setBlocked(true); setOtpSubmitting(false); return; }
+      window.open(data.waUrl, '_blank');
+      onClose();
+    } catch { setError('Failed to verify OTP'); setOtpSubmitting(false); }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-sm bg-card rounded-2xl shadow-xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-4" onClick={onClose}>
+      <div className="w-full max-w-sm bg-card rounded-2xl shadow-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between p-4 border-b border-border">
-          <h3 className="font-semibold text-foreground">Send Inquiry</h3>
+          <h3 className="font-semibold text-foreground">
+            {otpSent ? 'Verify Phone' : 'Contact via WhatsApp'}
+          </h3>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-muted transition-colors">
             <X className="h-4 w-4 text-muted-foreground" />
           </button>
@@ -132,20 +174,34 @@ export function LeadFormModal({ operator, onClose }: { operator: Operator; onClo
               <p className="text-xs text-muted-foreground mt-1">This operator has reached their inquiry limit for this month.</p>
               <Button size="sm" variant="outline" className="mt-3" onClick={onClose}>Close</Button>
             </div>
-          ) : done ? (
-            <div className="p-4 rounded-xl bg-success/10 border border-success/20 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-success/20 mx-auto mb-2">
-                <Send className="h-6 w-6 text-success" />
+          ) : otpSent ? (
+            <>
+              <p className="text-sm text-muted-foreground">Enter the one-time code sent to <span className="font-medium text-foreground">{phone}</span></p>
+              <Input
+                label="OTP"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                placeholder="000000"
+                className="text-center tracking-widest text-lg"
+              />
+              {error && <p className="text-xs text-danger">{error}</p>}
+              <div className="flex gap-2">
+                <Button onClick={handleOtpSubmit} disabled={otp.length < 4 || otpSubmitting} className="flex-1">
+                  {otpSubmitting ? 'Verifying...' : 'Verify & Unlock'}
+                </Button>
+                <Button variant="outline" onClick={() => { setOtpSent(false); setOtp(''); setError(''); submit(); }} disabled={submitting}>
+                  Resend
+                </Button>
               </div>
-              <p className="text-sm font-medium text-foreground">Inquiry sent!</p>
-              <p className="text-xs text-muted-foreground mt-1">{operator.name} will contact you shortly.</p>
-              <Button size="sm" variant="outline" className="mt-3" onClick={onClose}>Close</Button>
-            </div>
+            </>
           ) : (
             <>
               <p className="text-sm text-muted-foreground">
                 Get in touch with <span className="font-medium text-foreground">{operator.name}</span>
               </p>
+              {operator.plan === 'pro' && (
+                <p className="text-xs text-muted-foreground">We'll send a one-time code to verify your number.</p>
+              )}
               <Input
                 label="Your name"
                 value={name}
@@ -159,8 +215,9 @@ export function LeadFormModal({ operator, onClose }: { operator: Operator; onClo
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+91 1234567890"
               />
+              {error && <p className="text-xs text-danger">{error}</p>}
               <Button onClick={submit} disabled={!name || !phone || submitting} className="w-full">
-                {submitting ? 'Sending...' : 'Send Inquiry'}
+                {submitting ? 'Sending...' : operator.plan === 'pro' ? 'Send OTP' : 'Unlock WhatsApp'}
               </Button>
             </>
           )}

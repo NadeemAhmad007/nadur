@@ -20,6 +20,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'operator_id is required' }, { status: 400 });
     }
 
+    if (visitor_phone) {
+      const digits = visitor_phone.replace(/[^0-9]/g, '');
+      if (digits.length < 10 || !/^[6-9]/.test(digits.slice(-10))) {
+        return NextResponse.json({ error: 'Invalid phone number' }, { status: 400 });
+      }
+    }
+
     const session_id = req.headers.get('x-session-id') || crypto.randomUUID();
 
     const op = await db.query.operators.findFirst({

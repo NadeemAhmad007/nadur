@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { OperatorCard, LeadFormModal } from '@/components/operator-card';
+import { OperatorCard } from '@/components/operator-card';
 import { CardSkeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -32,7 +32,6 @@ export default function BrowsePage() {
   const [locating, setLocating] = useState(false);
   const [loading, setLoading] = useState(true);
   const pageRef = useRef(1);
-  const [leadOp, setLeadOp] = useState<any>(null);
 
   const fetchOperators = async (page = 1, append = false) => {
     setLoading(true);
@@ -144,7 +143,7 @@ export default function BrowsePage() {
           {loading && operators.length === 0
             ? Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)
             : operators.map((op) => (
-                <OperatorCard key={op.id} operator={op} onInquiry={() => setLeadOp(op)} />
+                <OperatorCard key={op.id} operator={op} />
               ))
           }
         </div>
@@ -175,9 +174,6 @@ export default function BrowsePage() {
           </div>
         )}
       </main>
-
-      {/* Lead form modal */}
-      {leadOp && <LeadFormModal operator={leadOp} onClose={() => setLeadOp(null)} />}
     </>
   );
 }

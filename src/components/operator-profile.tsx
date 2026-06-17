@@ -25,6 +25,11 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
   const [visitorName, setVisitorName] = useState('');
   const [visitorPhone, setVisitorPhone] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [otpSubmitting, setOtpSubmitting] = useState(false);
+  const [otpError, setOtpError] = useState('');
+  const [stepError, setStepError] = useState('');
 
   const photos = op.photos?.length ? op.photos : [];
 
@@ -50,6 +55,23 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
   const handleSubmit = async () => {
     if (!visitorName.trim() || !visitorPhone.trim()) return;
     setSubmitting(true);
+    setStepError('');
+
+    if (op.plan === 'pro') {
+      try {
+        const res = await fetch('/api/leads/send-otp', {
+          method: 'POST',
+          body: JSON.stringify({ operator_id: op.id, visitor_name: visitorName.trim(), visitor_phone: visitorPhone.trim() }),
+          headers: { 'Content-Type': 'application/json' },
+        });
+        const data = await res.json();
+        if (!res.ok) { setStepError(data.error || 'Failed to send OTP'); setSubmitting(false); return; }
+      } catch { setStepError('Failed to send OTP'); setSubmitting(false); return; }
+      setSubmitting(false);
+      setOtpSent(true);
+      return;
+    }
+
     try {
       const res = await fetch('/api/leads', {
         method: 'POST',
@@ -57,12 +79,30 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
         headers: { 'Content-Type': 'application/json' },
       });
       const data = await res.json();
+      if (!res.ok) { setStepError(data.error || 'Failed to submit'); setSubmitting(false); return; }
       if (data.blocked) { setBlocked(true); setShowForm(false); setSubmitting(false); return; }
     } catch { setSubmitting(false); return; }
     setShowForm(false);
     setSubmitting(false);
     const waUrl = `https://wa.me/${op.whatsapp}?text=${encodeURIComponent(`Hi! I found you on Kashmir360. I'm interested in your ${op.category ? (categoryLabels[op.category] || op.category) : ''}.`)}`;
     window.location.href = waUrl;
+  };
+
+  const handleOtpSubmit = async () => {
+    if (!otp.trim()) return;
+    setOtpSubmitting(true);
+    setOtpError('');
+    try {
+      const res = await fetch('/api/leads/verify-otp', {
+        method: 'POST',
+        body: JSON.stringify({ operator_id: op.id, visitor_name: visitorName.trim(), visitor_phone: visitorPhone.trim(), otp: otp.trim() }),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const data = await res.json();
+      if (!res.ok) { setOtpError(data.error || 'Invalid OTP'); setOtpSubmitting(false); return; }
+      if (data.blocked) { setBlocked(true); setShowForm(false); setOtpSubmitting(false); return; }
+      window.location.href = data.waUrl;
+    } catch { setOtpError('Failed to verify OTP'); setOtpSubmitting(false); }
   };
 
   return (
@@ -267,7 +307,36 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
         )}
 
         {/* CTA */}
-        {showForm ? (
+        {showForm && otpSent ? (
+          <Card>
+            <CardContent className="p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold">Verify your phone</h3>
+                <button onClick={() => { setOtpSent(false); setOtp(''); setOtpError(''); }} className="text-muted-foreground hover:text-foreground">
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <p className="text-sm text-muted-foreground">Enter the OTP sent to {visitorPhone}</p>
+              <input
+                type="text"
+                inputMode="numeric"
+                placeholder="Enter OTP"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                className="w-full h-10 px-3 rounded-lg border border-input bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring text-center tracking-widest text-lg"
+              />
+              {otpError && <p className="text-xs text-danger">{otpError}</p>}
+              <div className="flex gap-2">
+                <Button onClick={handleOtpSubmit} className="flex-1 gap-2 bg-[#25D366] hover:bg-[#20BD5A] text-white" disabled={otpSubmitting || otp.length < 4}>
+                  {otpSubmitting ? 'Verifying...' : 'Verify & Contact'}
+                </Button>
+                <Button variant="outline" onClick={() => { setOtpSent(false); setOtp(''); setOtpError(''); handleSubmit(); }} disabled={submitting}>
+                  Resend
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ) : showForm ? (
           <Card>
             <CardContent className="p-5 space-y-4">
               <div className="flex items-center justify-between">
@@ -276,6 +345,9 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
                   <X className="h-4 w-4" />
                 </button>
               </div>
+              {op.plan === 'pro' && (
+                <p className="text-xs text-muted-foreground">We'll send a one-time code to verify your number.</p>
+              )}
               <input
                 type="text"
                 placeholder="Your name"
@@ -290,8 +362,10 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
                 onChange={(e) => setVisitorPhone(e.target.value)}
                 className="w-full h-10 px-3 rounded-lg border border-input bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
+              {stepError && <p className="text-xs text-danger">{stepError}</p>}
               <Button onClick={handleSubmit} className="w-full gap-2 bg-[#25D366] hover:bg-[#20BD5A] text-white" disabled={submitting || !visitorName.trim() || !visitorPhone.trim()}>
-                {submitting ? 'Sending...' : <Send className="h-4 w-4" />} Send Inquiry
+                {submitting ? 'Sending...' : op.plan === 'pro' ? 'Send OTP' : <Send className="h-4 w-4" />}
+                {submitting ? '' : op.plan === 'pro' ? '' : ' Send Inquiry'}
               </Button>
             </CardContent>
           </Card>
