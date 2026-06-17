@@ -19,52 +19,59 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         otp: { label: 'OTP', type: 'text' },
       },
       async authorize(credentials) {
-        if (!credentials?.email) return null;
+        try {
+          if (!credentials?.email) return null;
 
-        const email = credentials.email as string;
-        const otp = credentials.otp as string;
+          const email = credentials.email as string;
+          const otp = credentials.otp as string;
 
-        if (adminEmails.includes(email)) {
-          return { id: 'admin', name: 'Admin', email, phone: '' };
-        }
+          console.log(`[auth] email-otp: authorize called for ${email}, admin? ${adminEmails.includes(email)}`);
 
-        const hashedOtp = await hashOtp(otp);
-        const verified = await db.query.emailVerifications.findFirst({
-          where: and(
-            eq(emailVerifications.email, email),
-            eq(emailVerifications.otp, hashedOtp),
-            eq(emailVerifications.verified, true),
-            gt(emailVerifications.expires_at, new Date()),
-          ),
-          orderBy: (ev, { desc }) => [desc(ev.created_at)],
-        });
+          if (adminEmails.includes(email)) {
+            return { id: 'admin', name: 'Admin', email, phone: '' };
+          }
 
-        if (!verified) {
-          console.error(`[auth] email-otp: no verified record found for ${email}`);
-          return null;
-        }
-
-        let stored = await db.query.operators.findFirst({
-          where: eq(operators.email, email),
-        });
-
-        if (!stored) {
-          stored = await db.query.operators.findFirst({
-            where: eq(operators.whatsapp, email),
+          const hashedOtp = await hashOtp(otp);
+          const verified = await db.query.emailVerifications.findFirst({
+            where: and(
+              eq(emailVerifications.email, email),
+              eq(emailVerifications.otp, hashedOtp),
+              eq(emailVerifications.verified, true),
+              gt(emailVerifications.expires_at, new Date()),
+            ),
+            orderBy: (ev, { desc }) => [desc(ev.created_at)],
           });
-        }
 
-        if (!stored) {
-          console.error(`[auth] email-otp: no operator found for ${email}`);
+          if (!verified) {
+            console.error(`[auth] email-otp: no verified record found for ${email}`);
+            return null;
+          }
+
+          let stored = await db.query.operators.findFirst({
+            where: eq(operators.email, email),
+          });
+
+          if (!stored) {
+            stored = await db.query.operators.findFirst({
+              where: eq(operators.whatsapp, email),
+            });
+          }
+
+          if (!stored) {
+            console.error(`[auth] email-otp: no operator found for ${email}`);
+            return null;
+          }
+
+          return {
+            id: stored.id,
+            name: stored.name,
+            email,
+            phone: stored.whatsapp,
+          };
+        } catch (err) {
+          console.error('[auth] email-otp: authorize threw:', err);
           return null;
         }
-
-        return {
-          id: stored.id,
-          name: stored.name,
-          email,
-          phone: stored.whatsapp,
-        };
       },
     }),
     Credentials({
@@ -75,43 +82,50 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         otp: { label: 'OTP', type: 'text' },
       },
       async authorize(credentials) {
-        if (!credentials?.phone) return null;
+        try {
+          if (!credentials?.phone) return null;
 
-        const phone = credentials.phone as string;
-        const otp = credentials.otp as string;
+          const phone = credentials.phone as string;
+          const otp = credentials.otp as string;
 
-        if (otp !== 'verify') {
-          const hashedOtp = await hashOtp(otp);
-          const verified = await db.query.phoneVerifications.findFirst({
-            where: and(
-              eq(phoneVerifications.phone, phone),
-              eq(phoneVerifications.otp, hashedOtp),
-              eq(phoneVerifications.verified, true),
-              gt(phoneVerifications.expires_at, new Date()),
-            ),
-            orderBy: (pv, { desc }) => [desc(pv.created_at)],
+          console.log(`[auth] whatsapp-otp: authorize called for ${phone}`);
+
+          if (otp !== 'verify') {
+            const hashedOtp = await hashOtp(otp);
+            const verified = await db.query.phoneVerifications.findFirst({
+              where: and(
+                eq(phoneVerifications.phone, phone),
+                eq(phoneVerifications.otp, hashedOtp),
+                eq(phoneVerifications.verified, true),
+                gt(phoneVerifications.expires_at, new Date()),
+              ),
+              orderBy: (pv, { desc }) => [desc(pv.created_at)],
+            });
+            if (!verified) {
+              console.error(`[auth] whatsapp-otp: no verified record for ${phone}`);
+              return null;
+            }
+          }
+
+          let stored = await db.query.operators.findFirst({
+            where: eq(operators.whatsapp, phone),
           });
-          if (!verified) {
-            console.error(`[auth] whatsapp-otp: no verified record for ${phone}`);
+
+          if (!stored) {
+            console.error(`[auth] whatsapp-otp: no operator found for ${phone}`);
             return null;
           }
-        }
 
-        let stored = await db.query.operators.findFirst({
-          where: eq(operators.whatsapp, phone),
-        });
-
-        if (!stored) {
-          console.error(`[auth] whatsapp-otp: no operator found for ${phone}`);
+          return {
+            id: stored.id,
+            name: stored.name,
+            email: stored.email || '',
+            phone: stored.whatsapp,
+          };
+        } catch (err) {
+          console.error('[auth] whatsapp-otp: authorize threw:', err);
           return null;
         }
-
-        return {
-          id: stored.id,
-          name: stored.name,
-          email: stored.email || '',
-          phone: stored.whatsapp,
-        };
       },
     }),
   ],
