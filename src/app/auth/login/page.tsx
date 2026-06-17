@@ -73,7 +73,8 @@ export default function LoginPage() {
       const data = await res.json();
       if (data.success) {
         const signInRes = await signIn('email-otp', { email, otp: emailOtp, redirect: false });
-        if (signInRes?.error) setError('Login failed. No account found with this email.');
+        console.log('[login] signIn result:', signInRes);
+        if (signInRes?.error) setError(`Login failed: ${signInRes.error} (status ${signInRes.status})`);
       } else setError(data.error || 'Verification failed');
     } catch { setError('Network error'); }
     setLoading(false);
