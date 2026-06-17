@@ -37,10 +37,13 @@ export async function POST(req: Request) {
 
     clearSessionUuid();
     const sessionId = ourSession.id || ourSession.sessionId;
-    const result = await startSession(sessionId);
+    const isStarted = ourSession.status === 'started' || ourSession.status === 'qr_ready' || ourSession.status === 'connected' || ourSession.status === 'active';
 
-    if (result.error) {
-      return NextResponse.json({ error: result.error, message: 'Failed to start session.' }, { status: 500 });
+    if (!isStarted) {
+      const result = await startSession(sessionId);
+      if (result.error) {
+        return NextResponse.json({ error: result.error, message: 'Failed to start session.' }, { status: 500 });
+      }
     }
 
     return NextResponse.json({ success: true, message: 'Session started. Scan the QR code to connect.' });

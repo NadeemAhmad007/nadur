@@ -42,7 +42,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'No session ID found.' }, { status: 500 });
     }
 
-    const isStarted = ourSession.status === 'started' || ourSession.status === 'connected' || ourSession.status === 'active';
+    const isStarted = ourSession.status === 'started' || ourSession.status === 'qr_ready' || ourSession.status === 'connected' || ourSession.status === 'active';
     if (!isStarted) {
       const started = await startSession(sessionId);
       if (started.error) {
