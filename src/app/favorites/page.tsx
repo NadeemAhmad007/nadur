@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { OperatorCard } from '@/components/operator-card';
 import type { Operator } from '@/types';
-import { Heart, ArrowLeft } from 'lucide-react';
+import { Heart, ArrowLeft, Compass } from 'lucide-react';
 import Link from 'next/link';
 
 export default function FavoritesPage() {
@@ -28,45 +28,53 @@ export default function FavoritesPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white">
-      <header className="sticky top-0 bg-white border-b border-gray-200 z-10">
-        <div className="max-w-lg mx-auto px-4 py-4 flex items-center gap-3">
-          <Link href="/" className="p-1">
+    <div className="min-h-screen bg-background">
+      <header className="sticky top-0 z-10 bg-background/90 backdrop-blur-lg border-b border-border/50">
+        <div className="max-w-5xl mx-auto px-4 h-16 flex items-center gap-3">
+          <Link href="/" className="flex h-9 w-9 items-center justify-center rounded-xl hover:bg-secondary transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <img src="/logo.png" alt="Kashmir360" className="h-14 w-auto" />
-          <h1 className="text-lg font-semibold">Favorites</h1>
+          <img src="/logo.png" alt="Kashmir360" className="h-11 w-auto" />
+          <h1 className="text-lg font-semibold ml-1">Favorites</h1>
         </div>
       </header>
 
-      <main className="max-w-lg mx-auto px-4 py-4">
+      <main className="max-w-5xl mx-auto px-4 py-6">
         {loading ? (
-          <div className="grid grid-cols-2 gap-3">
-            {[...Array(2)].map((_, i) => (
-              <div key={i} className="rounded-xl bg-gray-100 animate-pulse">
-                <div className="aspect-[4/3] rounded-t-xl bg-gray-200" />
-                <div className="p-3 space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-3/4" />
-                  <div className="h-3 bg-gray-200 rounded w-1/2" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="rounded-[14px] border border-border bg-card overflow-hidden animate-pulse">
+                <div className="aspect-[4/3] bg-muted" />
+                <div className="p-4 space-y-3">
+                  <div className="h-4 bg-muted rounded-lg w-3/4" />
+                  <div className="h-3 bg-muted rounded-lg w-1/2" />
+                  <div className="h-9 bg-muted rounded-lg" />
                 </div>
               </div>
             ))}
           </div>
         ) : favorites.length === 0 ? (
-          <div className="text-center py-16 text-gray-500">
-            <Heart className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-            <p className="font-medium">No favorites yet</p>
-            <p className="text-sm mt-1">Tap the heart icon on an operator profile to save them here</p>
-            <Link href="/" className="text-[#2C5F8A] text-sm font-medium mt-4 inline-block">
+          <div className="text-center py-24">
+            <div className="flex justify-center mb-5">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary">
+                <Heart className="w-7 h-7 text-muted-foreground" />
+              </div>
+            </div>
+            <h2 className="text-lg font-semibold text-foreground">No favorites yet</h2>
+            <p className="text-sm text-muted-foreground mt-1.5 max-w-xs mx-auto">Tap the heart icon on an operator profile to save them here</p>
+            <Link href="/" className="inline-flex mt-6 text-sm text-accent font-medium hover:underline">
               Browse operators
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
-            {favorites.map((op) => (
-              <OperatorCard key={op.id} operator={op} />
-            ))}
-          </div>
+          <>
+            <p className="text-sm text-muted-foreground mb-5">{favorites.length} saved operator{favorites.length !== 1 ? 's' : ''}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {favorites.map((op) => (
+                <OperatorCard key={op.id} operator={op} />
+              ))}
+            </div>
+          </>
         )}
       </main>
     </div>

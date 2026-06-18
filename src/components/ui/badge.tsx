@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils';
 
 const variants = {
-  default: 'bg-muted text-muted-foreground',
+  default: 'bg-secondary text-muted-foreground',
   primary: 'bg-primary/10 text-primary',
   success: 'bg-success/10 text-success',
   warning: 'bg-warning/10 text-warning',
@@ -12,9 +12,9 @@ const variants = {
 } as const;
 
 const sizes = {
-  sm: 'px-1.5 py-0.5 text-[10px]',
-  md: 'px-2.5 py-0.5 text-xs',
-  lg: 'px-3 py-1 text-sm',
+  sm: 'px-2 py-0.5 text-[11px]',
+  md: 'px-2.5 py-1 text-xs',
+  lg: 'px-3.5 py-1 text-sm',
 } as const;
 
 interface BadgeProps {

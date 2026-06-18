@@ -7,8 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import {
   BarChart3, Phone, QrCode, Edit3, CheckCircle2, AlertCircle,
-  ArrowUp, ArrowDown, Sparkles, User, Compass, Building2, Clock,
-  TrendingUp, Target
+  ArrowUp, ArrowDown, Sparkles, User, Building2, Clock,
+  TrendingUp, Target, MessageCircle, ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -179,7 +179,10 @@ export default function PortalPage() {
   if (loading || status === 'loading') {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
+        <div className="flex flex-col items-center gap-3">
+          <div className="animate-spin h-7 w-7 border-2 border-accent border-t-transparent rounded-full" />
+          <p className="text-xs text-muted-foreground">Loading dashboard...</p>
+        </div>
       </div>
     );
   }
@@ -188,9 +191,9 @@ export default function PortalPage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center max-w-sm">
-          <div className="flex justify-center mb-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-destructive/10">
-              <AlertCircle className="h-8 w-8 text-destructive" />
+          <div className="flex justify-center mb-5">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-danger/10">
+              <AlertCircle className="h-7 w-7 text-danger" />
             </div>
           </div>
           <h2 className="text-xl font-semibold text-foreground">Something went wrong</h2>
@@ -205,9 +208,9 @@ export default function PortalPage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center max-w-sm">
-          <div className="flex justify-center mb-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">
-              <Building2 className="h-8 w-8 text-muted-foreground" />
+          <div className="flex justify-center mb-5">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary">
+              <Building2 className="h-7 w-7 text-muted-foreground" />
             </div>
           </div>
           <h2 className="text-xl font-semibold text-foreground">No profile yet</h2>
@@ -231,7 +234,7 @@ export default function PortalPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground text-sm mt-0.5">Welcome back, {operator.name}</p>
+          <p className="text-muted-foreground text-sm mt-1">Welcome back, {operator.name}</p>
         </div>
         <Badge variant={operator.status === 'approved' ? 'success' : 'warning'}>
           {operator.status === 'approved' ? 'Live' : operator.status}
@@ -241,24 +244,24 @@ export default function PortalPage() {
       {/* Profile completion + plan */}
       <Card>
         <CardContent className="p-5">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary font-bold text-lg">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3.5">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent font-bold text-lg">
                 {operator.name[0]}
               </div>
               <div>
                 <h2 className="font-semibold text-foreground">{operator.name}</h2>
-                <p className="text-xs text-muted-foreground capitalize">{operator.category} · {operator.plan === 'free' ? 'Free Plan' : 'Pro'}</p>
+                <p className="text-xs text-muted-foreground capitalize">{operator.category} &middot; {operator.plan === 'free' ? 'Free Plan' : 'Pro'}</p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-2xl font-bold text-primary">{percent}%</p>
+              <p className="text-2xl font-bold text-foreground">{percent}%</p>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Complete</p>
             </div>
           </div>
-          <div className="w-full bg-muted rounded-full h-2">
+          <div className="w-full bg-secondary rounded-full h-2.5">
             <div
-              className={`h-2 rounded-full transition-all duration-500 ${percent === 100 ? 'bg-success' : percent > 60 ? 'bg-primary' : 'bg-warning'}`}
+              className={`h-2.5 rounded-full transition-all duration-500 ${percent === 100 ? 'bg-success' : percent > 60 ? 'bg-accent' : 'bg-warning'}`}
               style={{ width: `${percent}%` }}
             />
           </div>
@@ -269,26 +272,26 @@ export default function PortalPage() {
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-4">
         <Card>
-          <CardContent className="p-4 text-center">
-            <div className="flex justify-center mb-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                <BarChart3 className="h-5 w-5 text-primary" />
+          <CardContent className="p-4 sm:p-5 text-center">
+            <div className="flex justify-center mb-2.5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10">
+                <BarChart3 className="h-5 w-5 text-accent" />
               </div>
             </div>
             <p className="text-2xl font-bold text-foreground">{monthlyLeads}</p>
             <p className="text-xs text-muted-foreground">Leads this month</p>
             {operator.plan === 'free' && (
-              <p className={`text-[10px] mt-1 font-medium ${leadsLeft > 0 ? 'text-muted-foreground' : 'text-danger'}`}>
+              <p className={`text-[11px] mt-1.5 font-medium ${leadsLeft > 0 ? 'text-muted-foreground' : 'text-danger'}`}>
                 {leadsLeft > 0 ? `${leadsLeft} remaining` : 'Limit reached'}
               </p>
             )}
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4 text-center">
-            <div className="flex justify-center mb-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-info/10">
-                <Phone className="h-5 w-5 text-info" />
+          <CardContent className="p-4 sm:p-5 text-center">
+            <div className="flex justify-center mb-2.5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-info/10">
+                <MessageCircle className="h-5 w-5 text-info" />
               </div>
             </div>
             <p className="text-2xl font-bold text-foreground">{leads.length}</p>
@@ -296,9 +299,9 @@ export default function PortalPage() {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4 text-center">
-            <div className="flex justify-center mb-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-success/10">
+          <CardContent className="p-4 sm:p-5 text-center">
+            <div className="flex justify-center mb-2.5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-success/10">
                 <TrendingUp className="h-5 w-5 text-success" />
               </div>
             </div>
@@ -311,28 +314,30 @@ export default function PortalPage() {
       {/* Quick actions */}
       <div className="grid grid-cols-2 gap-3">
         <Link href="/portal/edit">
-          <Card className="hover:shadow-md transition-shadow cursor-pointer border-primary/20">
+          <Card className="hover:shadow-md transition-all duration-200 cursor-pointer border-accent/20 hover:border-accent/40 group">
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                <Edit3 className="h-5 w-5 text-primary" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10 shrink-0">
+                <Edit3 className="h-5 w-5 text-accent" />
               </div>
-              <div>
+              <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-foreground">Edit Profile</p>
-                <p className="text-xs text-muted-foreground">Update your business info</p>
+                <p className="text-xs text-muted-foreground">Update your info</p>
               </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" />
             </CardContent>
           </Card>
         </Link>
         <Link href="/portal/qr">
-          <Card className="hover:shadow-md transition-shadow cursor-pointer border-accent/20">
+          <Card className="hover:shadow-md transition-all duration-200 cursor-pointer border-info/20 hover:border-info/40 group">
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10">
-                <QrCode className="h-5 w-5 text-accent" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-info/10 shrink-0">
+                <QrCode className="h-5 w-5 text-info" />
               </div>
-              <div>
+              <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-foreground">QR Code</p>
-                <p className="text-xs text-muted-foreground">Print stickers & share</p>
+                <p className="text-xs text-muted-foreground">Print & share</p>
               </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" />
             </CardContent>
           </Card>
         </Link>
@@ -340,24 +345,24 @@ export default function PortalPage() {
 
       {/* Profile completion tips */}
       {score.missing.length > 0 && (
-        <Card className="border-warning/30 bg-warning/5">
-          <CardContent className="p-4">
+        <Card className="border-warning/20 bg-warning/[0.03]">
+          <CardContent className="p-5">
             <div className="flex items-start gap-3">
               <AlertCircle className="h-5 w-5 text-warning mt-0.5 shrink-0" />
               <div className="flex-1">
                 <h3 className="text-sm font-semibold text-foreground">Complete your profile</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-xs text-muted-foreground mt-1">
                   Add the following details to attract more customers:
                 </p>
-                <div className="flex flex-wrap gap-1.5 mt-2">
+                <div className="flex flex-wrap gap-1.5 mt-3">
                   {score.missing.map((m) => (
-                    <span key={m} className="inline-flex items-center px-2 py-0.5 rounded-md bg-warning/10 text-warning text-xs font-medium">
+                    <span key={m} className="inline-flex items-center px-2.5 py-1 rounded-lg bg-warning/10 text-warning text-xs font-medium">
                       {m}
                     </span>
                   ))}
                 </div>
                 <Link href="/portal/edit">
-                  <Button size="sm" variant="outline" className="mt-3">Edit Profile</Button>
+                  <Button size="sm" variant="outline" className="mt-4">Edit Profile</Button>
                 </Link>
               </div>
             </div>
@@ -368,20 +373,20 @@ export default function PortalPage() {
       {/* Lead trends */}
       {stats && (
         <Card>
-          <CardHeader className="p-4 border-b border-border">
+          <CardHeader className="p-5 border-b border-border/60">
             <div className="flex items-center gap-2">
               <Target className="h-4 w-4 text-muted-foreground" />
               <h3 className="font-semibold text-sm">Lead Trends</h3>
             </div>
           </CardHeader>
-          <CardContent className="p-4">
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div className="text-center p-3 rounded-lg bg-muted">
+          <CardContent className="p-5">
+            <div className="grid grid-cols-2 gap-4 mb-5">
+              <div className="text-center p-4 rounded-xl bg-secondary">
                 <p className="text-2xl font-bold text-foreground">{stats.thisWeek}</p>
-                <p className="text-xs text-muted-foreground">This week</p>
+                <p className="text-xs text-muted-foreground mt-1">This week</p>
               </div>
-              <div className="text-center p-3 rounded-lg bg-muted">
-                <div className="flex items-center justify-center gap-1">
+              <div className="text-center p-4 rounded-xl bg-secondary">
+                <div className="flex items-center justify-center gap-1.5">
                   <p className="text-2xl font-bold text-foreground">{stats.lastWeek}</p>
                   {stats.lastWeek > 0 && (
                     stats.thisWeek > stats.lastWeek ? <ArrowUp className="h-5 w-5 text-success" />
@@ -389,12 +394,12 @@ export default function PortalPage() {
                     : null
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground">Last week</p>
+                <p className="text-xs text-muted-foreground mt-1">Last week</p>
               </div>
             </div>
             {Object.keys(stats.bySource).length > 0 && (
-              <div className="pt-3 border-t border-border">
-                <p className="text-xs font-medium text-muted-foreground mb-2">By source</p>
+              <div className="pt-4 border-t border-border/60">
+                <p className="text-xs font-medium text-muted-foreground mb-2.5">By source</p>
                 <div className="flex gap-2 flex-wrap">
                   {Object.entries(stats.bySource).map(([src, count]) => (
                     <Badge key={src} variant="outline">{src}: {count}</Badge>
@@ -408,21 +413,21 @@ export default function PortalPage() {
 
       {/* Recent leads */}
       <Card>
-        <CardHeader className="p-4 border-b border-border">
+        <CardHeader className="p-5 border-b border-border/60">
           <h3 className="font-semibold text-sm">Recent Leads</h3>
         </CardHeader>
         <CardContent className="p-0">
           {leads.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground text-sm">No leads yet — your QR code will help customers find you</div>
           ) : (
-            <div className="divide-y divide-border">
+            <div className="divide-y divide-border/60">
               {leads.slice(0, 10).map((lead: any) => (
-                <div key={lead.id} className="p-4 flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{lead.visitor_name || 'Anonymous'}</p>
-                    <p className="text-xs text-muted-foreground">{lead.visitor_phone || ''}</p>
+                <div key={lead.id} className="p-4 sm:p-5 flex items-center justify-between hover:bg-secondary/30 transition-colors">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-foreground truncate">{lead.visitor_name || 'Anonymous'}</p>
+                    <p className="text-xs text-muted-foreground truncate">{lead.visitor_phone || ''}</p>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right shrink-0 ml-3">
                     <Badge variant="outline" size="sm">{lead.source}</Badge>
                     <p className="text-xs text-muted-foreground mt-1">
                       {new Date(lead.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
@@ -437,15 +442,16 @@ export default function PortalPage() {
 
       {/* Upgrade prompts */}
       {operator.plan === 'free' && monthlyLeads >= 3 && (
-        <Card className="border-danger/30 bg-danger/5">
-          <CardContent className="p-4 flex items-start gap-3">
-            <AlertCircle className="h-5 w-5 text-danger mt-0.5 shrink-0" />
+        <Card className="border-accent/20 bg-accent/[0.03]">
+          <CardContent className="p-5 flex items-start gap-3">
+            <Sparkles className="h-5 w-5 text-accent mt-0.5 shrink-0" />
             <div>
-              <h3 className="text-sm font-semibold text-foreground">Lead limit reached</h3>
-              <p className="text-xs text-muted-foreground mt-0.5">Upgrade to Pro for unlimited leads and higher visibility.</p>
-              <div className="flex gap-4 mt-2">
-                <span className="text-xs text-muted-foreground flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-success" /> Unlimited leads</span>
-                <span className="text-xs text-muted-foreground flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-success" /> Priority listing</span>
+              <h3 className="text-sm font-semibold text-foreground">Upgrade to Pro</h3>
+              <p className="text-xs text-muted-foreground mt-1">Get unlimited leads, higher visibility, and lead details delivered directly to you.</p>
+              <div className="flex flex-wrap gap-4 mt-3">
+                <span className="text-xs text-muted-foreground flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-success" /> Unlimited leads</span>
+                <span className="text-xs text-muted-foreground flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-success" /> Priority listing</span>
+                <span className="text-xs text-muted-foreground flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-success" /> Direct notifications</span>
               </div>
             </div>
           </CardContent>

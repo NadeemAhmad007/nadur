@@ -9,7 +9,7 @@ import {
   ArrowLeft, BadgeCheck, Heart, Share2, MessageCircle,
   ChevronLeft, ChevronRight, Send, MapPin, Phone, Mail,
   Star, User, Map, Clock, Globe, X, TrendingUp,
-  Car, Hash, Building2, Navigation, Store, Info, ChevronDown
+  Car, Hash, Building2, Navigation, Store, Info, ChevronDown, Ship
 } from 'lucide-react';
 import Link from 'next/link';
 import { countryOptions } from '@/data/country-codes';
@@ -123,18 +123,18 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
               alt={op.name}
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10" />
             {photos.length > 1 && (
               <>
                 <button
                   onClick={() => setCurrentPhoto(p => p === 0 ? photos.length - 1 : p - 1)}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 backdrop-blur shadow-lg hover:bg-white transition-colors"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 backdrop-blur shadow-lg hover:bg-white transition-all active:scale-95"
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </button>
                 <button
                   onClick={() => setCurrentPhoto(p => p === photos.length - 1 ? 0 : p + 1)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 backdrop-blur shadow-lg hover:bg-white transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 backdrop-blur shadow-lg hover:bg-white transition-all active:scale-95"
                 >
                   <ChevronRight className="h-5 w-5" />
                 </button>
@@ -143,7 +143,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
                     <button
                       key={i}
                       onClick={() => setCurrentPhoto(i)}
-                      className={`w-2 h-2 rounded-full transition-all ${i === currentPhoto ? 'bg-white w-4' : 'bg-white/50 hover:bg-white/70'}`}
+                      className={`w-2 h-2 rounded-full transition-all ${i === currentPhoto ? 'bg-white w-5' : 'bg-white/50 hover:bg-white/70'}`}
                     />
                   ))}
                 </div>
@@ -151,28 +151,27 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
             )}
           </div>
         ) : (
-          <div className="aspect-[16/9] sm:aspect-[21/9] flex items-center justify-center text-muted-foreground bg-gradient-to-br from-muted to-border">
+          <div className="aspect-[16/9] sm:aspect-[21/9] flex items-center justify-center bg-gradient-to-br from-muted to-border/50">
             <div className="text-center">
-              <div className="text-6xl font-bold text-muted-foreground/20">{op.name[0]}</div>
-              <p className="text-sm mt-2">No photos available</p>
+              <div className="text-7xl font-bold text-muted-foreground/15">{op.name[0]}</div>
             </div>
           </div>
         )}
 
         {/* Top actions */}
         <div className="absolute top-4 left-4 z-10 flex gap-2">
-          <Link href="/" className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 backdrop-blur shadow-lg hover:bg-white transition-colors">
+          <Link href="/" className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 backdrop-blur shadow-sm hover:bg-white transition-all active:scale-95">
             <ArrowLeft className="h-5 w-5" />
           </Link>
         </div>
         <div className="absolute top-4 right-4 z-10 flex gap-2">
           <button
             onClick={toggleFavorite}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 backdrop-blur shadow-lg hover:bg-white transition-colors"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 backdrop-blur shadow-sm hover:bg-white transition-all active:scale-95"
           >
             <Heart className={`h-5 w-5 ${favorited ? 'fill-danger text-danger' : ''}`} />
           </button>
-          <button className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 backdrop-blur shadow-lg hover:bg-white transition-colors">
+          <button className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 backdrop-blur shadow-sm hover:bg-white transition-all active:scale-95">
             <Share2 className="h-5 w-5" />
           </button>
         </div>
@@ -184,11 +183,11 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
         <div>
           <div className="flex items-start justify-between">
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <h1 className="text-2xl font-bold text-foreground">{op.name}</h1>
-                {op.verified && <BadgeCheck className="h-5 w-5 text-primary" />}
+                {op.verified && <BadgeCheck className="h-5 w-5 text-accent" />}
               </div>
-              <div className="flex items-center gap-2 mt-1">
+              <div className="flex items-center gap-2.5 mt-2">
                 <Badge variant="outline" className="capitalize">{op.category ? (categoryLabels[op.category] || op.category) : ''}</Badge>
                 {op.verified && <Badge variant="primary" size="sm"><BadgeCheck className="h-3 w-3 mr-0.5" /> Verified</Badge>}
               </div>
@@ -197,14 +196,14 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
         </div>
 
         {/* Description */}
-        {op.short_desc && <p className="text-muted-foreground">{op.short_desc}</p>}
+        {op.short_desc && <p className="text-muted-foreground leading-relaxed">{op.short_desc}</p>}
         {op.long_desc && <p className="text-muted-foreground leading-relaxed">{op.long_desc}</p>}
 
         {/* Category-specific details */}
         {op.houseboat_details && op.category === 'houseboat' && (
           <Card>
             <CardContent className="p-5 space-y-4">
-              <h2 className="font-semibold flex items-center gap-2"><User className="h-4 w-4 text-muted-foreground" /> Houseboat Details</h2>
+              <h2 className="font-semibold flex items-center gap-2"><Building2 className="h-4 w-4 text-muted-foreground" /> Houseboat Details</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 {(op.houseboat_details as any).owner && <DetailRow icon={User} label="Owner" value={(op.houseboat_details as any).owner} />}
                 {(op.houseboat_details as any).address && <DetailRow icon={MapPin} label="Address" value={(op.houseboat_details as any).address} />}
@@ -218,22 +217,22 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
               </div>
               {(op.houseboat_details as any).room_types?.length > 0 && (
                 <div>
-                  <p className="text-xs text-muted-foreground font-medium">Room Types</p>
-                  <div className="flex flex-wrap gap-1.5 mt-1">
+                  <p className="text-xs text-muted-foreground font-medium mb-2">Room Types</p>
+                  <div className="flex flex-wrap gap-1.5">
                     {(op.houseboat_details as any).room_types.map((r: string) => <Badge key={r} variant="outline" size="sm">{r}</Badge>)}
                   </div>
                 </div>
               )}
               {(op.houseboat_details as any).amenities?.length > 0 && (
                 <div>
-                  <p className="text-xs text-muted-foreground font-medium">Amenities</p>
-                  <div className="flex flex-wrap gap-1.5 mt-1">
+                  <p className="text-xs text-muted-foreground font-medium mb-2">Amenities</p>
+                  <div className="flex flex-wrap gap-1.5">
                     {(op.houseboat_details as any).amenities.map((a: string) => <Badge key={a} variant="outline" size="sm">{a}</Badge>)}
                   </div>
                 </div>
               )}
               {(op.houseboat_details as any).google_maps && (
-                <a href={(op.houseboat_details as any).google_maps} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+                <a href={(op.houseboat_details as any).google_maps} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-accent font-medium hover:underline">
                   <Globe className="h-4 w-4" /> View on Google Maps
                 </a>
               )}
@@ -244,7 +243,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
         {op.shikara_details && op.category === 'shikara' && (
           <Card>
             <CardContent className="p-5 space-y-4">
-              <h2 className="font-semibold flex items-center gap-2"><User className="h-4 w-4 text-muted-foreground" /> Shikara Details</h2>
+              <h2 className="font-semibold flex items-center gap-2"><Ship className="h-4 w-4 text-muted-foreground" /> Shikara Details</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 {(op.shikara_details as any).full_name && <DetailRow icon={User} label="Full Name" value={(op.shikara_details as any).full_name} />}
                 {(op.shikara_details as any).mobile_number && <DetailRow icon={Phone} label="Mobile" value={(op.shikara_details as any).mobile_number} />}
@@ -255,8 +254,8 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
               </div>
               {(op.shikara_details as any).services?.length > 0 && (
                 <div>
-                  <p className="text-xs text-muted-foreground font-medium">Services</p>
-                  <div className="flex flex-wrap gap-1.5 mt-1">
+                  <p className="text-xs text-muted-foreground font-medium mb-2">Services</p>
+                  <div className="flex flex-wrap gap-1.5">
                     {(op.shikara_details as any).services.map((s: string) => <Badge key={s} variant="outline" size="sm">{s}</Badge>)}
                   </div>
                 </div>
@@ -273,7 +272,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
         {op.artisan_details && op.category === 'artisan' && (
           <Card>
             <CardContent className="p-5 space-y-4">
-              <h2 className="font-semibold flex items-center gap-2"><User className="h-4 w-4 text-muted-foreground" /> Artisan Details</h2>
+              <h2 className="font-semibold flex items-center gap-2"><Store className="h-4 w-4 text-muted-foreground" /> Artisan Details</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 {(op.artisan_details as any).business_type && <DetailRow icon={Star} label="Business Type" value={(op.artisan_details as any).business_type} />}
                 {(op.artisan_details as any).business_scale && <DetailRow icon={TrendingUp} label="Scale" value={(op.artisan_details as any).business_scale} />}
@@ -283,14 +282,14 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
               </div>
               {(op.artisan_details as any).specialties?.length > 0 && (
                 <div>
-                  <p className="text-xs text-muted-foreground font-medium">Specialties</p>
-                  <div className="flex flex-wrap gap-1.5 mt-1">
+                  <p className="text-xs text-muted-foreground font-medium mb-2">Specialties</p>
+                  <div className="flex flex-wrap gap-1.5">
                     {(op.artisan_details as any).specialties.map((s: string) => <Badge key={s} variant="outline" size="sm">{s}</Badge>)}
                   </div>
                 </div>
               )}
               {(op.artisan_details as any).google_maps && (
-                <a href={(op.artisan_details as any).google_maps} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+                <a href={(op.artisan_details as any).google_maps} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-accent font-medium hover:underline">
                   <Globe className="h-4 w-4" /> View on Google Maps
                 </a>
               )}
@@ -317,23 +316,23 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
               </div>
               {(op.accommodation_details as any).amenities?.length > 0 && (
                 <div>
-                  <p className="text-xs text-muted-foreground font-medium">Amenities</p>
-                  <div className="flex flex-wrap gap-1.5 mt-1">
+                  <p className="text-xs text-muted-foreground font-medium mb-2">Amenities</p>
+                  <div className="flex flex-wrap gap-1.5">
                     {(op.accommodation_details as any).amenities.map((a: string, i: number) => <Badge key={i} variant="outline" size="sm">{a}</Badge>)}
                   </div>
                 </div>
               )}
               {(op.accommodation_details as any).meals_included?.length > 0 && (
                 <div>
-                  <p className="text-xs text-muted-foreground font-medium">Meals Included</p>
-                  <div className="flex flex-wrap gap-1.5 mt-1">
+                  <p className="text-xs text-muted-foreground font-medium mb-2">Meals Included</p>
+                  <div className="flex flex-wrap gap-1.5">
                     {(op.accommodation_details as any).meals_included.map((m: string, i: number) => <Badge key={i} variant="outline" size="sm">{m}</Badge>)}
                   </div>
                 </div>
               )}
               {(op.accommodation_details as any).nearby_attractions && <DetailRow icon={MapPin} label="Nearby Attractions" value={(op.accommodation_details as any).nearby_attractions} />}
               {(op.accommodation_details as any).google_maps && (
-                <a href={(op.accommodation_details as any).google_maps} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+                <a href={(op.accommodation_details as any).google_maps} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-accent font-medium hover:underline">
                   <Globe className="h-4 w-4" /> View on Google Maps
                 </a>
               )}
@@ -345,17 +344,17 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
         {op.accommodation_details && (op.category === 'homestay' || op.category === 'guest_house') && (
           <Card>
             <CardContent className="p-5 space-y-4">
-              <h2 className="font-semibold flex items-center gap-2"><Star className="h-4 w-4 text-muted-foreground" /> Pricing (₹)</h2>
+              <h2 className="font-semibold flex items-center gap-2"><TrendingUp className="h-4 w-4 text-muted-foreground" /> Pricing (₹)</h2>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {(op.accommodation_details as any).pricing_single && (
-                  <div className="rounded-xl bg-muted p-3 text-center">
-                    <p className="text-[10px] text-muted-foreground uppercase">Single/Night</p>
+                  <div className="rounded-xl bg-secondary p-3.5 text-center">
+                    <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Single/Night</p>
                     <p className="text-lg font-bold text-foreground mt-0.5">₹{(op.accommodation_details as any).pricing_single}</p>
                   </div>
                 )}
                 {(op.accommodation_details as any).pricing_double && (
-                  <div className="rounded-xl bg-muted p-3 text-center">
-                    <p className="text-[10px] text-muted-foreground uppercase">Double/Night</p>
+                  <div className="rounded-xl bg-secondary p-3.5 text-center">
+                    <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Double/Night</p>
                     <p className="text-lg font-bold text-foreground mt-0.5">₹{(op.accommodation_details as any).pricing_double}</p>
                   </div>
                 )}
@@ -368,7 +367,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
         {op.taxi_details && op.category === 'taxi' && (
           <Card>
             <CardContent className="p-5 space-y-4">
-              <h2 className="font-semibold flex items-center gap-2"><MapPin className="h-4 w-4 text-muted-foreground" /> Taxi Details</h2>
+              <h2 className="font-semibold flex items-center gap-2"><Car className="h-4 w-4 text-muted-foreground" /> Taxi Details</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 {op.taxi_details.driver_name && <DetailRow icon={User} label="Driver" value={op.taxi_details.driver_name} />}
                 {op.taxi_details.vehicle_type && <DetailRow icon={Car} label="Vehicle Type" value={op.taxi_details.vehicle_type} />}
@@ -386,43 +385,43 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
         {op.taxi_details && op.category === 'taxi' && (
           <Card>
             <CardContent className="p-5 space-y-4">
-              <h2 className="font-semibold flex items-center gap-2"><Star className="h-4 w-4 text-muted-foreground" /> Pricing (₹)</h2>
+              <h2 className="font-semibold flex items-center gap-2"><TrendingUp className="h-4 w-4 text-muted-foreground" /> Pricing (₹)</h2>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {op.taxi_details.price_per_km && (
-                  <div className="rounded-xl bg-muted p-3 text-center">
-                    <p className="text-[10px] text-muted-foreground uppercase">Per Km</p>
+                  <div className="rounded-xl bg-secondary p-3.5 text-center">
+                    <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Per Km</p>
                     <p className="text-lg font-bold text-foreground mt-0.5">₹{op.taxi_details.price_per_km}</p>
                   </div>
                 )}
                 {op.taxi_details.price_per_day && (
-                  <div className="rounded-xl bg-muted p-3 text-center">
-                    <p className="text-[10px] text-muted-foreground uppercase">Per Day</p>
+                  <div className="rounded-xl bg-secondary p-3.5 text-center">
+                    <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Per Day</p>
                     <p className="text-lg font-bold text-foreground mt-0.5">₹{op.taxi_details.price_per_day}</p>
                   </div>
                 )}
                 {op.taxi_details.airport_flat_rate && (
-                  <div className="rounded-xl bg-muted p-3 text-center">
-                    <p className="text-[10px] text-muted-foreground uppercase">Airport</p>
+                  <div className="rounded-xl bg-secondary p-3.5 text-center">
+                    <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Airport</p>
                     <p className="text-lg font-bold text-foreground mt-0.5">₹{op.taxi_details.airport_flat_rate}</p>
                   </div>
                 )}
                 {op.taxi_details.extra_per_km && (
-                  <div className="rounded-xl bg-muted p-3 text-center">
-                    <p className="text-[10px] text-muted-foreground uppercase">Extra/Km</p>
+                  <div className="rounded-xl bg-secondary p-3.5 text-center">
+                    <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Extra/Km</p>
                     <p className="text-lg font-bold text-foreground mt-0.5">₹{op.taxi_details.extra_per_km}</p>
                   </div>
                 )}
               </div>
               {(op.taxi_details as any).tour_types?.length > 0 && (
                 <div>
-                  <p className="text-xs text-muted-foreground font-medium">Tour Types</p>
-                  <div className="flex flex-wrap gap-1.5 mt-1">
+                  <p className="text-xs text-muted-foreground font-medium mb-2">Tour Types</p>
+                  <div className="flex flex-wrap gap-1.5">
                     {(op.taxi_details as any).tour_types.map((t: string) => <Badge key={t} variant="outline" size="sm">{t}</Badge>)}
                   </div>
                 </div>
               )}
               {op.taxi_details.google_maps && (
-                <a href={op.taxi_details.google_maps} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+                <a href={op.taxi_details.google_maps} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-accent font-medium hover:underline">
                   <Globe className="h-4 w-4" /> View on Google Maps
                 </a>
               )}
@@ -441,34 +440,34 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
               {op.guide_details.years_experience && <DetailRow icon={Clock} label="Experience" value={`${op.guide_details.years_experience} years`} />}
               {op.guide_details.certification && <DetailRow icon={BadgeCheck} label="Certification" value={op.guide_details.certification} />}
               {op.guide_details.languages && op.guide_details.languages.length > 0 && (
-                <div className="flex items-start gap-2">
+                <div className="flex items-start gap-2.5">
                   <Globe className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
                   <div>
-                    <p className="text-xs text-muted-foreground">Languages</p>
+                    <p className="text-xs text-muted-foreground font-medium">Languages</p>
                     <div className="flex flex-wrap gap-1 mt-0.5">{op.guide_details.languages.map((l: string) => <Badge key={l} variant="outline" size="sm">{l}</Badge>)}</div>
                   </div>
                 </div>
               )}
               {op.guide_details.specialties && op.guide_details.specialties.length > 0 && (
-                <div className="flex items-start gap-2">
+                <div className="flex items-start gap-2.5">
                   <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
                   <div>
-                    <p className="text-xs text-muted-foreground">Specialties</p>
+                    <p className="text-xs text-muted-foreground font-medium">Specialties</p>
                     <div className="flex flex-wrap gap-1 mt-0.5">{op.guide_details.specialties.map((s: string) => <Badge key={s} variant="outline" size="sm">{s}</Badge>)}</div>
                   </div>
                 </div>
               )}
               {op.guide_details.operating_areas && op.guide_details.operating_areas.length > 0 && (
-                <div className="flex items-start gap-2">
+                <div className="flex items-start gap-2.5">
                   <Map className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
                   <div>
-                    <p className="text-xs text-muted-foreground">Operating Areas</p>
+                    <p className="text-xs text-muted-foreground font-medium">Operating Areas</p>
                     <div className="flex flex-wrap gap-1 mt-0.5">{op.guide_details.operating_areas.map((a: string) => <Badge key={a} variant="outline" size="sm">{a}</Badge>)}</div>
                   </div>
                 </div>
               )}
               {op.guide_details.google_maps && (
-                <a href={op.guide_details.google_maps} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+                <a href={op.guide_details.google_maps} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-accent font-medium hover:underline">
                   <Globe className="h-4 w-4" /> View on Google Maps
                 </a>
               )}
@@ -487,25 +486,25 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
               {op.vendor_details.whatsapp_number && <DetailRow icon={MessageCircle} label="WhatsApp" value={op.vendor_details.whatsapp_number} />}
               {op.vendor_details.business_type && <DetailRow icon={Building2} label="Type" value={op.vendor_details.business_type.replace('_', ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())} />}
               {op.vendor_details.specialties && op.vendor_details.specialties.length > 0 && (
-                <div className="flex items-start gap-2">
+                <div className="flex items-start gap-2.5">
                   <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
                   <div>
-                    <p className="text-xs text-muted-foreground">Specialties</p>
+                    <p className="text-xs text-muted-foreground font-medium">Specialties</p>
                     <div className="flex flex-wrap gap-1 mt-0.5">{op.vendor_details.specialties.map((s: string) => <Badge key={s} variant="outline" size="sm">{s}</Badge>)}</div>
                   </div>
                 </div>
               )}
               {op.vendor_details.operating_areas && op.vendor_details.operating_areas.length > 0 && (
-                <div className="flex items-start gap-2">
+                <div className="flex items-start gap-2.5">
                   <Map className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
                   <div>
-                    <p className="text-xs text-muted-foreground">Operating Areas</p>
+                    <p className="text-xs text-muted-foreground font-medium">Operating Areas</p>
                     <div className="flex flex-wrap gap-1 mt-0.5">{op.vendor_details.operating_areas.map((a: string) => <Badge key={a} variant="outline" size="sm">{a}</Badge>)}</div>
                   </div>
                 </div>
               )}
               {op.vendor_details.google_maps && (
-                <a href={op.vendor_details.google_maps} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+                <a href={op.vendor_details.google_maps} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-accent font-medium hover:underline">
                   <Globe className="h-4 w-4" /> View on Google Maps
                 </a>
               )}
@@ -517,7 +516,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
         {op.tariffs && op.category === 'houseboat' && (
           <Card>
             <CardContent className="p-5 space-y-4">
-              <h2 className="font-semibold flex items-center gap-2"><Star className="h-4 w-4 text-muted-foreground" /> Tariffs (₹)</h2>
+              <h2 className="font-semibold flex items-center gap-2"><TrendingUp className="h-4 w-4 text-muted-foreground" /> Tariffs (₹)</h2>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {([
                   ['double_ep', 'Double EP'], ['double_cp', 'Double CP'],
@@ -528,8 +527,8 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
                   const val = (op.tariffs as any)?.[key];
                   if (!val) return null;
                   return (
-                    <div key={key} className="rounded-xl bg-muted p-3 text-center">
-                      <p className="text-[10px] text-muted-foreground uppercase">{label}</p>
+                    <div key={key} className="rounded-xl bg-secondary p-3.5 text-center">
+                      <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{label}</p>
                       <p className="text-lg font-bold text-foreground mt-0.5">₹{val}</p>
                     </div>
                   );
@@ -543,7 +542,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
         )}
 
         {op.pricing_note && (
-          <Card className="bg-muted/30">
+          <Card className="bg-secondary/50 border-dashed">
             <CardContent className="p-5">
               <p className="text-sm text-muted-foreground">{op.pricing_note}</p>
             </CardContent>
@@ -556,8 +555,8 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
             <CardContent className="p-5 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold">Verify your phone</h3>
-                <button onClick={() => { setOtpSent(false); setOtp(''); setOtpError(''); }} className="text-muted-foreground hover:text-foreground">
-                  <X className="h-4 w-4" />
+                <button onClick={() => { setOtpSent(false); setOtp(''); setOtpError(''); }} className="p-1.5 rounded-lg hover:bg-secondary transition-colors">
+                  <X className="h-4 w-4 text-muted-foreground" />
                 </button>
               </div>
               <p className="text-sm text-muted-foreground">Enter the OTP sent to {getPhone()}</p>
@@ -567,11 +566,11 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
                 placeholder="Enter OTP"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                className="w-full h-10 px-3 rounded-lg border border-input bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring text-center tracking-widest text-lg"
+                className="w-full h-11 px-3.5 rounded-xl border border-input bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all text-center tracking-[0.4em] text-lg font-mono"
               />
               {otpError && <p className="text-xs text-danger">{otpError}</p>}
-              <div className="flex gap-2">
-                <Button onClick={handleOtpSubmit} className="flex-1 gap-2 bg-[#25D366] hover:bg-[#20BD5A] text-white" disabled={otpSubmitting || otp.length < 4}>
+              <div className="flex gap-2.5">
+                <Button onClick={handleOtpSubmit} className="flex-1" disabled={otpSubmitting || otp.length < 4}>
                   {otpSubmitting ? 'Verifying...' : 'Verify & Contact'}
                 </Button>
                 <Button variant="outline" onClick={() => { setOtpSent(false); setOtp(''); setOtpError(''); handleSubmit(); }} disabled={submitting}>
@@ -585,27 +584,33 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
             <CardContent className="p-5 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold">Share your details</h3>
-                <button onClick={() => setShowForm(false)} className="text-muted-foreground hover:text-foreground">
-                  <X className="h-4 w-4" />
+                <button onClick={() => setShowForm(false)} className="p-1.5 rounded-lg hover:bg-secondary transition-colors">
+                  <X className="h-4 w-4 text-muted-foreground" />
                 </button>
               </div>
+              <div className="flex items-center gap-3 pb-1">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10">
+                  <MessageCircle className="h-5 w-5 text-accent" />
+                </div>
+                <p className="text-sm text-muted-foreground">Reach out to <span className="font-medium text-foreground">{op.name}</span> directly</p>
+              </div>
               {op.plan === 'pro' && (
-                <p className="text-xs text-muted-foreground">We'll send a one-time code to verify your number.</p>
+                <p className="text-xs text-muted-foreground bg-secondary rounded-xl px-3.5 py-2.5">We'll send a one-time code to verify your number.</p>
               )}
               <input
                 type="text"
                 placeholder="Your name"
                 value={visitorName}
                 onChange={(e) => setVisitorName(e.target.value)}
-                className="w-full h-10 px-3 rounded-lg border border-input bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full h-11 px-3.5 rounded-xl border border-input bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all placeholder:text-muted-foreground/50"
               />
               <p className="text-xs text-muted-foreground font-medium">Phone number</p>
-              <div className="flex gap-2">
+              <div className="flex gap-2.5">
                 <div className="relative w-[140px] shrink-0">
                   <select
                     value={countryCode}
                     onChange={(e) => setCountryCode(e.target.value)}
-                    className="flex h-10 w-full rounded-lg border border-input bg-card px-3 pr-8 text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-ring transition-colors"
+                    className="flex h-11 w-full rounded-xl border border-input bg-card px-3 pr-8 text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all"
                   >
                     {countryOptions.map((opt) => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -618,21 +623,20 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
                   value={localNumber}
                   onChange={(e) => setLocalNumber(e.target.value.replace(/[^0-9]/g, ''))}
                   placeholder="1234567890"
-                  className="flex-1 h-10 px-3 rounded-lg border border-input bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="flex-1 h-11 px-3.5 rounded-xl border border-input bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all placeholder:text-muted-foreground/50"
                 />
               </div>
               {stepError && <p className="text-xs text-danger">{stepError}</p>}
-              <Button onClick={handleSubmit} className="w-full gap-2 bg-[#25D366] hover:bg-[#20BD5A] text-white" disabled={submitting || !visitorName.trim() || !localNumber}>
-                {submitting ? 'Sending...' : op.plan === 'pro' ? 'Send OTP' : <Send className="h-4 w-4" />}
-                {submitting ? '' : op.plan === 'pro' ? '' : ' Send Inquiry'}
+              <Button onClick={handleSubmit} className="w-full" size="lg" disabled={submitting || !visitorName.trim() || !localNumber}>
+                {submitting ? 'Sending...' : op.plan === 'pro' ? 'Send OTP' : 'Start Chat'}
               </Button>
             </CardContent>
           </Card>
         ) : (
           <>
             {overflow && (
-              <Card className="border-warning/20 bg-warning/5">
-                <CardContent className="p-4 flex items-start gap-2">
+              <Card className="border-warning/20 bg-warning/[0.03]">
+                <CardContent className="p-4 flex items-start gap-2.5">
                   <Info className="h-4 w-4 text-warning shrink-0 mt-0.5" />
                   <p className="text-xs text-muted-foreground">This operator is currently at capacity. Your enquiry has been forwarded to our team.</p>
                 </CardContent>
@@ -641,7 +645,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
             <Button
               onClick={() => setShowForm(true)}
               size="lg"
-              className="w-full gap-2 bg-[#25D366] hover:bg-[#20BD5A] text-white h-12 text-base"
+              className="w-full h-13 text-base shadow-sm"
             >
               <MessageCircle className="h-5 w-5" />
               Contact on WhatsApp
@@ -650,7 +654,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
         )}
 
         <div className="text-center pb-8">
-          <Link href="/" className="text-sm text-primary hover:underline font-medium">
+          <Link href="/" className="text-sm text-accent font-medium hover:underline inline-flex items-center gap-1">
             Browse all operators
           </Link>
         </div>
@@ -661,13 +665,12 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
 
 function DetailRow({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
   return (
-    <div className="flex items-start gap-2">
+    <div className="flex items-start gap-2.5">
       <Icon className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
       <div>
-        <p className="text-xs text-muted-foreground">{label}</p>
+        <p className="text-xs text-muted-foreground font-medium">{label}</p>
         <p className="text-sm text-foreground">{value}</p>
       </div>
     </div>
   );
 }
-

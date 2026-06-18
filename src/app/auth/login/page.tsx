@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Mail, Phone, ArrowLeft, Building2 } from 'lucide-react';
+import { Mail, Phone, ArrowLeft, Building2, MessageCircle, Shield } from 'lucide-react';
 import Link from 'next/link';
 
 type Tab = 'email' | 'whatsapp';
@@ -125,35 +125,35 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-sm">
         {/* Brand */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex flex-col items-center gap-2">
-            <img src="/logo.png" alt="Kashmir360" className="h-32 w-auto" />
+          <Link href="/" className="inline-flex flex-col items-center gap-3">
+            <img src="/logo.png" alt="Kashmir360" className="h-24 w-auto" />
           </Link>
-          <p className="text-sm text-muted-foreground mt-2">Sign in to your account</p>
+          <p className="text-sm text-muted-foreground mt-3">Sign in to your account</p>
         </div>
 
-        <Card>
+        <Card className="shadow-md">
           <CardContent className="p-6">
-            <div className="space-y-6">
+            <div className="space-y-5">
               {/* Tabs */}
-              <div className="flex rounded-lg bg-muted p-1">
+              <div className="flex rounded-xl bg-secondary p-1 gap-1">
                 <button
                   onClick={() => { setTab('email'); setError(''); }}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-md text-sm font-medium transition-all ${
-                    tab === 'email' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
+                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                    tab === 'email' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   <Mail className="h-4 w-4" /> Email
                 </button>
                 <button
                   onClick={() => { setTab('whatsapp'); setError(''); setShowForgotEmail(false); }}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-md text-sm font-medium transition-all ${
-                    tab === 'whatsapp' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
+                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                    tab === 'whatsapp' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  <Phone className="h-4 w-4" /> WhatsApp
+                  <MessageCircle className="h-4 w-4" /> WhatsApp
                 </button>
               </div>
 
@@ -171,7 +171,7 @@ export default function LoginPage() {
                           disabled={loading}
                         />
                         <Button onClick={sendEmailOtp} className="w-full" disabled={!email || loading}>
-                          {loading ? 'Sending...' : 'Send OTP via Email'}
+                          {loading ? 'Sending...' : 'Send OTP'}
                         </Button>
                         <button
                           onClick={() => setShowForgotEmail(!showForgotEmail)}
@@ -180,7 +180,7 @@ export default function LoginPage() {
                           Forgot your email?
                         </button>
                         {showForgotEmail && (
-                          <div className="p-4 rounded-lg bg-muted space-y-3">
+                          <div className="p-4 rounded-xl bg-secondary space-y-3">
                             <p className="text-xs text-muted-foreground">Enter your WhatsApp number and we will send an OTP to the registered email.</p>
                             <Input value={forgotPhone} onChange={(e) => setForgotPhone(e.target.value)} placeholder="+91 1234567890" />
                             <Button size="sm" onClick={lookupEmail} disabled={!forgotPhone || forgotLoading} className="w-full">
@@ -202,17 +202,17 @@ export default function LoginPage() {
                           placeholder="000000"
                           maxLength={6}
                           autoFocus
-                          className="text-center text-2xl tracking-[0.5em] font-mono"
+                          className="text-center text-2xl tracking-[0.4em] font-mono"
                         />
                         <Button onClick={verifyEmailOtp} className="w-full" disabled={emailOtp.length !== 6 || loading}>
-                          {loading ? 'Verifying...' : 'Verify OTP'}
+                          {loading ? 'Verifying...' : 'Verify'}
                         </Button>
                         <div className="flex items-center justify-between text-sm">
-                          <button onClick={() => { setEmailOtpSent(false); setEmailOtp(''); setCooldown(0); }} className="text-muted-foreground hover:text-foreground">
+                          <button onClick={() => { setEmailOtpSent(false); setEmailOtp(''); setCooldown(0); }} className="text-muted-foreground hover:text-foreground transition-colors">
                             Change email
                           </button>
-                          <button onClick={sendEmailOtp} disabled={cooldown > 0 || loading} className="text-primary font-medium disabled:text-muted-foreground">
-                            {cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend OTP'}
+                          <button onClick={sendEmailOtp} disabled={cooldown > 0 || loading} className="text-accent font-medium disabled:text-muted-foreground transition-colors">
+                            {cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend'}
                           </button>
                         </div>
                       </>
@@ -246,17 +246,17 @@ export default function LoginPage() {
                           placeholder="000000"
                           maxLength={6}
                           autoFocus
-                          className="text-center text-2xl tracking-[0.5em] font-mono"
+                          className="text-center text-2xl tracking-[0.4em] font-mono"
                         />
                         <Button onClick={verifyPhoneOtp} className="w-full" disabled={phoneOtp.length !== 6 || loading}>
-                          {loading ? 'Verifying...' : 'Verify OTP'}
+                          {loading ? 'Verifying...' : 'Verify'}
                         </Button>
                         <div className="flex items-center justify-between text-sm">
-                          <button onClick={() => { setPhoneOtpSent(false); setPhoneOtp(''); setPhoneCooldown(0); }} className="text-muted-foreground hover:text-foreground">
+                          <button onClick={() => { setPhoneOtpSent(false); setPhoneOtp(''); setPhoneCooldown(0); }} className="text-muted-foreground hover:text-foreground transition-colors">
                             Change number
                           </button>
-                          <button onClick={sendPhoneOtp} disabled={phoneCooldown > 0 || loading} className="text-primary font-medium disabled:text-muted-foreground">
-                            {phoneCooldown > 0 ? `Resend in ${phoneCooldown}s` : 'Resend OTP'}
+                          <button onClick={sendPhoneOtp} disabled={phoneCooldown > 0 || loading} className="text-accent font-medium disabled:text-muted-foreground transition-colors">
+                            {phoneCooldown > 0 ? `Resend in ${phoneCooldown}s` : 'Resend'}
                           </button>
                         </div>
                       </>
@@ -265,7 +265,7 @@ export default function LoginPage() {
                 )}
 
                 {error && (
-                  <div className="p-3 rounded-lg bg-danger/10 border border-danger/20">
+                  <div className="p-3.5 rounded-xl bg-danger/10 border border-danger/20">
                     <p className="text-xs text-danger font-medium">{error}</p>
                   </div>
                 )}
@@ -273,14 +273,14 @@ export default function LoginPage() {
 
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-border" />
+                  <div className="w-full border-t border-border/60" />
                 </div>
                 <div className="relative flex justify-center">
-                  <span className="bg-card px-2 text-xs text-muted-foreground">or continue with</span>
+                  <span className="bg-card px-3 text-xs text-muted-foreground">or continue with</span>
                 </div>
               </div>
 
-              <Button variant="outline" className="w-full gap-2" onClick={() => signIn('google')}>
+              <Button variant="outline" className="w-full gap-2.5 h-11" onClick={() => signIn('google')}>
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
                   <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -292,7 +292,7 @@ export default function LoginPage() {
 
               <p className="text-center text-xs text-muted-foreground">
                 New to Kashmir360?{' '}
-                <Link href="/join" className="text-primary font-medium hover:underline">Register your business</Link>
+                <Link href="/join" className="text-accent font-medium hover:underline">Register your business</Link>
               </p>
             </div>
           </CardContent>

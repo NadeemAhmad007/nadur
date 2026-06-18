@@ -9,7 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import {
   Search, MapPin, Navigation, Compass, Sparkles, Building2,
   Ship, Palette, Store, LogIn, UserPlus, Car,
-  SlidersHorizontal, X, ChevronDown, Check, ArrowUpDown, AlertTriangle,
+  SlidersHorizontal, X, Check, ArrowUpDown, AlertTriangle,
+  Heart, Menu, RotateCcw, Filter,
 } from 'lucide-react';
 
 const CATEGORIES = [
@@ -139,118 +140,134 @@ export default function BrowsePage() {
 
   return (
     <>
-      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-gray-200">
+      <header className="sticky top-0 z-30 bg-[#FAF8F3]/90 backdrop-blur-lg border-b border-border/50">
         <div className="max-w-5xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
-            <Link href="/" className="flex items-center gap-3">
-              <img src="/logo.png" alt="Kashmir360" className="h-16 w-auto" />
+            <Link href="/" className="flex items-center gap-3 shrink-0">
+              <img src="/logo.png" alt="Kashmir360" className="h-14 w-auto" />
             </Link>
             <div className="flex items-center gap-2">
-              <Link href="/auth/login" className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-foreground hover:bg-muted transition-colors">
-                <LogIn className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Sign In</span>
-              </Link>
-              <Link href="/join" className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
-                <UserPlus className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Register</span>
-              </Link>
               <button
                 onClick={locateMe}
                 disabled={locating}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-colors disabled:opacity-50"
+                className="hidden sm:inline-flex items-center gap-1.5 h-9 px-3 rounded-xl text-xs font-medium bg-secondary text-muted-foreground hover:bg-border transition-all disabled:opacity-50"
               >
                 <MapPin className="h-3.5 w-3.5" />
                 {locating ? 'Locating...' : userLat ? 'Near Me' : 'Near Me'}
               </button>
+              <Link href="/auth/login" className="inline-flex items-center gap-1.5 h-9 px-3 rounded-xl text-xs font-medium text-foreground hover:bg-secondary transition-all">
+                <LogIn className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Sign In</span>
+              </Link>
+              <Link href="/join" className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl text-xs font-medium bg-primary text-primary-foreground hover:bg-primary-light transition-all shadow-sm">
+                <UserPlus className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Register</span>
+              </Link>
             </div>
           </div>
-          <form onSubmit={handleSearch} className="pb-3">
+          <form onSubmit={handleSearch} className="pb-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
               <input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search operators..."
-                className="w-full pl-9 pr-4 h-10 rounded-xl border border-input bg-muted/50 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:bg-card transition-colors"
+                className="w-full pl-10 pr-4 h-11 rounded-xl border border-border bg-card text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring transition-all"
               />
+              <button
+                type="button"
+                onClick={locateMe}
+                disabled={locating}
+                className="sm:hidden absolute right-2 top-1/2 -translate-y-1/2 h-7 px-2 rounded-lg text-[11px] font-medium bg-secondary text-muted-foreground hover:bg-border transition-all disabled:opacity-50"
+              >
+                <MapPin className="h-3 w-3" />
+              </button>
             </div>
           </form>
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-6">
+      <main className="max-w-5xl mx-auto px-4 pt-5 pb-12">
         {/* Categories */}
-        <div className="flex gap-2 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-none">
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat.slug}
-              onClick={() => setActiveCategory(cat.slug)}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
-                activeCategory === cat.slug
-                  ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
-              }`}
-            >
-              <cat.icon className="h-4 w-4" />
-              {cat.label}
-            </button>
-          ))}
+        <div className="flex gap-2 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-none">
+          {CATEGORIES.map((cat) => {
+            const Icon = cat.icon;
+            const isActive = activeCategory === cat.slug;
+            return (
+              <button
+                key={cat.slug}
+                onClick={() => setActiveCategory(cat.slug)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-200 shrink-0 ${
+                  isActive
+                    ? 'bg-accent text-accent-foreground shadow-sm'
+                    : 'bg-card text-muted-foreground border border-border hover:border-accent/30 hover:text-foreground'
+                }`}
+              >
+                <Icon className={`h-4 w-4 ${isActive ? 'text-accent-foreground' : 'text-muted-foreground'}`} />
+                {cat.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* Toolbar */}
-        <div className="flex items-center justify-between gap-3 mb-4">
-          <div className="flex items-center gap-2">
-            <p className="text-sm text-muted-foreground">
-              {operators.length > 0 ? `${operators.length} found` : ''}
-            </p>
+        <div className="flex items-center justify-between gap-3 mb-5">
+          <div className="flex items-center gap-2.5">
+            {operators.length > 0 && (
+              <p className="text-sm text-muted-foreground">{operators.length} operator{operators.length !== 1 ? 's' : ''}</p>
+            )}
             {hasActiveFilters && (
-              <button onClick={clearFilters} className="text-xs text-primary hover:underline flex items-center gap-1">
-                <X className="h-3 w-3" /> Clear
+              <button onClick={clearFilters} className="text-xs text-accent font-medium hover:underline inline-flex items-center gap-1">
+                <RotateCcw className="h-3 w-3" /> Clear
               </button>
             )}
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              className={`inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl text-xs font-medium transition-all ${
                 showFilters || hasActiveFilters
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  ? 'bg-accent text-accent-foreground shadow-sm'
+                  : 'bg-card text-muted-foreground border border-border hover:border-accent/30 hover:text-foreground'
               }`}
             >
-              <SlidersHorizontal className="h-3.5 w-3.5" />
+              <Filter className="h-3.5 w-3.5" />
               Filters
-              {hasActiveFilters && <Badge variant="primary" size="sm" className="ml-0.5">!</Badge>}
+              {hasActiveFilters && (
+                <span className="ml-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-accent-foreground/20 text-[10px] font-bold">
+                  {(selectedGhats.length + selectedAreas.length + selectedLanguages.length + (verifiedOnly ? 1 : 0) + (priceMin ? 1 : 0) + (priceMax ? 1 : 0))}
+                </span>
+              )}
             </button>
             <div className="relative">
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="appearance-none bg-muted text-muted-foreground text-xs font-medium rounded-lg px-3 py-1.5 pr-7 border-0 focus:outline-none focus:ring-2 focus:ring-ring cursor-pointer hover:bg-muted/80 transition-colors"
+                className="appearance-none h-9 pl-3.5 pr-8 rounded-xl text-xs font-medium bg-card border border-border text-muted-foreground cursor-pointer hover:border-accent/30 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all"
               >
-                <option value="relevance">Sort: Relevance</option>
-                <option value="newest">Sort: Newest</option>
-                <option value="name">Sort: Name A-Z</option>
-                <option value="-name">Sort: Name Z-A</option>
+                <option value="relevance">Relevance</option>
+                <option value="newest">Newest</option>
+                <option value="name">Name A-Z</option>
+                <option value="-name">Name Z-A</option>
               </select>
-              <ArrowUpDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
+              <ArrowUpDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
             </div>
           </div>
         </div>
 
         {/* Filter Panel */}
         {showFilters && (
-          <div className="mb-6 p-4 rounded-xl bg-muted/30 border border-border space-y-4">
+          <div className="mb-6 p-5 rounded-xl bg-card border border-border shadow-sm space-y-5">
             {/* Price range */}
             <div>
-              <p className="text-xs font-semibold text-foreground mb-2">Price Range (₹/night or per km)</p>
-              <div className="flex items-center gap-2">
+              <p className="text-xs font-semibold text-foreground mb-2.5">Price Range</p>
+              <div className="flex items-center gap-2.5">
                 <input
                   type="number"
                   placeholder="Min"
                   value={priceMin}
                   onChange={(e) => setPriceMin(e.target.value)}
-                  className="w-full h-9 px-3 rounded-lg border border-input bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full h-9 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all"
                 />
                 <span className="text-muted-foreground text-xs">—</span>
                 <input
@@ -258,7 +275,7 @@ export default function BrowsePage() {
                   placeholder="Max"
                   value={priceMax}
                   onChange={(e) => setPriceMax(e.target.value)}
-                  className="w-full h-9 px-3 rounded-lg border border-input bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full h-9 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all"
                 />
               </div>
             </div>
@@ -266,21 +283,24 @@ export default function BrowsePage() {
             {/* Ghat filter */}
             {showGhatFilter && (
               <div>
-                <p className="text-xs font-semibold text-foreground mb-2">Ghat / Location</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {GHATS.map((g) => (
-                    <button
-                      key={g}
-                      onClick={() => toggleChip(selectedGhats, g, setSelectedGhats)}
-                      className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
-                        selectedGhats.includes(g)
-                          ? 'bg-primary text-primary-foreground border-primary'
-                          : 'bg-card text-muted-foreground border-border hover:border-primary/50'
-                      }`}
-                    >
-                      {g}
-                    </button>
-                  ))}
+                <p className="text-xs font-semibold text-foreground mb-2.5">Ghat / Location</p>
+                <div className="flex flex-wrap gap-2">
+                  {GHATS.map((g) => {
+                    const selected = selectedGhats.includes(g);
+                    return (
+                      <button
+                        key={g}
+                        onClick={() => toggleChip(selectedGhats, g, setSelectedGhats)}
+                        className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
+                          selected
+                            ? 'bg-accent text-accent-foreground border-accent'
+                            : 'bg-background text-muted-foreground border-border hover:border-accent/40 hover:text-foreground'
+                        }`}
+                      >
+                        {g}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -288,21 +308,24 @@ export default function BrowsePage() {
             {/* Operating area filter */}
             {showAreaFilter && (
               <div>
-                <p className="text-xs font-semibold text-foreground mb-2">Operating Area</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {AREAS.map((a) => (
-                    <button
-                      key={a}
-                      onClick={() => toggleChip(selectedAreas, a, setSelectedAreas)}
-                      className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
-                        selectedAreas.includes(a)
-                          ? 'bg-primary text-primary-foreground border-primary'
-                          : 'bg-card text-muted-foreground border-border hover:border-primary/50'
-                      }`}
-                    >
-                      {a}
-                    </button>
-                  ))}
+                <p className="text-xs font-semibold text-foreground mb-2.5">Operating Area</p>
+                <div className="flex flex-wrap gap-2">
+                  {AREAS.map((a) => {
+                    const selected = selectedAreas.includes(a);
+                    return (
+                      <button
+                        key={a}
+                        onClick={() => toggleChip(selectedAreas, a, setSelectedAreas)}
+                        className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
+                          selected
+                            ? 'bg-accent text-accent-foreground border-accent'
+                            : 'bg-background text-muted-foreground border-border hover:border-accent/40 hover:text-foreground'
+                        }`}
+                      >
+                        {a}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -310,28 +333,38 @@ export default function BrowsePage() {
             {/* Language filter */}
             {showLanguageFilter && (
               <div>
-                <p className="text-xs font-semibold text-foreground mb-2">Languages Spoken</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {LANGUAGES.map((l) => (
-                    <button
-                      key={l}
-                      onClick={() => toggleChip(selectedLanguages, l, setSelectedLanguages)}
-                      className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
-                        selectedLanguages.includes(l)
-                          ? 'bg-primary text-primary-foreground border-primary'
-                          : 'bg-card text-muted-foreground border-border hover:border-primary/50'
-                      }`}
-                    >
-                      {l}
-                    </button>
-                  ))}
+                <p className="text-xs font-semibold text-foreground mb-2.5">Languages Spoken</p>
+                <div className="flex flex-wrap gap-2">
+                  {LANGUAGES.map((l) => {
+                    const selected = selectedLanguages.includes(l);
+                    return (
+                      <button
+                        key={l}
+                        onClick={() => toggleChip(selectedLanguages, l, setSelectedLanguages)}
+                        className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
+                          selected
+                            ? 'bg-accent text-accent-foreground border-accent'
+                            : 'bg-background text-muted-foreground border-border hover:border-accent/40 hover:text-foreground'
+                        }`}
+                      >
+                        {l}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
 
             {/* Verified only */}
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={verifiedOnly} onChange={(e) => setVerifiedOnly(e.target.checked)} className="rounded" />
+            <label className="flex items-center gap-2.5 cursor-pointer group">
+              <div className={`relative w-5 h-5 rounded-md border-2 transition-all ${
+                verifiedOnly ? 'bg-accent border-accent' : 'border-border group-hover:border-accent/50'
+              }`}>
+                {verifiedOnly && (
+                  <Check className="absolute inset-0 h-full w-full p-0.5 text-accent-foreground" />
+                )}
+                <input type="checkbox" checked={verifiedOnly} onChange={(e) => setVerifiedOnly(e.target.checked)} className="sr-only" />
+              </div>
               <span className="text-xs font-medium text-foreground">Verified operators only</span>
             </label>
           </div>
@@ -339,24 +372,24 @@ export default function BrowsePage() {
 
         {/* Active filter chips */}
         {hasActiveFilters && (
-          <div className="flex flex-wrap gap-1.5 mb-4">
-            {priceMin && <Badge variant="outline" size="sm" className="gap-1">Min: ₹{priceMin} <X className="h-3 w-3 cursor-pointer" onClick={() => setPriceMin('')} /></Badge>}
-            {priceMax && <Badge variant="outline" size="sm" className="gap-1">Max: ₹{priceMax} <X className="h-3 w-3 cursor-pointer" onClick={() => setPriceMax('')} /></Badge>}
+          <div className="flex flex-wrap gap-2 mb-5">
+            {priceMin && <Badge variant="outline" size="sm" className="gap-1.5 pr-1">Min: ₹{priceMin} <X className="h-3 w-3 cursor-pointer hover:text-danger transition-colors" onClick={() => setPriceMin('')} /></Badge>}
+            {priceMax && <Badge variant="outline" size="sm" className="gap-1.5 pr-1">Max: ₹{priceMax} <X className="h-3 w-3 cursor-pointer hover:text-danger transition-colors" onClick={() => setPriceMax('')} /></Badge>}
             {selectedGhats.map(g => (
-              <Badge key={g} variant="outline" size="sm" className="gap-1">{g} <X className="h-3 w-3 cursor-pointer" onClick={() => setSelectedGhats(selectedGhats.filter(i => i !== g))} /></Badge>
+              <Badge key={g} variant="outline" size="sm" className="gap-1.5 pr-1">{g} <X className="h-3 w-3 cursor-pointer hover:text-danger transition-colors" onClick={() => setSelectedGhats(selectedGhats.filter(i => i !== g))} /></Badge>
             ))}
             {selectedAreas.map(a => (
-              <Badge key={a} variant="outline" size="sm" className="gap-1">{a} <X className="h-3 w-3 cursor-pointer" onClick={() => setSelectedAreas(selectedAreas.filter(i => i !== a))} /></Badge>
+              <Badge key={a} variant="outline" size="sm" className="gap-1.5 pr-1">{a} <X className="h-3 w-3 cursor-pointer hover:text-danger transition-colors" onClick={() => setSelectedAreas(selectedAreas.filter(i => i !== a))} /></Badge>
             ))}
             {selectedLanguages.map(l => (
-              <Badge key={l} variant="outline" size="sm" className="gap-1">{l} <X className="h-3 w-3 cursor-pointer" onClick={() => setSelectedLanguages(selectedLanguages.filter(i => i !== l))} /></Badge>
+              <Badge key={l} variant="outline" size="sm" className="gap-1.5 pr-1">{l} <X className="h-3 w-3 cursor-pointer hover:text-danger transition-colors" onClick={() => setSelectedLanguages(selectedLanguages.filter(i => i !== l))} /></Badge>
             ))}
-            {verifiedOnly && <Badge variant="outline" size="sm" className="gap-1">Verified <X className="h-3 w-3 cursor-pointer" onClick={() => setVerifiedOnly(false)} /></Badge>}
+            {verifiedOnly && <Badge variant="outline" size="sm" className="gap-1.5 pr-1">Verified <X className="h-3 w-3 cursor-pointer hover:text-danger transition-colors" onClick={() => setVerifiedOnly(false)} /></Badge>}
           </div>
         )}
 
         {/* Results grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {loading && operators.length === 0
             ? Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)
             : operators.map((op) => (
@@ -367,28 +400,28 @@ export default function BrowsePage() {
 
         {/* Error state */}
         {fetchError && (
-          <div className="text-center py-16">
-            <div className="flex justify-center mb-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-destructive/10">
-                <AlertTriangle className="h-8 w-8 text-destructive" />
+          <div className="text-center py-20">
+            <div className="flex justify-center mb-5">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-danger/10">
+                <AlertTriangle className="h-7 w-7 text-danger" />
               </div>
             </div>
             <h3 className="text-lg font-semibold text-foreground">Something went wrong</h3>
-            <p className="text-sm text-muted-foreground mt-1 mb-4">{fetchError}</p>
+            <p className="text-sm text-muted-foreground mt-1.5 mb-5">{fetchError}</p>
             <Button variant="outline" onClick={() => fetchOperators()}>Try Again</Button>
           </div>
         )}
 
         {/* Empty state */}
         {!loading && !fetchError && operators.length === 0 && (
-          <div className="text-center py-16">
-            <div className="flex justify-center mb-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">
-                <Compass className="h-8 w-8 text-muted-foreground" />
+          <div className="text-center py-20">
+            <div className="flex justify-center mb-5">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary">
+                <Compass className="h-7 w-7 text-muted-foreground" />
               </div>
             </div>
             <h3 className="text-lg font-semibold text-foreground">No operators found</h3>
-            <p className="text-sm text-muted-foreground mt-1">Try adjusting your filters or search term</p>
+            <p className="text-sm text-muted-foreground mt-1.5">Try adjusting your filters or search term</p>
           </div>
         )}
 
@@ -397,8 +430,10 @@ export default function BrowsePage() {
           <div className="text-center mt-8">
             <Button
               variant="outline"
+              size="lg"
               onClick={() => fetchOperators(pageRef.current + 1, true)}
               disabled={loading}
+              className="px-8"
             >
               {loading ? 'Loading...' : 'Load More'}
             </Button>

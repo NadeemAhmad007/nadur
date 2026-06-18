@@ -2,19 +2,19 @@ import { forwardRef, ButtonHTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 
 const variants = {
-  primary: 'bg-[#2C5F8A] text-white hover:bg-[#1A3D5C]',
-  secondary: 'bg-gray-100 text-gray-900 hover:bg-gray-200',
-  outline: 'border border-gray-300 bg-white hover:bg-gray-50',
-  ghost: 'hover:bg-gray-100',
-  danger: 'bg-red-600 text-white hover:bg-red-700',
-  accent: 'bg-[#E8A838] text-white hover:bg-[#D49420]',
+  primary: 'bg-accent text-white hover:bg-accent-light shadow-sm hover:shadow active:scale-[0.98]',
+  secondary: 'bg-secondary text-secondary-foreground hover:bg-border active:scale-[0.98]',
+  outline: 'border-2 border-border bg-card hover:border-accent/40 hover:bg-accent/[0.03] active:scale-[0.98]',
+  ghost: 'text-muted-foreground hover:text-foreground hover:bg-secondary active:scale-[0.98]',
+  danger: 'bg-danger text-danger-foreground hover:opacity-90 active:scale-[0.98]',
+  accent: 'bg-primary text-primary-foreground hover:bg-primary-light shadow-sm hover:shadow active:scale-[0.98]',
 } as const;
 
 const sizes = {
-  sm: 'h-8 px-3 text-sm',
-  md: 'h-10 px-4 text-sm',
-  lg: 'h-12 px-6 text-base',
-  icon: 'h-10 w-10',
+  sm: 'h-9 px-3.5 text-xs gap-1.5 rounded-lg',
+  md: 'h-10 px-5 text-sm gap-2 rounded-xl',
+  lg: 'h-12 px-7 text-base gap-2 rounded-xl',
+  icon: 'h-10 w-10 rounded-xl',
 } as const;
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -28,7 +28,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         className={cn(
-          'inline-flex items-center justify-center rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-[#2C5F8A] focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+          'inline-flex items-center justify-center font-medium transition-all duration-150',
+          'focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2',
+          'disabled:pointer-events-none disabled:opacity-50',
           variants[variant],
           sizes[size],
           className
