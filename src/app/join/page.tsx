@@ -834,7 +834,7 @@ export default function JoinPage() {
           <div className="space-y-4">
             <h2 className="text-lg font-semibold">Business Basics</h2>
             <div>
-              <label className="text-sm font-medium">Business Name</label>
+              <label className="text-sm font-medium">Business Name *</label>
               <input
                 value={form.name}
                 onChange={(e) => update('name', e.target.value)}
@@ -860,7 +860,7 @@ export default function JoinPage() {
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium">WhatsApp / Contact Number</label>
+              <label className="text-sm font-medium">WhatsApp / Contact Number *</label>
               <input
                 type="tel"
                 value={form.phone}
@@ -873,11 +873,11 @@ export default function JoinPage() {
               <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
                 <h3 className="text-sm font-semibold">Houseboat Details</h3>
                 <div>
-                  <label className="text-xs font-medium">Owner Name</label>
+                  <label className="text-xs font-medium">Owner Name *</label>
                   <input value={form.owner} onChange={(e) => update('owner', e.target.value)} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
                 </div>
                 <div>
-                  <label className="text-xs font-medium">Address</label>
+                  <label className="text-xs font-medium">Address *</label>
                   <input value={form.address} onChange={(e) => update('address', e.target.value)} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
                 </div>
                 <div>
@@ -1006,7 +1006,7 @@ export default function JoinPage() {
               <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
                 <h3 className="text-sm font-semibold">Business Details</h3>
                 <div>
-                  <label className="text-xs font-medium">Select one</label>
+                  <label className="text-xs font-medium">Select one *</label>
                   <select value={form.artisan.business_type} onChange={(e) => setForm((prev) => ({ ...prev, artisan: { ...prev.artisan, business_type: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                     <option value="">Select Business Type</option>
                     {businessTypes.map((t) => (
@@ -1059,7 +1059,7 @@ export default function JoinPage() {
               <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
                 <h3 className="text-sm font-semibold">Property Details</h3>
                 <div>
-                  <label className="text-xs font-medium">Owner Name</label>
+                  <label className="text-xs font-medium">Owner Name *</label>
                   <input value={form.accommodation.owner_name} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, owner_name: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
                 </div>
                 <div>
@@ -1067,7 +1067,7 @@ export default function JoinPage() {
                   <input value={form.accommodation.manager_name} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, manager_name: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
                 </div>
                 <div>
-                  <label className="text-xs font-medium">Contact Number</label>
+                  <label className="text-xs font-medium">Contact Number *</label>
                   <input value={form.accommodation.contact} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, contact: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
                 </div>
                 <div>
@@ -1075,7 +1075,7 @@ export default function JoinPage() {
                   <input type="email" value={form.accommodation.email} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, email: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
                 </div>
                 <div>
-                  <label className="text-xs font-medium">Address</label>
+                  <label className="text-xs font-medium">Address *</label>
                   <input value={form.accommodation.address} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, address: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
                 </div>
                 <div>
@@ -1148,11 +1148,11 @@ export default function JoinPage() {
               <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
                 <h3 className="text-sm font-semibold">Vehicle & Driver Details</h3>
                 <div>
-                  <label className="text-xs font-medium">Driver Name</label>
+                  <label className="text-xs font-medium">Driver Name *</label>
                   <input value={form.taxi.driver_name} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, driver_name: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
                 </div>
                 <div>
-                  <label className="text-xs font-medium">Vehicle Type</label>
+                  <label className="text-xs font-medium">Vehicle Type *</label>
                   <select value={form.taxi.vehicle_type} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, vehicle_type: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                     <option value="">Select vehicle type</option>
                     <option value="sedan">Sedan</option>
@@ -1167,7 +1167,7 @@ export default function JoinPage() {
                   <input value={form.taxi.vehicle_model} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, vehicle_model: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. Dzire, Innova, Ertiga" />
                 </div>
                 <div>
-                  <label className="text-xs font-medium">Registration Number</label>
+                  <label className="text-xs font-medium">Registration Number *</label>
                   <input value={form.taxi.registration_number} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, registration_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. JK01AB1234" />
                 </div>
                 <div>
@@ -1434,11 +1434,11 @@ export default function JoinPage() {
                 <h3 className="text-sm font-semibold">Owner Information</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs font-medium">Owner Name</label>
+                    <label className="text-xs font-medium">Owner Name *</label>
                     <input value={form.artisan.owner_name} onChange={(e) => setForm((prev) => ({ ...prev, artisan: { ...prev.artisan, owner_name: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
                   </div>
                   <div>
-                    <label className="text-xs font-medium">Contact Number</label>
+                    <label className="text-xs font-medium">Contact Number *</label>
                     <input value={form.artisan.contact_number} onChange={(e) => setForm((prev) => ({ ...prev, artisan: { ...prev.artisan, contact_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
                   </div>
                   <div>
