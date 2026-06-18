@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import type { Operator } from '@/types';
 import { cn } from '@/lib/utils';
-import { BadgeCheck, MapPin, ExternalLink, MessageCircle, X, Send, AlertCircle } from 'lucide-react';
+import { BadgeCheck, MapPin, ExternalLink, X, Send, ChevronDown, Info } from 'lucide-react';
+import { countryOptions } from '@/data/country-codes';
 
 const categoryLabels: Record<string, string> = {
   houseboat: 'Houseboat', shikara: 'Shikara Ride', artisan: 'Artisan',
@@ -65,18 +66,10 @@ export function OperatorCard({ operator, className }: { operator: Operator; clas
         <div className="flex gap-2">
           <Button
             size="sm"
-            variant="outline"
             className="flex-1 text-xs"
             onClick={() => setShowLeadForm(true)}
           >
-            <MessageCircle className="h-3.5 w-3.5 mr-1" /> WhatsApp
-          </Button>
-          <Button
-            size="sm"
-            className="flex-1 text-xs"
-            onClick={() => setShowLeadForm(true)}
-          >
-            <Send className="h-3.5 w-3.5 mr-1" /> Inquire
+            <Send className="h-3.5 w-3.5 mr-1" /> Enquiry
           </Button>
         </div>
         <Button
@@ -95,16 +88,20 @@ export function OperatorCard({ operator, className }: { operator: Operator; clas
 
 export function LeadFormModal({ operator, onClose }: { operator: Operator; onClose: () => void }) {
   const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
+  const [countryCode, setCountryCode] = useState('+91');
+  const [localNumber, setLocalNumber] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [blocked, setBlocked] = useState(false);
+  const [overflow, setOverflow] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState('');
   const [otpSubmitting, setOtpSubmitting] = useState(false);
   const [error, setError] = useState('');
 
+  const getPhone = () => countryCode + localNumber;
+
   const submit = async () => {
-    if (!name || !phone) return;
+    if (!name || !localNumber) return;
+    const phone = getPhone();
     setSubmitting(true);
     setError('');
 
@@ -130,7 +127,7 @@ export function LeadFormModal({ operator, onClose }: { operator: Operator; onClo
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || 'Failed to submit'); setSubmitting(false); return; }
-      if (data.blocked) { setBlocked(true); setSubmitting(false); return; }
+      setOverflow(data.overflow);
     } catch { setSubmitting(false); return; }
     setSubmitting(false);
     const waUrl = `https://wa.me/${operator.whatsapp}?text=${encodeURIComponent('Hi! I found you on Kashmir360.')}`;
@@ -140,6 +137,7 @@ export function LeadFormModal({ operator, onClose }: { operator: Operator; onClo
 
   const handleOtpSubmit = async () => {
     if (!otp.trim()) return;
+    const phone = getPhone();
     setOtpSubmitting(true);
     setError('');
     try {
@@ -150,7 +148,6 @@ export function LeadFormModal({ operator, onClose }: { operator: Operator; onClo
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || 'Invalid OTP'); setOtpSubmitting(false); return; }
-      if (data.blocked) { setBlocked(true); setOtpSubmitting(false); return; }
       window.open(data.waUrl, '_blank');
       onClose();
     } catch { setError('Failed to verify OTP'); setOtpSubmitting(false); }
@@ -168,16 +165,15 @@ export function LeadFormModal({ operator, onClose }: { operator: Operator; onClo
           </button>
         </div>
         <div className="p-4 space-y-4">
-          {blocked ? (
-            <div className="p-4 rounded-xl bg-warning/10 border border-warning/20 text-center">
-              <AlertCircle className="h-8 w-8 text-warning mx-auto mb-2" />
-              <p className="text-sm font-medium text-foreground">Monthly limit reached</p>
-              <p className="text-xs text-muted-foreground mt-1">This operator has reached their inquiry limit for this month.</p>
-              <Button size="sm" variant="outline" className="mt-3" onClick={onClose}>Close</Button>
+          {overflow && (
+            <div className="p-3 rounded-xl bg-warning/10 border border-warning/20 flex items-start gap-2">
+              <Info className="h-4 w-4 text-warning shrink-0 mt-0.5" />
+              <p className="text-xs text-muted-foreground">This operator is currently at capacity. Your enquiry has been forwarded to our team.</p>
             </div>
-          ) : otpSent ? (
+          )}
+          {otpSent ? (
             <>
-              <p className="text-sm text-muted-foreground">Enter the one-time code sent to <span className="font-medium text-foreground">{phone}</span></p>
+              <p className="text-sm text-muted-foreground">Enter the one-time code sent to <span className="font-medium text-foreground">{getPhone()}</span></p>
               <Input
                 label="OTP"
                 value={otp}
@@ -209,15 +205,30 @@ export function LeadFormModal({ operator, onClose }: { operator: Operator; onClo
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Enter your name"
               />
-              <Input
-                label="Phone number"
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+91 1234567890"
-              />
+              <label className="text-sm font-medium text-foreground">Phone number</label>
+              <div className="flex gap-2">
+                <div className="relative w-[140px] shrink-0">
+                  <select
+                    value={countryCode}
+                    onChange={(e) => setCountryCode(e.target.value)}
+                    className="flex h-10 w-full rounded-lg border border-input bg-card px-3 pr-8 text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-ring transition-colors"
+                  >
+                    {countryOptions.map((opt) => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                </div>
+                <Input
+                  type="tel"
+                  value={localNumber}
+                  onChange={(e) => setLocalNumber(e.target.value.replace(/[^0-9]/g, ''))}
+                  placeholder="1234567890"
+                  className="flex-1"
+                />
+              </div>
               {error && <p className="text-xs text-danger">{error}</p>}
-              <Button onClick={submit} disabled={!name || !phone || submitting} className="w-full">
+              <Button onClick={submit} disabled={!name || !localNumber || submitting} className="w-full">
                 {submitting ? 'Sending...' : operator.plan === 'pro' ? 'Send OTP' : 'Unlock WhatsApp'}
               </Button>
             </>

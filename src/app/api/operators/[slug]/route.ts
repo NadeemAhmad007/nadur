@@ -16,6 +16,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
       status: true, hidden: true, verified: true, plan: true,
       lead_month: true, photos: true, tariffs: true,
       houseboat_details: true, shikara_details: true, artisan_details: true, taxi_details: true,
+      accommodation_details: true, guide_details: true, vendor_details: true,
       lat: true, lng: true,
     },
   });
@@ -83,6 +84,18 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ slug: 
   }
   if (body.taxi_details !== undefined) {
     updateData.taxi_details = body.taxi_details;
+    updateData.status = 'pending';
+  }
+  if (body.accommodation_details !== undefined) {
+    updateData.accommodation_details = body.accommodation_details;
+    updateData.status = 'pending';
+  }
+  if (body.guide_details !== undefined) {
+    updateData.guide_details = body.guide_details;
+    updateData.status = 'pending';
+  }
+  if (body.vendor_details !== undefined) {
+    updateData.vendor_details = body.vendor_details;
     updateData.status = 'pending';
   }
   if (body.lat !== undefined) {

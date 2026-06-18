@@ -49,6 +49,10 @@ export async function GET(req: Request) {
     houseboat_details: operators.houseboat_details,
     shikara_details: operators.shikara_details,
     artisan_details: operators.artisan_details,
+    taxi_details: operators.taxi_details,
+    accommodation_details: operators.accommodation_details,
+    guide_details: operators.guide_details,
+    vendor_details: operators.vendor_details,
     lat: operators.lat,
     lng: operators.lng,
   }).from(operators).$dynamic();

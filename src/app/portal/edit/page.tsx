@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Save, Upload, X, Check } from 'lucide-react';
+import { ArrowLeft, Save, Upload, X, Check, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import imageCompression from 'browser-image-compression';
 import { parseGoogleMapsUrl } from '@/lib/location';
@@ -44,6 +44,8 @@ export default function EditProfilePage() {
   const [newPhotos, setNewPhotos] = useState<File[]>([]);
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [emailOtp, setEmailOtp] = useState('');
   const [emailOtpSent, setEmailOtpSent] = useState(false);
   const [emailOtpLoading, setEmailOtpLoading] = useState(false);
@@ -66,105 +68,113 @@ export default function EditProfilePage() {
     const email = session?.user?.email;
     const operatorId = sUser?.operator_id as string | undefined;
 
-    const fetchOperator = (query: string) =>
-      fetch(`/api/operators?${query}`)
-        .then((r) => r.json())
-        .then(({ data }) => {
-          const op = data[0];
-          if (op) {
-            setOperator(op);
-            setPhotos(op.photos || []);
-            const hd = op.houseboat_details || {};
-            const sd = op.shikara_details || {};
-            const ad = op.artisan_details || {};
-            const ac = op.accommodation_details || {};
-            const gd = op.guide_details || {};
-            const vd = op.vendor_details || {};
-            setForm({
-              name: op.name,
-              short_desc: op.short_desc || '',
-              long_desc: op.long_desc || '',
-              pricing_note: op.pricing_note || '',
-              whatsapp: op.whatsapp,
-              operatorEmail: op.email || '',
-              tariffs: op.tariffs || {},
-              owner: hd.owner || '',
-              address: hd.address || '',
-              hb_contact: hd.contact || '',
-              hb_contact2: hd.contact2 || '',
-              email: hd.email || '',
-              grade: hd.grade || 'Grade A',
-              google_maps: hd.google_maps || '',
-              boat_ghat: hd.boat_ghat || '',
-              hb_total_rooms: hd.total_rooms || '',
-              hb_capacity: hd.capacity || '',
-              hb_room_types: hd.room_types || [],
-              hb_amenities: hd.amenities || [],
-              full_name: sd.full_name || '',
-              mobile_number: sd.mobile_number || '',
-              whatsapp_number: sd.whatsapp_number || '',
-              shikara_number: sd.shikara_number || '',
-              ghat_number: sd.ghat_number || '',
-              operating_areas: sd.operating_areas || [],
-              years_experience: sd.years_experience || '',
-              languages: sd.languages || [],
-              services: sd.services || [],
-              tour_duration: sd.tour_duration || '',
-              registered_shikara: sd.registered_shikara || '',
-              registration_number: sd.registration_number || '',
-              price_per_ride: sd.price_per_ride || '',
-              price_per_hour: sd.price_per_hour || '',
-              price_note: sd.price_note || '',
-              business_type: ad.business_type || '',
-              specialties: ad.specialties || [],
-              business_scale: ad.business_scale || '',
-              owner_name: ad.owner_name || '',
-              contact_number: ad.contact_number || '',
-              artisan_whatsapp: ad.whatsapp_number || '',
-              email_address: ad.email_address || '',
-              website: ad.website || '',
-              gst_number: ad.gst_number || '',
-              export_license: ad.export_license || '',
-              years_in_business: ad.years_in_business || '',
-              artisan_google_maps: ad.google_maps || '',
-              acc_owner_name: ac.owner_name || '',
-              acc_manager_name: ac.manager_name || '',
-              acc_contact: ac.contact || '',
-              acc_email: ac.email || '',
-              acc_address: ac.address || '',
-              acc_google_maps: ac.google_maps || '',
-              acc_total_rooms: ac.total_rooms || '',
-              acc_room_types: ac.room_types || [],
-              acc_pricing_single: ac.pricing_single || '',
-              acc_pricing_double: ac.pricing_double || '',
-              acc_amenities: ac.amenities || [],
-              acc_meals_included: ac.meals_included || [],
-              acc_check_in: ac.check_in || '',
-              acc_check_out: ac.check_out || '',
-              acc_languages: ac.languages || [],
-              acc_nearby_attractions: ac.nearby_attractions || '',
-              guide_full_name: gd.full_name || '',
-              guide_contact_number: gd.contact_number || '',
-              guide_whatsapp_number: gd.whatsapp_number || '',
-              guide_email: gd.email || '',
-              guide_languages: gd.languages || [],
-              guide_specialties: gd.specialties || [],
-              guide_years_experience: gd.years_experience || '',
-              guide_certification: gd.certification || '',
-              guide_operating_areas: gd.operating_areas || [],
-              guide_google_maps: gd.google_maps || '',
-              vendor_business_name: vd.business_name || '',
-              vendor_owner_name: vd.owner_name || '',
-              vendor_contact_number: vd.contact_number || '',
-              vendor_whatsapp_number: vd.whatsapp_number || '',
-              vendor_email: vd.email || '',
-              vendor_business_type: vd.business_type || '',
-              vendor_specialties: vd.specialties || [],
-              vendor_operating_areas: vd.operating_areas || [],
-              vendor_google_maps: vd.google_maps || '',
-            });
-          }
-        });
+    const fetchOperator = async (query: string) => {
+      setFetchError(null);
+      try {
+        const r = await fetch(`/api/operators?${query}`);
+        if (!r.ok) {
+          setFetchError(`Failed to load profile (${r.status})`);
+          return;
+        }
+        const { data } = await r.json();
+        const op = data[0];
+        if (op) {
+          setOperator(op);
+          setPhotos(op.photos || []);
+          const hd = op.houseboat_details || {};
+          const sd = op.shikara_details || {};
+          const ad = op.artisan_details || {};
+          const ac = op.accommodation_details || {};
+          const gd = op.guide_details || {};
+          const vd = op.vendor_details || {};
+          setForm({
+            name: op.name,
+            short_desc: op.short_desc || '',
+            long_desc: op.long_desc || '',
+            pricing_note: op.pricing_note || '',
+            whatsapp: op.whatsapp,
+            operatorEmail: op.email || '',
+            tariffs: op.tariffs || {},
+            owner: hd.owner || '',
+            address: hd.address || '',
+            hb_contact: hd.contact || '',
+            hb_contact2: hd.contact2 || '',
+            email: hd.email || '',
+            grade: hd.grade || 'Grade A',
+            google_maps: hd.google_maps || '',
+            boat_ghat: hd.boat_ghat || '',
+            hb_total_rooms: hd.total_rooms || '',
+            hb_capacity: hd.capacity || '',
+            hb_room_types: hd.room_types || [],
+            hb_amenities: hd.amenities || [],
+            full_name: sd.full_name || '',
+            mobile_number: sd.mobile_number || '',
+            whatsapp_number: sd.whatsapp_number || '',
+            shikara_number: sd.shikara_number || '',
+            ghat_number: sd.ghat_number || '',
+            operating_areas: sd.operating_areas || [],
+            years_experience: sd.years_experience || '',
+            languages: sd.languages || [],
+            services: sd.services || [],
+            tour_duration: sd.tour_duration || '',
+            registered_shikara: sd.registered_shikara || '',
+            registration_number: sd.registration_number || '',
+            price_per_ride: sd.price_per_ride || '',
+            price_per_hour: sd.price_per_hour || '',
+            price_note: sd.price_note || '',
+            business_type: ad.business_type || '',
+            specialties: ad.specialties || [],
+            business_scale: ad.business_scale || '',
+            owner_name: ad.owner_name || '',
+            contact_number: ad.contact_number || '',
+            artisan_whatsapp: ad.whatsapp_number || '',
+            email_address: ad.email_address || '',
+            website: ad.website || '',
+            gst_number: ad.gst_number || '',
+            export_license: ad.export_license || '',
+            years_in_business: ad.years_in_business || '',
+            artisan_google_maps: ad.google_maps || '',
+            acc_owner_name: ac.owner_name || '',
+            acc_manager_name: ac.manager_name || '',
+            acc_contact: ac.contact || '',
+            acc_email: ac.email || '',
+            acc_address: ac.address || '',
+            acc_google_maps: ac.google_maps || '',
+            acc_total_rooms: ac.total_rooms || '',
+            acc_room_types: ac.room_types || [],
+            acc_pricing_single: ac.pricing_single || '',
+            acc_pricing_double: ac.pricing_double || '',
+            acc_amenities: ac.amenities || [],
+            acc_meals_included: ac.meals_included || [],
+            acc_check_in: ac.check_in || '',
+            acc_check_out: ac.check_out || '',
+            acc_languages: ac.languages || [],
+            acc_nearby_attractions: ac.nearby_attractions || '',
+            guide_full_name: gd.full_name || '',
+            guide_contact_number: gd.contact_number || '',
+            guide_whatsapp_number: gd.whatsapp_number || '',
+            guide_email: gd.email || '',
+            guide_languages: gd.languages || [],
+            guide_specialties: gd.specialties || [],
+            guide_years_experience: gd.years_experience || '',
+            guide_certification: gd.certification || '',
+            guide_operating_areas: gd.operating_areas || [],
+            guide_google_maps: gd.google_maps || '',
+            vendor_business_name: vd.business_name || '',
+            vendor_owner_name: vd.owner_name || '',
+            vendor_contact_number: vd.contact_number || '',
+            vendor_whatsapp_number: vd.whatsapp_number || '',
+            vendor_email: vd.email || '',
+            vendor_business_type: vd.business_type || '',
+            vendor_specialties: vd.specialties || [],
+            vendor_operating_areas: vd.operating_areas || [],
+            vendor_google_maps: vd.google_maps || '',
+          });
+        }
+      } catch {
+        setFetchError('Network error — please check your connection');
+      }
+    };
 
     if (email) {
       fetchOperator(`email=${email}`);
@@ -196,6 +206,7 @@ export default function EditProfilePage() {
   const handleSave = async () => {
     if (!operator) return;
     setSaving(true);
+    setSaveError(null);
     try {
       let allPhotos = [...photos];
       for (const file of newPhotos) {
@@ -312,7 +323,7 @@ export default function EditProfilePage() {
       } : undefined;
       const coords = form.google_maps ? parseGoogleMapsUrl(form.google_maps) : null;
 
-      await fetch(`/api/operators/${operator.slug}`, {
+      const res = await fetch(`/api/operators/${operator.slug}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -335,13 +346,32 @@ export default function EditProfilePage() {
           lng: coords?.lng ?? null,
         }),
       });
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => null);
+        setSaveError(errBody?.error || `Save failed (${res.status})`);
+        setSaving(false);
+        return;
+      }
+      setSaving(false);
       router.push('/portal');
-    } catch (e) {
-      console.error('Save failed', e);
-    } finally {
+    } catch {
+      setSaveError('Network error — please check your connection');
       setSaving(false);
     }
   };
+
+  if (fetchError) {
+    return <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center max-w-sm px-4">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-destructive/10 mx-auto mb-4">
+          <AlertCircle className="h-8 w-8 text-destructive" />
+        </div>
+        <h2 className="text-xl font-semibold text-foreground">Something went wrong</h2>
+        <p className="text-sm text-muted-foreground mt-2">{fetchError}</p>
+        <Button className="mt-6" onClick={() => window.location.reload()}>Try Again</Button>
+      </div>
+    </div>;
+  }
 
   if (!operator) {
     return <div className="min-h-screen flex items-center justify-center">
@@ -1213,6 +1243,13 @@ export default function EditProfilePage() {
         <p className="text-xs text-gray-500">
           Changing photos will reset status to pending (requires admin re-approval).
         </p>
+
+        {saveError && (
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+            <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+            <span>{saveError}</span>
+          </div>
+        )}
 
         <Button onClick={handleSave} className="w-full gap-2" disabled={saving}>
           <Save className="w-4 h-4" /> {saving ? 'Saving...' : 'Save Changes'}

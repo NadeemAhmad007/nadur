@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { uploadPhotoToCloudinary } from '@/lib/cloudinary';
-import { auth } from '@/lib/auth';
 import { rateLimit } from '@/lib/rate-limit';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -18,11 +17,6 @@ function validateMagicBytes(buffer: Uint8Array, mimeType: string): boolean {
 }
 
 export async function POST(req: Request) {
-  const session = await auth();
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
   const ip = req.headers.get('x-forwarded-for') || 'anon';
   const { allowed } = rateLimit(`upload:${ip}`, 10, 60000);
   if (!allowed) {

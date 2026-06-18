@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   Search, MapPin, Navigation, Compass, Sparkles, Building2,
   Ship, Palette, Store, LogIn, UserPlus, Car,
-  SlidersHorizontal, X, ChevronDown, Check, ArrowUpDown,
+  SlidersHorizontal, X, ChevronDown, Check, ArrowUpDown, AlertTriangle,
 } from 'lucide-react';
 
 const CATEGORIES = [
@@ -48,6 +48,7 @@ export default function BrowsePage() {
   const [userLng, setUserLng] = useState<number | null>(null);
   const [locating, setLocating] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const pageRef = useRef(1);
 
   const [showFilters, setShowFilters] = useState(false);
@@ -80,15 +81,21 @@ export default function BrowsePage() {
 
   const fetchOperators = useCallback(async (page = 1, append = false) => {
     setLoading(true);
+    setFetchError(null);
     const params = buildParams(page);
     try {
       const res = await fetch(`/api/operators?${params}`);
+      if (!res.ok) {
+        setFetchError(`Server error (${res.status})`);
+        setLoading(false);
+        return;
+      }
       const { data, hasMore: hm } = await res.json();
       setOperators(append ? prev => [...prev, ...data] : data);
       setHasMore(hm);
       pageRef.current = page;
-    } catch (e) {
-      console.error(e);
+    } catch {
+      setFetchError('Network error — please check your connection');
     }
     setLoading(false);
   }, [buildParams]);
@@ -358,8 +365,22 @@ export default function BrowsePage() {
           }
         </div>
 
+        {/* Error state */}
+        {fetchError && (
+          <div className="text-center py-16">
+            <div className="flex justify-center mb-4">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-destructive/10">
+                <AlertTriangle className="h-8 w-8 text-destructive" />
+              </div>
+            </div>
+            <h3 className="text-lg font-semibold text-foreground">Something went wrong</h3>
+            <p className="text-sm text-muted-foreground mt-1 mb-4">{fetchError}</p>
+            <Button variant="outline" onClick={() => fetchOperators()}>Try Again</Button>
+          </div>
+        )}
+
         {/* Empty state */}
-        {!loading && operators.length === 0 && (
+        {!loading && !fetchError && operators.length === 0 && (
           <div className="text-center py-16">
             <div className="flex justify-center mb-4">
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">

@@ -119,6 +119,14 @@ export async function GET(req: Request) {
               eq(operators.category, 'shikara'),
               sql`COALESCE(NULLIF(${operators.shikara_details}->>'price_per_ride', '')::numeric, 0) BETWEEN ${pMin} AND ${pMax}`,
             ),
+            and(
+              eq(operators.category, 'homestay'),
+              sql`COALESCE(NULLIF(${operators.accommodation_details}->>'pricing_double', '')::numeric, 0) BETWEEN ${pMin} AND ${pMax}`,
+            ),
+            and(
+              eq(operators.category, 'guest_house'),
+              sql`COALESCE(NULLIF(${operators.accommodation_details}->>'pricing_double', '')::numeric, 0) BETWEEN ${pMin} AND ${pMax}`,
+            ),
           )
         );
       }

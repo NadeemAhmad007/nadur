@@ -12,8 +12,7 @@ function generateOtp(): string {
 
 function validatePhone(phone: string): string | null {
   const digits = phone.replace(/[^0-9]/g, '');
-  if (digits.length < 10) return 'Phone number must have at least 10 digits';
-  if (!/^[6-9]/.test(digits.slice(-10))) return 'Invalid Indian phone number';
+  if (digits.length < 5) return 'Phone number must have at least 5 digits';
   return null;
 }
 

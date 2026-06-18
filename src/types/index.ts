@@ -150,6 +150,7 @@ export interface Operator {
   short_desc: string | null;
   long_desc: string | null;
   whatsapp: string;
+  email: string | null;
   pricing_note: string | null;
   status: OperatorStatus | null;
   verified: boolean | null;

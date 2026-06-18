@@ -23,7 +23,7 @@ const commonFields: FieldDef[] = [
   { key: 'long_desc', label: 'Detailed description' },
   { key: 'pricing_note', label: 'Pricing info' },
   { key: 'photos', label: 'Photos', check: (v) => Array.isArray(v) && v.length > 0 },
-  { key: 'lat', label: 'Map location', check: (v, op) => Boolean(v) || !!op.houseboat_details?.google_maps || !!op.artisan_details?.google_maps },
+  { key: 'lat', label: 'Map location', check: (v, op) => Boolean(v) || !!op.houseboat_details?.google_maps || !!op.artisan_details?.google_maps || !!op.taxi_details?.google_maps || !!op.guide_details?.google_maps || !!op.vendor_details?.google_maps || !!op.accommodation_details?.google_maps },
 ];
 
 const categoryFields: Record<string, FieldDef[]> = {
@@ -50,7 +50,46 @@ const categoryFields: Record<string, FieldDef[]> = {
     { key: 'artisan_details.contact_number', label: 'Contact number' },
     { key: 'artisan_details.years_in_business', label: 'Years in business' },
   ],
-  guide: [], vendor: [], taxi: [
+  guide: [
+    { key: 'guide_details.full_name', label: 'Full name' },
+    { key: 'guide_details.contact_number', label: 'Contact number' },
+    { key: 'guide_details.languages', label: 'Languages', check: (v) => Array.isArray(v) && v.length > 0 },
+    { key: 'guide_details.specialties', label: 'Specialties', check: (v) => Array.isArray(v) && v.length > 0 },
+    { key: 'guide_details.years_experience', label: 'Years of experience' },
+    { key: 'guide_details.certification', label: 'Certification' },
+    { key: 'guide_details.operating_areas', label: 'Operating areas', check: (v) => Array.isArray(v) && v.length > 0 },
+  ],
+  vendor: [
+    { key: 'vendor_details.business_name', label: 'Business name' },
+    { key: 'vendor_details.owner_name', label: 'Owner name' },
+    { key: 'vendor_details.contact_number', label: 'Contact number' },
+    { key: 'vendor_details.business_type', label: 'Business type' },
+    { key: 'vendor_details.specialties', label: 'Specialties', check: (v) => Array.isArray(v) && v.length > 0 },
+    { key: 'vendor_details.operating_areas', label: 'Operating areas', check: (v) => Array.isArray(v) && v.length > 0 },
+  ],
+  homestay: [
+    { key: 'accommodation_details.owner_name', label: 'Owner name' },
+    { key: 'accommodation_details.contact', label: 'Contact number' },
+    { key: 'accommodation_details.total_rooms', label: 'Total rooms' },
+    { key: 'accommodation_details.room_types', label: 'Room types', check: (v) => Array.isArray(v) && v.length > 0 },
+    { key: 'accommodation_details.amenities', label: 'Amenities', check: (v) => Array.isArray(v) && v.length > 0 },
+    { key: 'accommodation_details.pricing_single', label: 'Single room pricing' },
+    { key: 'accommodation_details.pricing_double', label: 'Double room pricing' },
+    { key: 'accommodation_details.languages', label: 'Languages', check: (v) => Array.isArray(v) && v.length > 0 },
+    { key: 'accommodation_details.nearby_attractions', label: 'Nearby attractions' },
+  ],
+  guest_house: [
+    { key: 'accommodation_details.owner_name', label: 'Owner name' },
+    { key: 'accommodation_details.contact', label: 'Contact number' },
+    { key: 'accommodation_details.total_rooms', label: 'Total rooms' },
+    { key: 'accommodation_details.room_types', label: 'Room types', check: (v) => Array.isArray(v) && v.length > 0 },
+    { key: 'accommodation_details.amenities', label: 'Amenities', check: (v) => Array.isArray(v) && v.length > 0 },
+    { key: 'accommodation_details.pricing_single', label: 'Single room pricing' },
+    { key: 'accommodation_details.pricing_double', label: 'Double room pricing' },
+    { key: 'accommodation_details.languages', label: 'Languages', check: (v) => Array.isArray(v) && v.length > 0 },
+    { key: 'accommodation_details.nearby_attractions', label: 'Nearby attractions' },
+  ],
+  taxi: [
     { key: 'taxi_details.driver_name', label: 'Driver name' },
     { key: 'taxi_details.vehicle_type', label: 'Vehicle type' },
     { key: 'taxi_details.vehicle_model', label: 'Vehicle model' },
@@ -68,6 +107,7 @@ export default function PortalPage() {
   const [operator, setOperator] = useState<any>(null);
   const [leads, setLeads] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/auth/login');
@@ -80,7 +120,13 @@ export default function PortalPage() {
 
     const fetchOperator = async (query: string) => {
       try {
+        setFetchError(null);
         const res = await fetch(`/api/operators?${query}`);
+        if (!res.ok) {
+          setFetchError(`Failed to load profile (${res.status})`);
+          setLoading(false);
+          return;
+        }
         const { data } = await res.json();
         if (data?.length > 0) {
           setOperator(data[0]);
@@ -88,8 +134,8 @@ export default function PortalPage() {
           const leadsData = await leadsRes.json();
           setLeads(Array.isArray(leadsData) ? leadsData : []);
         }
-      } catch (e) {
-        console.error(e);
+      } catch {
+        setFetchError('Network error — please check your connection');
       }
       setLoading(false);
     };
@@ -134,6 +180,23 @@ export default function PortalPage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center max-w-sm">
+          <div className="flex justify-center mb-4">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-destructive/10">
+              <AlertCircle className="h-8 w-8 text-destructive" />
+            </div>
+          </div>
+          <h2 className="text-xl font-semibold text-foreground">Something went wrong</h2>
+          <p className="text-sm text-muted-foreground mt-2">{fetchError}</p>
+          <Button className="mt-6" onClick={() => window.location.reload()}>Try Again</Button>
+        </div>
       </div>
     );
   }

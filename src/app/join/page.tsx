@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ArrowRight, Check, Upload } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Upload, MessageCircle, Mail, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import imageCompression from 'browser-image-compression';
 import { parseGoogleMapsUrl } from '@/lib/location';
@@ -284,6 +284,7 @@ export default function JoinPage() {
   const { data: session } = useSession();
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
@@ -291,6 +292,10 @@ export default function JoinPage() {
   const [otpError, setOtpError] = useState('');
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpCooldown, setOtpCooldown] = useState(0);
+  const [otpMethod, setOtpMethod] = useState<'email' | 'whatsapp'>('email');
+  const [phoneOtp, setPhoneOtp] = useState('');
+  const [phoneOtpSent, setPhoneOtpSent] = useState(false);
+  const [verifiedPhone, setVerifiedPhone] = useState('');
 
   useEffect(() => {
     if (otpCooldown > 0) {
@@ -358,6 +363,7 @@ export default function JoinPage() {
 
   const handleSubmit = async () => {
     setLoading(true);
+    setSubmitError(null);
     try {
       const uploadedUrls: string[] = [];
       for (const file of form.photos) {
@@ -512,12 +518,15 @@ export default function JoinPage() {
         }),
       });
 
-      if (res.ok) {
-        router.push('/join?success=true');
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => null);
+        setSubmitError(errBody?.error || `Submission failed (${res.status})`);
+        setLoading(false);
+        return;
       }
-    } catch (e) {
-      console.error('Submission failed', e);
-    } finally {
+      router.push('/join?success=true');
+    } catch {
+      setSubmitError('Network error — please check your connection');
       setLoading(false);
     }
   };
@@ -566,90 +575,36 @@ export default function JoinPage() {
 
         {step === 0 && (
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold">Email Address</h2>
-            <p className="text-sm text-gray-600">This will be used for login. Verify it first.</p>
-            <input
-              type="email"
-              placeholder="you@example.com"
-              value={form.email}
-              onChange={(e) => { update('email', e.target.value); setOtpVerified(false); setOtpSent(false); setOtp(''); }}
-              disabled={otpSent && !otpVerified}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2C5F8A] disabled:bg-gray-100"
-            />
-            {!otpVerified && (
+            <h2 className="text-lg font-semibold">Verify Your Contact</h2>
+            <p className="text-sm text-gray-600">Verify your email or WhatsApp to get started.</p>
+            <div className="flex rounded-lg border border-gray-300 overflow-hidden">
+              <button
+                onClick={() => { setOtpMethod('email'); setOtpVerified(false); setOtpSent(false); setOtp(''); setOtpError(''); setPhoneOtpSent(false); setPhoneOtp(''); }}
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium transition-colors ${otpMethod === 'email' ? 'bg-[#2C5F8A] text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+              >
+                <Mail className="h-4 w-4" /> Email
+              </button>
+              <button
+                onClick={() => { setOtpMethod('whatsapp'); setOtpVerified(false); setOtpSent(false); setOtp(''); setOtpError(''); setPhoneOtpSent(false); setPhoneOtp(''); }}
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium transition-colors ${otpMethod === 'whatsapp' ? 'bg-[#2C5F8A] text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+              >
+                <MessageCircle className="h-4 w-4" /> WhatsApp
+              </button>
+            </div>
+            {otpMethod === 'email' && (
               <>
-                {!otpSent ? (
-                  <Button
-                    onClick={async () => {
-                      setOtpLoading(true);
-                      setOtpError('');
-                      try {
-                        const res = await fetch('/api/auth/send-otp', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ email: form.email }),
-                        });
-                        const data = await res.json();
-                        if (data.sent) {
-                          setOtpSent(true);
-                          setOtpCooldown(60);
-                        } else {
-                          setOtpError(data.error || 'Failed to send OTP');
-                        }
-                      } catch { setOtpError('Network error'); }
-                      finally { setOtpLoading(false); }
-                    }}
-                    className="w-full"
-                    disabled={!form.email || otpLoading}
-                  >
-                    {otpLoading ? 'Sending...' : 'Send OTP via Email'}
-                  </Button>
-                ) : (
-                  <div className="space-y-3">
-                    <div>
-                      <label className="text-sm font-medium">Enter OTP</label>
-                      <input
-                        type="text"
-                        value={otp}
-                        onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                        className="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2C5F8A] tracking-widest text-center text-lg"
-                        placeholder="000000"
-                        maxLength={6}
-                        autoFocus
-                      />
-                    </div>
-                    <Button
-                      onClick={async () => {
-                        setOtpLoading(true);
-                        setOtpError('');
-                        try {
-                          const res = await fetch('/api/auth/verify', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ email: form.email, otp, verifyOnly: true }),
-                          });
-                          const data = await res.json();
-                          if (data.success) {
-                            setOtpVerified(true);
-                          } else {
-                            setOtpError(data.error || 'Invalid OTP');
-                          }
-                        } catch { setOtpError('Network error'); }
-                        finally { setOtpLoading(false); }
-                      }}
-                      className="w-full"
-                      disabled={otp.length !== 6 || otpLoading}
-                    >
-                      {otpLoading ? 'Verifying...' : 'Verify OTP'}
-                    </Button>
-                    <div className="flex items-center justify-between text-sm">
-                      <button
-                        onClick={() => { setOtpSent(false); setOtp(''); setOtpCooldown(0); }}
-                        className="text-gray-500 hover:text-gray-700"
-                      >
-                        Change email
-                      </button>
-                      <button
+                <input
+                  type="email"
+                  placeholder="you@example.com"
+                  value={form.email}
+                  onChange={(e) => { update('email', e.target.value); setOtpVerified(false); setOtpSent(false); setOtp(''); }}
+                  disabled={otpSent && !otpVerified}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2C5F8A] disabled:bg-gray-100"
+                />
+                {!otpVerified && (
+                  <>
+                    {!otpSent ? (
+                      <Button
                         onClick={async () => {
                           setOtpLoading(true);
                           setOtpError('');
@@ -661,18 +616,204 @@ export default function JoinPage() {
                             });
                             const data = await res.json();
                             if (data.sent) {
+                              setOtpSent(true);
                               setOtpCooldown(60);
+                            } else {
+                              setOtpError(data.error || 'Failed to send OTP');
                             }
-                          } catch { /* ignore */ }
+                          } catch { setOtpError('Network error'); }
                           finally { setOtpLoading(false); }
                         }}
-                        disabled={otpCooldown > 0 || otpLoading}
-                        className="text-[#2C5F8A] font-medium disabled:text-gray-400"
+                        className="w-full"
+                        disabled={!form.email || otpLoading}
                       >
-                        {otpCooldown > 0 ? `Resend in ${otpCooldown}s` : 'Resend OTP'}
-                      </button>
-                    </div>
-                  </div>
+                        {otpLoading ? 'Sending...' : 'Send OTP via Email'}
+                      </Button>
+                    ) : (
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-sm font-medium">Enter OTP</label>
+                          <input
+                            type="text"
+                            value={otp}
+                            onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                            className="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2C5F8A] tracking-widest text-center text-lg"
+                            placeholder="000000"
+                            maxLength={6}
+                            autoFocus
+                          />
+                        </div>
+                        <Button
+                          onClick={async () => {
+                            setOtpLoading(true);
+                            setOtpError('');
+                            try {
+                              const res = await fetch('/api/auth/verify', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ email: form.email, otp, verifyOnly: true }),
+                              });
+                              const data = await res.json();
+                              if (data.success) {
+                                setOtpVerified(true);
+                              } else {
+                                setOtpError(data.error || 'Invalid OTP');
+                              }
+                            } catch { setOtpError('Network error'); }
+                            finally { setOtpLoading(false); }
+                          }}
+                          className="w-full"
+                          disabled={otp.length !== 6 || otpLoading}
+                        >
+                          {otpLoading ? 'Verifying...' : 'Verify OTP'}
+                        </Button>
+                        <div className="flex items-center justify-between text-sm">
+                          <button
+                            onClick={() => { setOtpSent(false); setOtp(''); setOtpCooldown(0); }}
+                            className="text-gray-500 hover:text-gray-700"
+                          >
+                            Change email
+                          </button>
+                          <button
+                            onClick={async () => {
+                              setOtpLoading(true);
+                              setOtpError('');
+                              try {
+                                const res = await fetch('/api/auth/send-otp', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ email: form.email }),
+                                });
+                                const data = await res.json();
+                                if (data.sent) {
+                                  setOtpCooldown(60);
+                                }
+                              } catch { /* ignore */ }
+                              finally { setOtpLoading(false); }
+                            }}
+                            disabled={otpCooldown > 0 || otpLoading}
+                            className="text-[#2C5F8A] font-medium disabled:text-gray-400"
+                          >
+                            {otpCooldown > 0 ? `Resend in ${otpCooldown}s` : 'Resend OTP'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </>
+            )}
+            {otpMethod === 'whatsapp' && (
+              <>
+                <input
+                  type="tel"
+                  placeholder="+91 1234567890"
+                  value={phoneOtp}
+                  onChange={(e) => { setPhoneOtp(e.target.value); setOtpVerified(false); setPhoneOtpSent(false); setOtp(''); setOtpError(''); }}
+                  disabled={phoneOtpSent && !otpVerified}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2C5F8A] disabled:bg-gray-100"
+                />
+                {!otpVerified && (
+                  <>
+                    {!phoneOtpSent ? (
+                      <Button
+                        onClick={async () => {
+                          setOtpLoading(true);
+                          setOtpError('');
+                          try {
+                            const res = await fetch('/api/auth/send-otp-whatsapp', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ phone: phoneOtp }),
+                            });
+                            const data = await res.json();
+                            if (data.sent) {
+                              setPhoneOtpSent(true);
+                              setOtpCooldown(60);
+                            } else {
+                              setOtpError(data.error || 'Failed to send OTP');
+                            }
+                          } catch { setOtpError('Network error'); }
+                          finally { setOtpLoading(false); }
+                        }}
+                        className="w-full"
+                        disabled={!phoneOtp || otpLoading}
+                      >
+                        {otpLoading ? 'Sending...' : 'Send OTP via WhatsApp'}
+                      </Button>
+                    ) : (
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-sm font-medium">Enter OTP</label>
+                          <input
+                            type="text"
+                            value={otp}
+                            onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                            className="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2C5F8A] tracking-widest text-center text-lg"
+                            placeholder="000000"
+                            maxLength={6}
+                            autoFocus
+                          />
+                        </div>
+                        <Button
+                          onClick={async () => {
+                            setOtpLoading(true);
+                            setOtpError('');
+                            try {
+                              const res = await fetch('/api/auth/verify-whatsapp', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ phone: phoneOtp, otp }),
+                              });
+                              const data = await res.json();
+                              if (data.success) {
+                                setOtpVerified(true);
+                                setVerifiedPhone(phoneOtp);
+                                setForm((prev) => ({ ...prev, phone: phoneOtp }));
+                              } else {
+                                setOtpError(data.error || 'Invalid OTP');
+                              }
+                            } catch { setOtpError('Network error'); }
+                            finally { setOtpLoading(false); }
+                          }}
+                          className="w-full"
+                          disabled={otp.length !== 6 || otpLoading}
+                        >
+                          {otpLoading ? 'Verifying...' : 'Verify OTP'}
+                        </Button>
+                        <div className="flex items-center justify-between text-sm">
+                          <button
+                            onClick={() => { setPhoneOtpSent(false); setOtp(''); setOtpCooldown(0); }}
+                            className="text-gray-500 hover:text-gray-700"
+                          >
+                            Change number
+                          </button>
+                          <button
+                            onClick={async () => {
+                              setOtpLoading(true);
+                              setOtpError('');
+                              try {
+                                const res = await fetch('/api/auth/send-otp-whatsapp', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ phone: phoneOtp }),
+                                });
+                                const data = await res.json();
+                                if (data.sent) {
+                                  setOtpCooldown(60);
+                                }
+                              } catch { /* ignore */ }
+                              finally { setOtpLoading(false); }
+                            }}
+                            disabled={otpCooldown > 0 || otpLoading}
+                            className="text-[#2C5F8A] font-medium disabled:text-gray-400"
+                          >
+                            {otpCooldown > 0 ? `Resend in ${otpCooldown}s` : 'Resend OTP'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </>
             )}
@@ -680,10 +821,10 @@ export default function JoinPage() {
             {otpVerified && (
               <div className="flex items-center gap-2 text-green-600 text-sm">
                 <Check className="w-4 h-4" />
-                Email verified
+                {otpMethod === 'email' ? 'Email verified' : 'WhatsApp verified'}
               </div>
             )}
-            <Button onClick={() => setStep(1)} className="w-full" disabled={!form.email || !otpVerified}>
+            <Button onClick={() => setStep(1)} className="w-full" disabled={!otpVerified || (otpMethod === 'email' && !form.email) || (otpMethod === 'whatsapp' && !verifiedPhone)}>
               Next <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
           </div>
@@ -1665,6 +1806,12 @@ export default function JoinPage() {
               )}
               <p><strong>Photos:</strong> {form.photos.length} uploaded</p>
             </div>
+            {submitError && (
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                <span>{submitError}</span>
+              </div>
+            )}
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setStep(3)} className="flex-1">
                 <ArrowLeft className="w-4 h-4 mr-1" /> Back

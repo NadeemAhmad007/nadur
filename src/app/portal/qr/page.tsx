@@ -19,19 +19,26 @@ export default function QRPage() {
   }, [status, router]);
 
   useEffect(() => {
-    if (session?.user?.email) {
-      fetch(`/api/operators?email=${session.user.email}`)
-        .then((r) => r.json())
-        .then(async ({ data }) => {
-          const op = data[0];
-          if (op) {
-            setOperator(op);
-            const res = await fetch(`/api/qr/${op.slug}`);
-            const svg = await res.text();
-            setQrDataUrl(`data:image/svg+xml;base64,${btoa(svg)}`);
-          }
-        });
-    }
+    const sUser = session?.user as Record<string, unknown> | undefined;
+    const email = session?.user?.email;
+    const operatorId = sUser?.operator_id as string | undefined;
+
+    const fetchOp = async (query: string) => {
+      try {
+        const r = await fetch(`/api/operators?${query}`);
+        const { data } = await r.json();
+        const op = data?.[0];
+        if (op) {
+          setOperator(op);
+          const res = await fetch(`/api/qr/${op.slug}`);
+          const svg = await res.text();
+          setQrDataUrl(`data:image/svg+xml;base64,${btoa(svg)}`);
+        }
+      } catch { /* ignore */ }
+    };
+
+    if (email) fetchOp(`email=${email}`);
+    else if (operatorId) fetchOp(`id=${operatorId}`);
   }, [session]);
 
   const download = (format: 'svg' | 'png') => {

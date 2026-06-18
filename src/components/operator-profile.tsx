@@ -8,10 +8,11 @@ import type { Operator } from '@/types';
 import {
   ArrowLeft, BadgeCheck, Heart, Share2, MessageCircle,
   ChevronLeft, ChevronRight, Send, MapPin, Phone, Mail,
-  Star, User, Map, Clock, Globe, AlertCircle, X, TrendingUp,
-  Car, Hash, Building2, Navigation, Store, Info
+  Star, User, Map, Clock, Globe, X, TrendingUp,
+  Car, Hash, Building2, Navigation, Store, Info, ChevronDown
 } from 'lucide-react';
 import Link from 'next/link';
+import { countryOptions } from '@/data/country-codes';
 
 const categoryLabels: Record<string, string> = {
   houseboat: 'Houseboat', shikara: 'Shikara Ride', artisan: 'Artisan',
@@ -22,16 +23,19 @@ const categoryLabels: Record<string, string> = {
 export function OperatorProfile({ operator: op }: { operator: Operator }) {
   const [currentPhoto, setCurrentPhoto] = useState(0);
   const [favorited, setFavorited] = useState(false);
-  const [blocked, setBlocked] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [visitorName, setVisitorName] = useState('');
-  const [visitorPhone, setVisitorPhone] = useState('');
+  const [countryCode, setCountryCode] = useState('+91');
+  const [localNumber, setLocalNumber] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [overflow, setOverflow] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState('');
   const [otpSubmitting, setOtpSubmitting] = useState(false);
   const [otpError, setOtpError] = useState('');
   const [stepError, setStepError] = useState('');
+
+  const getPhone = () => countryCode + localNumber;
 
   const photos = op.photos?.length ? op.photos : [];
 
@@ -55,7 +59,8 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
   };
 
   const handleSubmit = async () => {
-    if (!visitorName.trim() || !visitorPhone.trim()) return;
+    if (!visitorName.trim() || !localNumber) return;
+    const phone = getPhone();
     setSubmitting(true);
     setStepError('');
 
@@ -63,7 +68,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
       try {
         const res = await fetch('/api/leads/send-otp', {
           method: 'POST',
-          body: JSON.stringify({ operator_id: op.id, visitor_name: visitorName.trim(), visitor_phone: visitorPhone.trim() }),
+          body: JSON.stringify({ operator_id: op.id, visitor_name: visitorName.trim(), visitor_phone: phone }),
           headers: { 'Content-Type': 'application/json' },
         });
         const data = await res.json();
@@ -77,12 +82,12 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
     try {
       const res = await fetch('/api/leads', {
         method: 'POST',
-        body: JSON.stringify({ operator_id: op.id, source: 'profile', visitor_name: visitorName.trim(), visitor_phone: visitorPhone.trim() }),
+        body: JSON.stringify({ operator_id: op.id, source: 'profile', visitor_name: visitorName.trim(), visitor_phone: phone }),
         headers: { 'Content-Type': 'application/json' },
       });
       const data = await res.json();
       if (!res.ok) { setStepError(data.error || 'Failed to submit'); setSubmitting(false); return; }
-      if (data.blocked) { setBlocked(true); setShowForm(false); setSubmitting(false); return; }
+      setOverflow(data.overflow);
     } catch { setSubmitting(false); return; }
     setShowForm(false);
     setSubmitting(false);
@@ -92,18 +97,18 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
 
   const handleOtpSubmit = async () => {
     if (!otp.trim()) return;
+    const phone = getPhone();
     setOtpSubmitting(true);
     setOtpError('');
     try {
       const res = await fetch('/api/leads/verify-otp', {
         method: 'POST',
-        body: JSON.stringify({ operator_id: op.id, visitor_name: visitorName.trim(), visitor_phone: visitorPhone.trim(), otp: otp.trim() }),
+        body: JSON.stringify({ operator_id: op.id, visitor_name: visitorName.trim(), visitor_phone: phone, otp: otp.trim() }),
         headers: { 'Content-Type': 'application/json' },
       });
       const data = await res.json();
       if (!res.ok) { setOtpError(data.error || 'Invalid OTP'); setOtpSubmitting(false); return; }
-      if (data.blocked) { setBlocked(true); setShowForm(false); setOtpSubmitting(false); return; }
-      window.location.href = data.waUrl;
+      window.location.href = data.waUrl || `https://wa.me/${op.whatsapp}`;
     } catch { setOtpError('Failed to verify OTP'); setOtpSubmitting(false); }
   };
 
@@ -555,7 +560,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
                   <X className="h-4 w-4" />
                 </button>
               </div>
-              <p className="text-sm text-muted-foreground">Enter the OTP sent to {visitorPhone}</p>
+              <p className="text-sm text-muted-foreground">Enter the OTP sent to {getPhone()}</p>
               <input
                 type="text"
                 inputMode="numeric"
@@ -594,38 +599,54 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
                 onChange={(e) => setVisitorName(e.target.value)}
                 className="w-full h-10 px-3 rounded-lg border border-input bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
-              <input
-                type="tel"
-                placeholder="Your phone number"
-                value={visitorPhone}
-                onChange={(e) => setVisitorPhone(e.target.value)}
-                className="w-full h-10 px-3 rounded-lg border border-input bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-              />
+              <p className="text-xs text-muted-foreground font-medium">Phone number</p>
+              <div className="flex gap-2">
+                <div className="relative w-[140px] shrink-0">
+                  <select
+                    value={countryCode}
+                    onChange={(e) => setCountryCode(e.target.value)}
+                    className="flex h-10 w-full rounded-lg border border-input bg-card px-3 pr-8 text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-ring transition-colors"
+                  >
+                    {countryOptions.map((opt) => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                </div>
+                <input
+                  type="tel"
+                  value={localNumber}
+                  onChange={(e) => setLocalNumber(e.target.value.replace(/[^0-9]/g, ''))}
+                  placeholder="1234567890"
+                  className="flex-1 h-10 px-3 rounded-lg border border-input bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+              </div>
               {stepError && <p className="text-xs text-danger">{stepError}</p>}
-              <Button onClick={handleSubmit} className="w-full gap-2 bg-[#25D366] hover:bg-[#20BD5A] text-white" disabled={submitting || !visitorName.trim() || !visitorPhone.trim()}>
+              <Button onClick={handleSubmit} className="w-full gap-2 bg-[#25D366] hover:bg-[#20BD5A] text-white" disabled={submitting || !visitorName.trim() || !localNumber}>
                 {submitting ? 'Sending...' : op.plan === 'pro' ? 'Send OTP' : <Send className="h-4 w-4" />}
                 {submitting ? '' : op.plan === 'pro' ? '' : ' Send Inquiry'}
               </Button>
             </CardContent>
           </Card>
-        ) : blocked ? (
-          <Card className="border-warning/30 bg-warning/5">
-            <CardContent className="p-5 text-center">
-              <AlertCircle className="h-8 w-8 text-warning mx-auto mb-2" />
-              <p className="text-sm text-foreground font-medium">Monthly limit reached</p>
-              <p className="text-xs text-muted-foreground mt-1">Please check back next month or browse other operators.</p>
-              <Button size="sm" variant="outline" className="mt-3" onClick={() => { setBlocked(false); setShowForm(true); }}>Try Again</Button>
-            </CardContent>
-          </Card>
         ) : (
-          <Button
-            onClick={() => setShowForm(true)}
-            size="lg"
-            className="w-full gap-2 bg-[#25D366] hover:bg-[#20BD5A] text-white h-12 text-base"
-          >
-            <MessageCircle className="h-5 w-5" />
-            Contact on WhatsApp
-          </Button>
+          <>
+            {overflow && (
+              <Card className="border-warning/20 bg-warning/5">
+                <CardContent className="p-4 flex items-start gap-2">
+                  <Info className="h-4 w-4 text-warning shrink-0 mt-0.5" />
+                  <p className="text-xs text-muted-foreground">This operator is currently at capacity. Your enquiry has been forwarded to our team.</p>
+                </CardContent>
+              </Card>
+            )}
+            <Button
+              onClick={() => setShowForm(true)}
+              size="lg"
+              className="w-full gap-2 bg-[#25D366] hover:bg-[#20BD5A] text-white h-12 text-base"
+            >
+              <MessageCircle className="h-5 w-5" />
+              Contact on WhatsApp
+            </Button>
+          </>
         )}
 
         <div className="text-center pb-8">

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/db';
 import { operators, leads } from '@/db/schema';
 import { eq, sql, and, gte } from 'drizzle-orm';
-import { notifyLead } from '@/lib/openwa';
+import { notifyLead, sendText } from '@/lib/openwa';
 import { auth } from '@/lib/auth';
 import { rateLimit } from '@/lib/rate-limit';
 
@@ -22,7 +22,7 @@ export async function POST(req: Request) {
 
     if (visitor_phone) {
       const digits = visitor_phone.replace(/[^0-9]/g, '');
-      if (digits.length < 10 || !/^[6-9]/.test(digits.slice(-10))) {
+      if (digits.length < 5) {
         return NextResponse.json({ error: 'Invalid phone number' }, { status: 400 });
       }
     }
@@ -51,26 +51,35 @@ export async function POST(req: Request) {
       ));
 
     const monthCount = Number(leadsThisMonth[0]?.count ?? 0);
-
-    if (op.plan === 'free' && monthCount >= 3) {
-      return NextResponse.json({ blocked: true });
-    }
+    const overflow = op.plan === 'free' && monthCount >= 3;
 
     await db.insert(leads).values({ operator_id, session_id, source: source || 'profile', visitor_name, visitor_phone });
     await db.update(operators).set({ lead_month: monthCount + 1 }).where(eq(operators.id, operator_id));
 
-    notifyLead(op.whatsapp, op.name, visitor_name, visitor_phone).catch((err) => {
-      console.error(`[leads] Failed to notify operator ${op.name} (${op.whatsapp}):`, err);
-    });
-
-    const adminNotify = process.env.KASHMIR360_ADMIN_WHATSAPP;
-    if (adminNotify && adminNotify !== op.whatsapp) {
-      notifyLead(adminNotify, op.name, visitor_name, visitor_phone, true).catch((err) => {
-        console.error(`[leads] Failed to notify admin:`, err);
+    if (overflow) {
+      const adminNotify = process.env.KASHMIR360_ADMIN_WHATSAPP;
+      if (adminNotify) {
+        notifyLead(adminNotify, op.name, visitor_name, visitor_phone, true).catch((err) => {
+          console.error(`[leads] Failed to notify admin of overflow:`, err);
+        });
+      }
+      sendText(op.whatsapp, `You've received ${monthCount + 1} enquiries this month! Upgrade to Pro to receive lead details directly. Contact the admin to upgrade.`).catch((err) => {
+        console.error(`[leads] Failed to send upsell to operator ${op.name}:`, err);
       });
+    } else {
+      notifyLead(op.whatsapp, op.name, visitor_name, visitor_phone).catch((err) => {
+        console.error(`[leads] Failed to notify operator ${op.name} (${op.whatsapp}):`, err);
+      });
+
+      const adminNotify = process.env.KASHMIR360_ADMIN_WHATSAPP;
+      if (adminNotify && adminNotify !== op.whatsapp) {
+        notifyLead(adminNotify, op.name, visitor_name, visitor_phone, true).catch((err) => {
+          console.error(`[leads] Failed to notify admin:`, err);
+        });
+      }
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, overflow });
   } catch (error) {
     console.error('leads POST error:', error);
     return NextResponse.json({ error: 'Failed to submit lead' }, { status: 500 });

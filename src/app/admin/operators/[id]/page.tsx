@@ -27,7 +27,9 @@ interface Operator {
   hidden: boolean; verified: boolean; plan: string;
   lead_month: number; photos: string[];
   tariffs: any; houseboat_details: any; shikara_details: any;
-  artisan_details: any; lat: number | null; lng: number | null;
+  artisan_details: any; taxi_details: any; accommodation_details: any;
+  guide_details: any; vendor_details: any;
+  lat: number | null; lng: number | null;
   created_at: string;
 }
 
