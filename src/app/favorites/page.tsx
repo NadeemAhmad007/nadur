@@ -30,11 +30,11 @@ export default function FavoritesPage() {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-10 bg-background/90 backdrop-blur-lg border-b border-border/50">
-        <div className="max-w-5xl mx-auto px-4 h-16 flex items-center gap-3">
+        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3 min-h-24">
           <Link href="/" className="flex h-9 w-9 items-center justify-center rounded-xl hover:bg-secondary transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <img src="/logo.png" alt="Kashmir360" className="h-11 w-auto" />
+          <img src="/logo.png" alt="Kashmir360" className="h-56 w-auto object-contain" />
           <h1 className="text-lg font-semibold ml-1">Favorites</h1>
         </div>
       </header>

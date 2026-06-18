@@ -142,9 +142,9 @@ export default function BrowsePage() {
     <>
       <header className="sticky top-0 z-30 bg-[#FAF8F3]/90 backdrop-blur-lg border-b border-border/50">
         <div className="max-w-5xl mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between py-3 min-h-24">
             <Link href="/" className="flex items-center gap-3 shrink-0">
-              <img src="/logo.png" alt="Kashmir360" className="h-14 w-auto" />
+              <img src="/logo.png" alt="Kashmir360" className="h-56 w-auto object-contain" />
             </Link>
             <div className="flex items-center gap-2">
               <button
@@ -187,7 +187,51 @@ export default function BrowsePage() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 pt-5 pb-12">
+      <main className="max-w-5xl mx-auto px-4 pt-8 pb-12">
+        {/* Hero Section */}
+        <div className="mb-10 text-center bg-gradient-to-br from-[#16314D]/5 to-[#2C5F8A]/5 rounded-3xl p-8 sm:p-12 border border-border/40">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-semibold uppercase tracking-wider mb-4">
+            <Sparkles className="h-3.5 w-3.5 animate-pulse" />
+            Explore Srinagar & Kashmir Like Never Before
+          </div>
+          <h1 className="text-3xl sm:text-5xl font-black text-foreground tracking-tight max-w-2xl mx-auto leading-tight">
+            Connect Direct, <span className="text-accent">Book Local</span> on Kashmir360
+          </h1>
+          <p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-xl mx-auto">
+            Your premium gateway to verified houseboats, shikara rides, authentic local artisans, tourist guides, and local taxi services across Srinagar and Kashmir. 100% direct connection—no middlemen, no hidden commissions.
+          </p>
+        </div>
+
+        {/* Why Choose Us Section */}
+        <div className="mb-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-card p-6 rounded-2xl border border-border/50 hover:border-accent/30 transition-all shadow-sm">
+            <div className="h-10 w-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent mb-4">
+              <Compass className="h-5 w-5" />
+            </div>
+            <h3 className="text-base font-bold text-foreground mb-2">100% Verified & Direct</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Every operator is verified locally for authenticity. Get their direct WhatsApp and mobile numbers to plan and negotiate directly.
+            </p>
+          </div>
+          <div className="bg-card p-6 rounded-2xl border border-border/50 hover:border-accent/30 transition-all shadow-sm">
+            <div className="h-10 w-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent mb-4">
+              <SlidersHorizontal className="h-5 w-5" />
+            </div>
+            <h3 className="text-base font-bold text-foreground mb-2">No Hidden Commissions</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Travel portals charge up to 30% commission. Kashmir360 connects you directly with the owner so you pay fair, local rates.
+            </p>
+          </div>
+          <div className="bg-card p-6 rounded-2xl border border-border/50 hover:border-accent/30 transition-all shadow-sm">
+            <div className="h-10 w-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent mb-4">
+              <Sparkles className="h-5 w-5" />
+            </div>
+            <h3 className="text-base font-bold text-foreground mb-2">Promote Local Tourism</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Support local houseboats, shikara drivers, guides, and artisans directly, keeping tourism revenue where it belongs—in Kashmir.
+            </p>
+          </div>
+        </div>
         {/* Categories */}
         <div className="flex gap-2 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-none">
           {CATEGORIES.map((cat) => {

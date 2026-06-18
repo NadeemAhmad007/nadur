@@ -5,11 +5,11 @@ export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-white">
       <header className="border-b border-gray-200">
-        <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
+        <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3 min-h-24">
           <Link href="/" className="p-1">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <img src="/logo.png" alt="Kashmir360" className="h-14 w-auto" />
+          <img src="/logo.png" alt="Kashmir360" className="h-56 w-auto object-contain" />
           <h1 className="text-lg font-semibold">Privacy Policy</h1>
         </div>
       </header>

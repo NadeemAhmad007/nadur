@@ -30,11 +30,11 @@ export default function AdminCategoriesPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-3">
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-3 min-h-24">
           <Link href="/admin" className="p-1">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <img src="/logo.png" alt="Kashmir360" className="h-14 w-auto" />
+          <img src="/logo.png" alt="Kashmir360" className="h-56 w-auto object-contain" />
           <h1 className="font-semibold">Categories</h1>
         </div>
       </header>
