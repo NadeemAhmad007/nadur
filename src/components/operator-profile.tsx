@@ -9,7 +9,7 @@ import {
   ArrowLeft, BadgeCheck, Heart, Share2, MessageCircle,
   ChevronLeft, ChevronRight, Send, MapPin, Phone, Mail,
   Star, User, Map, Clock, Globe, AlertCircle, X, TrendingUp,
-  Car, Hash, Building2, Navigation, Store
+  Car, Hash, Building2, Navigation, Store, Info
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -204,10 +204,29 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
                 {(op.houseboat_details as any).owner && <DetailRow icon={User} label="Owner" value={(op.houseboat_details as any).owner} />}
                 {(op.houseboat_details as any).address && <DetailRow icon={MapPin} label="Address" value={(op.houseboat_details as any).address} />}
                 {(op.houseboat_details as any).contact && <DetailRow icon={Phone} label="Contact" value={(op.houseboat_details as any).contact} />}
+                {(op.houseboat_details as any).contact2 && <DetailRow icon={Phone} label="Alt Contact" value={(op.houseboat_details as any).contact2} />}
                 {(op.houseboat_details as any).email && <DetailRow icon={Mail} label="Email" value={(op.houseboat_details as any).email} />}
                 {(op.houseboat_details as any).grade && <DetailRow icon={Star} label="Grade" value={(op.houseboat_details as any).grade} />}
+                {(op.houseboat_details as any).total_rooms && <DetailRow icon={Building2} label="Total Rooms" value={(op.houseboat_details as any).total_rooms} />}
+                {(op.houseboat_details as any).capacity && <DetailRow icon={User} label="Max Guests" value={(op.houseboat_details as any).capacity} />}
                 {(op.houseboat_details as any).boat_ghat && <DetailRow icon={Map} label="Boat Ghat" value={(op.houseboat_details as any).boat_ghat} />}
               </div>
+              {(op.houseboat_details as any).room_types?.length > 0 && (
+                <div>
+                  <p className="text-xs text-muted-foreground font-medium">Room Types</p>
+                  <div className="flex flex-wrap gap-1.5 mt-1">
+                    {(op.houseboat_details as any).room_types.map((r: string) => <Badge key={r} variant="outline" size="sm">{r}</Badge>)}
+                  </div>
+                </div>
+              )}
+              {(op.houseboat_details as any).amenities?.length > 0 && (
+                <div>
+                  <p className="text-xs text-muted-foreground font-medium">Amenities</p>
+                  <div className="flex flex-wrap gap-1.5 mt-1">
+                    {(op.houseboat_details as any).amenities.map((a: string) => <Badge key={a} variant="outline" size="sm">{a}</Badge>)}
+                  </div>
+                </div>
+              )}
               {(op.houseboat_details as any).google_maps && (
                 <a href={(op.houseboat_details as any).google_maps} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
                   <Globe className="h-4 w-4" /> View on Google Maps
@@ -239,6 +258,9 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
               )}
               {(op.shikara_details as any).years_experience && <DetailRow icon={Clock} label="Experience" value={`${(op.shikara_details as any).years_experience} years`} />}
               {(op.shikara_details as any).tour_duration && <DetailRow icon={Clock} label="Tour Duration" value={(op.shikara_details as any).tour_duration} />}
+              {(op.shikara_details as any).price_per_ride && <DetailRow icon={TrendingUp} label="Per Ride" value={`₹${(op.shikara_details as any).price_per_ride}`} />}
+              {(op.shikara_details as any).price_per_hour && <DetailRow icon={TrendingUp} label="Per Hour" value={`₹${(op.shikara_details as any).price_per_hour}`} />}
+              {(op.shikara_details as any).price_note && <DetailRow icon={Info} label="Price Note" value={(op.shikara_details as any).price_note} />}
             </CardContent>
           </Card>
         )}

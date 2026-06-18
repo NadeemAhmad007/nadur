@@ -96,6 +96,10 @@ export default function EditProfilePage() {
               grade: hd.grade || 'Grade A',
               google_maps: hd.google_maps || '',
               boat_ghat: hd.boat_ghat || '',
+              hb_total_rooms: hd.total_rooms || '',
+              hb_capacity: hd.capacity || '',
+              hb_room_types: hd.room_types || [],
+              hb_amenities: hd.amenities || [],
               full_name: sd.full_name || '',
               mobile_number: sd.mobile_number || '',
               whatsapp_number: sd.whatsapp_number || '',
@@ -108,6 +112,9 @@ export default function EditProfilePage() {
               tour_duration: sd.tour_duration || '',
               registered_shikara: sd.registered_shikara || '',
               registration_number: sd.registration_number || '',
+              price_per_ride: sd.price_per_ride || '',
+              price_per_hour: sd.price_per_hour || '',
+              price_note: sd.price_note || '',
               business_type: ad.business_type || '',
               specialties: ad.specialties || [],
               business_scale: ad.business_scale || '',
@@ -210,6 +217,10 @@ export default function EditProfilePage() {
         boat_ghat: form.boat_ghat || null,
         boat_ghat_lat: houseboatGhat?.lat ?? null,
         boat_ghat_lng: houseboatGhat?.lng ?? null,
+        total_rooms: form.hb_total_rooms || null,
+        capacity: form.hb_capacity || null,
+        room_types: form.hb_room_types || null,
+        amenities: form.hb_amenities || null,
       } : undefined;
       const shikaraPayload = operator.category === 'shikara' ? {
         full_name: form.full_name || null,
@@ -224,6 +235,9 @@ export default function EditProfilePage() {
         tour_duration: form.tour_duration || null,
         registered_shikara: form.registered_shikara || null,
         registration_number: form.registration_number || null,
+        price_per_ride: form.price_per_ride || null,
+        price_per_hour: form.price_per_hour || null,
+        price_note: form.price_note || null,
       } : undefined;
       const taxiPayload = operator.category === 'taxi' ? {
         driver_name: form.driver_name || null,
@@ -551,6 +565,38 @@ export default function EditProfilePage() {
                   <option value="Other">Other</option>
                 </select>
               </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-medium">Total Rooms</label>
+                  <input value={form.hb_total_rooms || ''} onChange={(e) => setForm({ ...form, hb_total_rooms: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. 6" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Max Guest Capacity</label>
+                  <input value={form.hb_capacity || ''} onChange={(e) => setForm({ ...form, hb_capacity: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. 20" />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium">Room Types</label>
+                <div className="mt-1 space-y-1">
+                  {['Single', 'Double', 'Family Suite', 'Deluxe Suite', 'Dormitory'].map((type) => (
+                    <label key={type} className="flex items-center gap-2 text-sm">
+                      <input type="checkbox" checked={(form.hb_room_types || []).includes(type)} onChange={(e) => setForm({ ...form, hb_room_types: e.target.checked ? [...(form.hb_room_types || []), type] : (form.hb_room_types || []).filter((t: string) => t !== type) })} className="rounded" />
+                      {type}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium">Amenities</label>
+                <div className="mt-1 grid grid-cols-2 gap-x-3 gap-y-1">
+                  {['AC', 'Heating', 'Attached Bathroom', 'Hot Water', 'TV', 'WiFi', 'Room Service', 'Lake View', 'Bonfire', 'Restaurant', 'Parking', 'Laundry'].map((a) => (
+                    <label key={a} className="flex items-center gap-2 text-sm">
+                      <input type="checkbox" checked={(form.hb_amenities || []).includes(a)} onChange={(e) => setForm({ ...form, hb_amenities: e.target.checked ? [...(form.hb_amenities || []), a] : (form.hb_amenities || []).filter((x: string) => x !== a) })} className="rounded" />
+                      {a}
+                    </label>
+                  ))}
+                </div>
+              </div>
             </div>
             <div className="space-y-3">
             <h3 className="text-sm font-semibold">Houseboat Tariffs (₹)</h3>
@@ -726,6 +772,23 @@ export default function EditProfilePage() {
                   <input value={form.registration_number || ''} onChange={(e) => setForm({ ...form, registration_number: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
                 </div>
               )}
+            </div>
+            <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+              <h3 className="text-sm font-semibold">Pricing</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-medium">Price per Ride (₹)</label>
+                  <input value={form.price_per_ride || ''} onChange={(e) => setForm({ ...form, price_per_ride: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="₹" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Price per Hour (₹)</label>
+                  <input value={form.price_per_hour || ''} onChange={(e) => setForm({ ...form, price_per_hour: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="₹" />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium">Price Note (Optional)</label>
+                <textarea value={form.price_note || ''} onChange={(e) => setForm({ ...form, price_note: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" rows={2} placeholder="e.g. Contact for group discounts" />
+              </div>
             </div>
           </>
         )}

@@ -60,6 +60,9 @@ type ShikaraFormFields = {
   tour_duration: string;
   registered_shikara: string;
   registration_number: string;
+  price_per_ride: string;
+  price_per_hour: string;
+  price_note: string;
 };
 
 type TaxiFormFields = {
@@ -160,6 +163,10 @@ type FormData = {
   guide: GuideFormFields;
   vendor: VendorFormFields;
   boat_ghat: string;
+  hb_total_rooms: string;
+  hb_capacity: string;
+  hb_room_types: string[];
+  hb_amenities: string[];
 };
 
 const defaultTaxi: TaxiFormFields = {
@@ -212,6 +219,9 @@ const defaultShikara: ShikaraFormFields = {
   tour_duration: '',
   registered_shikara: '',
   registration_number: '',
+  price_per_ride: '',
+  price_per_hour: '',
+  price_note: '',
 };
 
 const ROOM_TYPES = ['Single', 'Double', 'Family', 'Dormitory', 'Suite'];
@@ -311,6 +321,10 @@ export default function JoinPage() {
     guide: { ...defaultGuide },
     vendor: { ...defaultVendor },
     boat_ghat: '',
+    hb_total_rooms: '',
+    hb_capacity: '',
+    hb_room_types: [],
+    hb_amenities: [],
   });
 
   useEffect(() => {
@@ -378,6 +392,10 @@ export default function JoinPage() {
           single_ap: form.tariffs.single_ap || null,
           note: form.tariffs.note || null,
         },
+        total_rooms: form.hb_total_rooms || null,
+        capacity: form.hb_capacity || null,
+        room_types: form.hb_room_types.length > 0 ? form.hb_room_types : null,
+        amenities: form.hb_amenities.length > 0 ? form.hb_amenities : null,
       } : null;
 
       const shikaraPayload = form.category === 'shikara' ? {
@@ -393,6 +411,9 @@ export default function JoinPage() {
         tour_duration: form.shikara.tour_duration || null,
         registered_shikara: form.shikara.registered_shikara || null,
         registration_number: form.shikara.registration_number || null,
+        price_per_ride: form.shikara.price_per_ride || null,
+        price_per_hour: form.shikara.price_per_hour || null,
+        price_note: form.shikara.price_note || null,
       } : null;
       const accommodationPayload = (form.category === 'homestay' || form.category === 'guest_house') ? {
         property_type: form.category,
@@ -753,6 +774,38 @@ export default function JoinPage() {
                     ))}
                     <option value="Other">Other</option>
                   </select>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-medium">Total Rooms</label>
+                    <input value={form.hb_total_rooms} onChange={(e) => update('hb_total_rooms', e.target.value)} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. 6" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium">Max Guest Capacity</label>
+                    <input value={form.hb_capacity} onChange={(e) => update('hb_capacity', e.target.value)} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. 20" />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Room Types</label>
+                  <div className="mt-1 space-y-1">
+                    {['Single', 'Double', 'Family Suite', 'Deluxe Suite', 'Dormitory'].map((type) => (
+                      <label key={type} className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={form.hb_room_types.includes(type)} onChange={(e) => setForm((prev) => ({ ...prev, hb_room_types: e.target.checked ? [...prev.hb_room_types, type] : prev.hb_room_types.filter((t) => t !== type) }))} className="accent-[#2C5F8A]" />
+                        {type}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Amenities</label>
+                  <div className="mt-1 grid grid-cols-2 gap-x-3 gap-y-1">
+                    {['AC', 'Heating', 'Attached Bathroom', 'Hot Water', 'TV', 'WiFi', 'Room Service', 'Lake View', 'Bonfire', 'Restaurant', 'Parking', 'Laundry'].map((a) => (
+                      <label key={a} className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={form.hb_amenities.includes(a)} onChange={(e) => setForm((prev) => ({ ...prev, hb_amenities: e.target.checked ? [...prev.hb_amenities, a] : prev.hb_amenities.filter((x) => x !== a) }))} className="accent-[#2C5F8A]" />
+                        {a}
+                      </label>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
@@ -1216,6 +1269,25 @@ export default function JoinPage() {
                 )}
               </div>
             )}
+            {form.category === 'shikara' && (
+              <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+                <h3 className="text-sm font-semibold">Pricing</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-medium">Price per Ride (₹)</label>
+                    <input value={form.shikara.price_per_ride} onChange={(e) => setForm((prev) => ({ ...prev, shikara: { ...prev.shikara, price_per_ride: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="₹" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium">Price per Hour (₹)</label>
+                    <input value={form.shikara.price_per_hour} onChange={(e) => setForm((prev) => ({ ...prev, shikara: { ...prev.shikara, price_per_hour: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="₹" />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Price Note (Optional)</label>
+                  <textarea value={form.shikara.price_note} onChange={(e) => setForm((prev) => ({ ...prev, shikara: { ...prev.shikara, price_note: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" rows={2} placeholder="e.g. Contact for group discounts" />
+                </div>
+              </div>
+            )}
             {form.category === 'artisan' && (
               <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
                 <h3 className="text-sm font-semibold">Owner Information</h3>
@@ -1501,6 +1573,10 @@ export default function JoinPage() {
                     </div>
                     {form.tariffs.note && <p className="text-xs text-gray-500 mt-1">{form.tariffs.note}</p>}
                   </div>
+                  {form.hb_total_rooms && <div><strong>Rooms:</strong> {form.hb_total_rooms}</div>}
+                  {form.hb_capacity && <div><strong>Capacity:</strong> {form.hb_capacity} guests</div>}
+                  {form.hb_room_types.length > 0 && <div><strong>Room Types:</strong> {form.hb_room_types.join(', ')}</div>}
+                  {form.hb_amenities.length > 0 && <div><strong>Amenities:</strong> {form.hb_amenities.join(', ')}</div>}
                 </>
               )}
               {form.category === 'shikara' && (
@@ -1516,6 +1592,9 @@ export default function JoinPage() {
                   {form.shikara.services.length > 0 && <div><strong>Services:</strong> {form.shikara.services.join(', ')}</div>}
                   {form.shikara.tour_duration && <div><strong>Duration:</strong> {form.shikara.tour_duration}</div>}
                   {form.shikara.registered_shikara && <div><strong>Registered Shikara:</strong> {form.shikara.registered_shikara}{form.shikara.registration_number ? ` (${form.shikara.registration_number})` : ''}</div>}
+                  {form.shikara.price_per_ride && <div><strong>Per Ride:</strong> ₹{form.shikara.price_per_ride}</div>}
+                  {form.shikara.price_per_hour && <div><strong>Per Hour:</strong> ₹{form.shikara.price_per_hour}</div>}
+                  {form.shikara.price_note && <div><strong>Price Note:</strong> {form.shikara.price_note}</div>}
                 </>
               )}
               {form.category === 'artisan' && (

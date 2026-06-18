@@ -39,6 +39,9 @@ export interface ShikaraDetails {
   tour_duration?: string | null;
   registered_shikara?: string | null;
   registration_number?: string | null;
+  price_per_ride?: string | null;
+  price_per_hour?: string | null;
+  price_note?: string | null;
 }
 
 export interface ArtisanDetails {
@@ -130,6 +133,10 @@ export interface HouseboatDetails {
   boat_ghat?: string | null;
   boat_ghat_lat?: number | null;
   boat_ghat_lng?: number | null;
+  total_rooms?: string | null;
+  capacity?: string | null;
+  room_types?: string[] | null;
+  amenities?: string[] | null;
 }
 
 export interface Operator {

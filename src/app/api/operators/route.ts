@@ -115,6 +115,10 @@ export async function GET(req: Request) {
               eq(operators.category, 'taxi'),
               sql`COALESCE(NULLIF(${operators.taxi_details}->>'price_per_km', '')::numeric, 0) BETWEEN ${pMin} AND ${pMax}`,
             ),
+            and(
+              eq(operators.category, 'shikara'),
+              sql`COALESCE(NULLIF(${operators.shikara_details}->>'price_per_ride', '')::numeric, 0) BETWEEN ${pMin} AND ${pMax}`,
+            ),
           )
         );
       }
