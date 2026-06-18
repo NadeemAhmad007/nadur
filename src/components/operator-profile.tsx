@@ -9,13 +9,14 @@ import {
   ArrowLeft, BadgeCheck, Heart, Share2, MessageCircle,
   ChevronLeft, ChevronRight, Send, MapPin, Phone, Mail,
   Star, User, Map, Clock, Globe, AlertCircle, X, TrendingUp,
-  Car, Hash
+  Car, Hash, Building2
 } from 'lucide-react';
 import Link from 'next/link';
 
 const categoryLabels: Record<string, string> = {
   houseboat: 'Houseboat', shikara: 'Shikara Ride', artisan: 'Artisan',
   guide: 'Local Guide', vendor: 'Floating Vendor', taxi: 'Taxi & Transfers',
+  homestay: 'Homestay', guest_house: 'Guest House',
 };
 
 export function OperatorProfile({ operator: op }: { operator: Operator }) {
@@ -266,6 +267,72 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
                   <Globe className="h-4 w-4" /> View on Google Maps
                 </a>
               )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Accommodation Details */}
+        {op.accommodation_details && (op.category === 'homestay' || op.category === 'guest_house') && (
+          <Card>
+            <CardContent className="p-5 space-y-4">
+              <h2 className="font-semibold flex items-center gap-2"><Building2 className="h-4 w-4 text-muted-foreground" /> Property Details</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                {(op.accommodation_details as any).owner_name && <DetailRow icon={User} label="Owner" value={(op.accommodation_details as any).owner_name} />}
+                {(op.accommodation_details as any).manager_name && <DetailRow icon={User} label="Manager" value={(op.accommodation_details as any).manager_name} />}
+                {(op.accommodation_details as any).contact && <DetailRow icon={Phone} label="Contact" value={(op.accommodation_details as any).contact} />}
+                {(op.accommodation_details as any).email && <DetailRow icon={Mail} label="Email" value={(op.accommodation_details as any).email} />}
+                {(op.accommodation_details as any).address && <DetailRow icon={MapPin} label="Address" value={(op.accommodation_details as any).address} />}
+                {(op.accommodation_details as any).total_rooms && <DetailRow icon={Building2} label="Total Rooms" value={(op.accommodation_details as any).total_rooms} />}
+                {(op.accommodation_details as any).room_types?.length > 0 && <DetailRow icon={Building2} label="Room Types" value={(op.accommodation_details as any).room_types.join(', ')} />}
+                {(op.accommodation_details as any).languages?.length > 0 && <DetailRow icon={Globe} label="Languages" value={(op.accommodation_details as any).languages.join(', ')} />}
+                {(op.accommodation_details as any).check_in && <DetailRow icon={Clock} label="Check-in" value={(op.accommodation_details as any).check_in} />}
+                {(op.accommodation_details as any).check_out && <DetailRow icon={Clock} label="Check-out" value={(op.accommodation_details as any).check_out} />}
+              </div>
+              {(op.accommodation_details as any).amenities?.length > 0 && (
+                <div>
+                  <p className="text-xs text-muted-foreground font-medium">Amenities</p>
+                  <div className="flex flex-wrap gap-1.5 mt-1">
+                    {(op.accommodation_details as any).amenities.map((a: string, i: number) => <Badge key={i} variant="outline" size="sm">{a}</Badge>)}
+                  </div>
+                </div>
+              )}
+              {(op.accommodation_details as any).meals_included?.length > 0 && (
+                <div>
+                  <p className="text-xs text-muted-foreground font-medium">Meals Included</p>
+                  <div className="flex flex-wrap gap-1.5 mt-1">
+                    {(op.accommodation_details as any).meals_included.map((m: string, i: number) => <Badge key={i} variant="outline" size="sm">{m}</Badge>)}
+                  </div>
+                </div>
+              )}
+              {(op.accommodation_details as any).nearby_attractions && <DetailRow icon={MapPin} label="Nearby Attractions" value={(op.accommodation_details as any).nearby_attractions} />}
+              {(op.accommodation_details as any).google_maps && (
+                <a href={(op.accommodation_details as any).google_maps} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+                  <Globe className="h-4 w-4" /> View on Google Maps
+                </a>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Accommodation Pricing */}
+        {op.accommodation_details && (op.category === 'homestay' || op.category === 'guest_house') && (
+          <Card>
+            <CardContent className="p-5 space-y-4">
+              <h2 className="font-semibold flex items-center gap-2"><Star className="h-4 w-4 text-muted-foreground" /> Pricing (₹)</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {(op.accommodation_details as any).pricing_single && (
+                  <div className="rounded-xl bg-muted p-3 text-center">
+                    <p className="text-[10px] text-muted-foreground uppercase">Single/Night</p>
+                    <p className="text-lg font-bold text-foreground mt-0.5">₹{(op.accommodation_details as any).pricing_single}</p>
+                  </div>
+                )}
+                {(op.accommodation_details as any).pricing_double && (
+                  <div className="rounded-xl bg-muted p-3 text-center">
+                    <p className="text-[10px] text-muted-foreground uppercase">Double/Night</p>
+                    <p className="text-lg font-bold text-foreground mt-0.5">₹{(op.accommodation_details as any).pricing_double}</p>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
         )}

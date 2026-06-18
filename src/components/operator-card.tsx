@@ -12,6 +12,7 @@ import { BadgeCheck, MapPin, ExternalLink, MessageCircle, X, Send, AlertCircle }
 const categoryLabels: Record<string, string> = {
   houseboat: 'Houseboat', shikara: 'Shikara Ride', artisan: 'Artisan',
   guide: 'Local Guide', vendor: 'Floating Vendor', taxi: 'Taxi & Transfers',
+  homestay: 'Homestay', guest_house: 'Guest House',
 };
 
 export function OperatorCard({ operator, className }: { operator: Operator; className?: string }) {

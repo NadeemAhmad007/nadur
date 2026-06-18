@@ -93,6 +93,25 @@ type ArtisanFormFields = {
   google_maps: string;
 };
 
+type AccommodationFormFields = {
+  owner_name: string;
+  manager_name: string;
+  contact: string;
+  email: string;
+  address: string;
+  google_maps: string;
+  total_rooms: string;
+  room_types: string[];
+  pricing_single: string;
+  pricing_double: string;
+  amenities: string[];
+  meals_included: string[];
+  check_in: string;
+  check_out: string;
+  languages: string[];
+  nearby_attractions: string;
+};
+
 type FormData = {
   email: string;
   name: string;
@@ -112,6 +131,7 @@ type FormData = {
   shikara: ShikaraFormFields;
   artisan: ArtisanFormFields;
   taxi: TaxiFormFields;
+  accommodation: AccommodationFormFields;
   boat_ghat: string;
 };
 
@@ -167,6 +187,30 @@ const defaultShikara: ShikaraFormFields = {
   registration_number: '',
 };
 
+const ROOM_TYPES = ['Single', 'Double', 'Family', 'Dormitory', 'Suite'];
+const AMENITIES_LIST = ['WiFi', 'AC', 'Parking', 'Hot Water', 'TV', 'Kitchen Access', 'Garden', 'Lake View', 'Mountain View', 'Bonfire', 'Room Service', 'Laundry'];
+const MEALS_LIST = ['Breakfast', 'Lunch', 'Dinner', 'All Meals'];
+const ACCOMMODATION_LANGUAGES = ['Kashmiri', 'Urdu', 'Hindi', 'English', 'Arabic', 'French'];
+
+const defaultAccommodation: AccommodationFormFields = {
+  owner_name: '',
+  manager_name: '',
+  contact: '',
+  email: '',
+  address: '',
+  google_maps: '',
+  total_rooms: '',
+  room_types: [],
+  pricing_single: '',
+  pricing_double: '',
+  amenities: [],
+  meals_included: [],
+  check_in: '',
+  check_out: '',
+  languages: [],
+  nearby_attractions: '',
+};
+
 const steps = ['Email', 'Business', 'Description', 'Photos', 'Review'];
 
 export default function JoinPage() {
@@ -207,6 +251,7 @@ export default function JoinPage() {
     shikara: { ...defaultShikara },
     artisan: { ...defaultArtisan },
     taxi: { ...defaultTaxi },
+    accommodation: { ...defaultAccommodation },
     boat_ghat: '',
   });
 
@@ -291,6 +336,25 @@ export default function JoinPage() {
         registered_shikara: form.shikara.registered_shikara || null,
         registration_number: form.shikara.registration_number || null,
       } : null;
+      const accommodationPayload = (form.category === 'homestay' || form.category === 'guest_house') ? {
+        property_type: form.category,
+        owner_name: form.accommodation.owner_name || null,
+        manager_name: form.accommodation.manager_name || null,
+        contact: form.accommodation.contact || null,
+        email: form.accommodation.email || null,
+        address: form.accommodation.address || null,
+        google_maps: form.accommodation.google_maps || null,
+        total_rooms: form.accommodation.total_rooms || null,
+        room_types: form.accommodation.room_types.length > 0 ? form.accommodation.room_types : null,
+        pricing_single: form.accommodation.pricing_single || null,
+        pricing_double: form.accommodation.pricing_double || null,
+        amenities: form.accommodation.amenities.length > 0 ? form.accommodation.amenities : null,
+        meals_included: form.accommodation.meals_included.length > 0 ? form.accommodation.meals_included : null,
+        check_in: form.accommodation.check_in || null,
+        check_out: form.accommodation.check_out || null,
+        languages: form.accommodation.languages.length > 0 ? form.accommodation.languages : null,
+        nearby_attractions: form.accommodation.nearby_attractions || null,
+      } : null;
       const taxiPayload = form.category === 'taxi' ? {
         driver_name: form.taxi.driver_name || null,
         vehicle_type: form.taxi.vehicle_type || null,
@@ -338,6 +402,7 @@ export default function JoinPage() {
           shikara_details: shikaraPayload,
           artisan_details: artisanPayload,
           taxi_details: taxiPayload,
+          accommodation_details: accommodationPayload,
           lat: coords?.lat ?? null,
           lng: coords?.lng ?? null,
         }),
@@ -545,6 +610,8 @@ export default function JoinPage() {
                 <option value="guide">Local Guide</option>
                 <option value="vendor">Floating Vendor</option>
                 <option value="taxi">Taxi & Transfers</option>
+                <option value="homestay">Homestay</option>
+                <option value="guest_house">Guest House</option>
               </select>
             </div>
             <div>
@@ -708,6 +775,95 @@ export default function JoinPage() {
                       </label>
                     ))}
                   </div>
+                </div>
+              </div>
+            )}
+            {(form.category === 'homestay' || form.category === 'guest_house') && (
+              <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+                <h3 className="text-sm font-semibold">Property Details</h3>
+                <div>
+                  <label className="text-xs font-medium">Owner Name</label>
+                  <input value={form.accommodation.owner_name} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, owner_name: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Manager Name (if different)</label>
+                  <input value={form.accommodation.manager_name} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, manager_name: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Contact Number</label>
+                  <input value={form.accommodation.contact} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, contact: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Email</label>
+                  <input type="email" value={form.accommodation.email} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, email: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Address</label>
+                  <input value={form.accommodation.address} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, address: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Google Maps Link</label>
+                  <input value={form.accommodation.google_maps} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, google_maps: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Total Rooms</label>
+                  <input type="number" value={form.accommodation.total_rooms} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, total_rooms: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. 4" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Room Types (select all that apply)</label>
+                  <div className="mt-1 space-y-1">
+                    {ROOM_TYPES.map((rt) => (
+                      <label key={rt} className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={form.accommodation.room_types.includes(rt)} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, room_types: e.target.checked ? [...prev.accommodation.room_types, rt] : prev.accommodation.room_types.filter((r) => r !== rt) } }))} className="accent-[#2C5F8A]" />
+                        {rt}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Languages Spoken</label>
+                  <div className="mt-1 space-y-1">
+                    {ACCOMMODATION_LANGUAGES.map((lang) => (
+                      <label key={lang} className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={form.accommodation.languages.includes(lang)} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, languages: e.target.checked ? [...prev.accommodation.languages, lang] : prev.accommodation.languages.filter((l) => l !== lang) } }))} className="accent-[#2C5F8A]" />
+                        {lang}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Check-in Time</label>
+                  <input value={form.accommodation.check_in} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, check_in: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. 12:00 PM" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Check-out Time</label>
+                  <input value={form.accommodation.check_out} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, check_out: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. 10:00 AM" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Amenities (select all that apply)</label>
+                  <div className="mt-1 grid grid-cols-2 gap-x-3 gap-y-1">
+                    {AMENITIES_LIST.map((a) => (
+                      <label key={a} className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={form.accommodation.amenities.includes(a)} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, amenities: e.target.checked ? [...prev.accommodation.amenities, a] : prev.accommodation.amenities.filter((x) => x !== a) } }))} className="accent-[#2C5F8A]" />
+                        {a}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Meals Included</label>
+                  <div className="mt-1 space-y-1">
+                    {MEALS_LIST.map((m) => (
+                      <label key={m} className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={form.accommodation.meals_included.includes(m)} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, meals_included: e.target.checked ? [...prev.accommodation.meals_included, m] : prev.accommodation.meals_included.filter((x) => x !== m) } }))} className="accent-[#2C5F8A]" />
+                        {m}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Nearby Attractions</label>
+                  <textarea value={form.accommodation.nearby_attractions} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, nearby_attractions: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" rows={2} placeholder="e.g. Dal Lake, Shankaracharya Temple, Mughal Gardens" />
                 </div>
               </div>
             )}
@@ -973,6 +1129,21 @@ export default function JoinPage() {
                   </div>
               </div>
             )}
+            {(form.category === 'homestay' || form.category === 'guest_house') && (
+              <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+                <h3 className="text-sm font-semibold">Pricing (₹ per night)</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-medium">Single Room</label>
+                    <input value={form.accommodation.pricing_single} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, pricing_single: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="₹" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium">Double Room</label>
+                    <input value={form.accommodation.pricing_double} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, pricing_double: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="₹" />
+                  </div>
+                </div>
+              </div>
+            )}
             {form.category === 'taxi' && (
               <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
                 <h3 className="text-sm font-semibold">Pricing & Tours</h3>
@@ -1142,8 +1313,21 @@ export default function JoinPage() {
                   {form.artisan.years_in_business && <div><strong>Years in Business:</strong> {form.artisan.years_in_business}</div>}
                 </>
               )}
-              {form.category === 'taxi' && (
-                <>
+               {(form.category === 'homestay' || form.category === 'guest_house') && (
+                  <>
+                    <div><strong>Owner:</strong> {form.accommodation.owner_name || '—'}</div>
+                    <div><strong>Contact:</strong> {form.accommodation.contact || '—'}</div>
+                    <div><strong>Address:</strong> {form.accommodation.address || '—'}</div>
+                    <div><strong>Total Rooms:</strong> {form.accommodation.total_rooms || '—'}</div>
+                    {form.accommodation.room_types.length > 0 && <div><strong>Room Types:</strong> {form.accommodation.room_types.join(', ')}</div>}
+                    {form.accommodation.amenities.length > 0 && <div><strong>Amenities:</strong> {form.accommodation.amenities.join(', ')}</div>}
+                    {form.accommodation.meals_included.length > 0 && <div><strong>Meals:</strong> {form.accommodation.meals_included.join(', ')}</div>}
+                    <div><strong>Single/Night:</strong> {form.accommodation.pricing_single ? `₹${form.accommodation.pricing_single}` : '—'}</div>
+                    <div><strong>Double/Night:</strong> {form.accommodation.pricing_double ? `₹${form.accommodation.pricing_double}` : '—'}</div>
+                  </>
+                )}
+                {form.category === 'taxi' && (
+                  <>
                   <div><strong>Driver:</strong> {form.taxi.driver_name || '—'}</div>
                   <div><strong>Vehicle:</strong> {form.taxi.vehicle_type || '—'} {form.taxi.vehicle_model ? `(${form.taxi.vehicle_model})` : ''}</div>
                   <div><strong>Registration:</strong> {form.taxi.registration_number || '—'}</div>

@@ -15,7 +15,7 @@ const run = async () => {
       user_id UUID,
       slug TEXT UNIQUE NOT NULL,
       name TEXT NOT NULL,
-      category TEXT NOT NULL CHECK (category IN ('houseboat','shikara','artisan','guide','vendor','taxi')),
+      category TEXT NOT NULL CHECK (category IN ('houseboat','shikara','artisan','guide','vendor','taxi','homestay','guest_house')),
       short_desc TEXT CHECK (char_length(short_desc) <= 500),
       long_desc TEXT CHECK (char_length(long_desc) <= 2000),
       whatsapp TEXT NOT NULL,
@@ -35,7 +35,7 @@ const run = async () => {
     ALTER TABLE operators DROP CONSTRAINT IF EXISTS operators_category_check
   `;
   await sql`
-    ALTER TABLE operators ADD CONSTRAINT operators_category_check CHECK (category IN ('houseboat','shikara','artisan','guide','vendor','taxi'))
+    ALTER TABLE operators ADD CONSTRAINT operators_category_check CHECK (category IN ('houseboat','shikara','artisan','guide','vendor','taxi','homestay','guest_house'))
   `;
 
   await sql`
@@ -126,7 +126,9 @@ const run = async () => {
         ('artisan', 'Artisans & Crafts', 'IconPalette', 3),
         ('guide', 'Local Guides', 'IconMapPin', 4),
         ('vendor', 'Floating Vendors', 'IconShoppingBag', 5),
-        ('taxi', 'Taxis & Transfers', 'IconCar', 6)
+        ('taxi', 'Taxis & Transfers', 'IconCar', 6),
+        ('homestay', 'Homestays', 'IconHome', 7),
+        ('guest_house', 'Guest Houses', 'IconBuilding2', 8)
     `;
   }
 
@@ -145,6 +147,9 @@ const run = async () => {
   `;
   await sql`
     ALTER TABLE operators ADD COLUMN IF NOT EXISTS taxi_details JSONB
+  `;
+  await sql`
+    ALTER TABLE operators ADD COLUMN IF NOT EXISTS accommodation_details JSONB
   `;
   await sql`
     ALTER TABLE operators ADD COLUMN IF NOT EXISTS lat DOUBLE PRECISION

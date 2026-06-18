@@ -1,5 +1,5 @@
 import { pgTable, uuid, text, timestamp, integer, boolean, doublePrecision, json, uniqueIndex, index } from 'drizzle-orm/pg-core';
-import type { Tariffs, HouseboatDetails, ShikaraDetails, ArtisanDetails, TaxiDetails } from '@/types';
+import type { Tariffs, HouseboatDetails, ShikaraDetails, ArtisanDetails, TaxiDetails, AccommodationDetails } from '@/types';
 
 export const operators = pgTable('operators', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -8,7 +8,7 @@ export const operators = pgTable('operators', {
   user_id: uuid('user_id'),
   slug: text('slug').notNull().unique(),
   name: text('name').notNull(),
-  category: text('category', { enum: ['houseboat', 'shikara', 'artisan', 'guide', 'vendor', 'taxi'] }).notNull(),
+  category: text('category', { enum: ['houseboat', 'shikara', 'artisan', 'guide', 'vendor', 'taxi', 'homestay', 'guest_house'] }).notNull(),
   short_desc: text('short_desc'),
   long_desc: text('long_desc'),
   whatsapp: text('whatsapp').notNull(),
@@ -25,6 +25,7 @@ export const operators = pgTable('operators', {
   shikara_details: json('shikara_details').$type<ShikaraDetails | null>(),
   artisan_details: json('artisan_details').$type<ArtisanDetails | null>(),
   taxi_details: json('taxi_details').$type<TaxiDetails | null>(),
+  accommodation_details: json('accommodation_details').$type<AccommodationDetails | null>(),
   lat: doublePrecision('lat'),
   lng: doublePrecision('lng'),
 }, (table) => [

@@ -77,6 +77,7 @@ export default function EditProfilePage() {
             const hd = op.houseboat_details || {};
             const sd = op.shikara_details || {};
             const ad = op.artisan_details || {};
+            const ac = op.accommodation_details || {};
             setForm({
               name: op.name,
               short_desc: op.short_desc || '',
@@ -117,6 +118,22 @@ export default function EditProfilePage() {
               export_license: ad.export_license || '',
               years_in_business: ad.years_in_business || '',
               artisan_google_maps: ad.google_maps || '',
+              acc_owner_name: ac.owner_name || '',
+              acc_manager_name: ac.manager_name || '',
+              acc_contact: ac.contact || '',
+              acc_email: ac.email || '',
+              acc_address: ac.address || '',
+              acc_google_maps: ac.google_maps || '',
+              acc_total_rooms: ac.total_rooms || '',
+              acc_room_types: ac.room_types || [],
+              acc_pricing_single: ac.pricing_single || '',
+              acc_pricing_double: ac.pricing_double || '',
+              acc_amenities: ac.amenities || [],
+              acc_meals_included: ac.meals_included || [],
+              acc_check_in: ac.check_in || '',
+              acc_check_out: ac.check_out || '',
+              acc_languages: ac.languages || [],
+              acc_nearby_attractions: ac.nearby_attractions || '',
             });
           }
         });
@@ -216,6 +233,25 @@ export default function EditProfilePage() {
         years_in_business: form.years_in_business || null,
         google_maps: form.artisan_google_maps || null,
       } : undefined;
+      const accommodationPayload = (operator.category === 'homestay' || operator.category === 'guest_house') ? {
+        property_type: operator.category,
+        owner_name: form.acc_owner_name || null,
+        manager_name: form.acc_manager_name || null,
+        contact: form.acc_contact || null,
+        email: form.acc_email || null,
+        address: form.acc_address || null,
+        google_maps: form.acc_google_maps || null,
+        total_rooms: form.acc_total_rooms || null,
+        room_types: form.acc_room_types || null,
+        pricing_single: form.acc_pricing_single || null,
+        pricing_double: form.acc_pricing_double || null,
+        amenities: form.acc_amenities || null,
+        meals_included: form.acc_meals_included || null,
+        check_in: form.acc_check_in || null,
+        check_out: form.acc_check_out || null,
+        languages: form.acc_languages || null,
+        nearby_attractions: form.acc_nearby_attractions || null,
+      } : undefined;
       const coords = form.google_maps ? parseGoogleMapsUrl(form.google_maps) : null;
 
       await fetch(`/api/operators/${operator.slug}`, {
@@ -234,6 +270,7 @@ export default function EditProfilePage() {
           shikara_details: shikaraPayload,
           artisan_details: artisanPayload,
           taxi_details: taxiPayload,
+          accommodation_details: accommodationPayload,
           lat: coords?.lat ?? null,
           lng: coords?.lng ?? null,
         }),
@@ -739,6 +776,67 @@ export default function EditProfilePage() {
               <div>
                 <label className="text-xs font-medium">Google Map Link</label>
                 <input value={form.artisan_google_maps || ''} onChange={(e) => setForm({ ...form, artisan_google_maps: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
+              </div>
+            </div>
+          </>
+        )}
+
+        {(operator.category === 'homestay' || operator.category === 'guest_house') && (
+          <>
+            <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+              <h3 className="text-sm font-semibold">Property Details</h3>
+              <div>
+                <label className="text-xs font-medium">Owner Name</label>
+                <input value={form.acc_owner_name || ''} onChange={(e) => setForm({ ...form, acc_owner_name: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+              </div>
+              <div>
+                <label className="text-xs font-medium">Manager Name</label>
+                <input value={form.acc_manager_name || ''} onChange={(e) => setForm({ ...form, acc_manager_name: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+              </div>
+              <div>
+                <label className="text-xs font-medium">Contact Number</label>
+                <input value={form.acc_contact || ''} onChange={(e) => setForm({ ...form, acc_contact: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+              </div>
+              <div>
+                <label className="text-xs font-medium">Email</label>
+                <input value={form.acc_email || ''} onChange={(e) => setForm({ ...form, acc_email: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+              </div>
+              <div>
+                <label className="text-xs font-medium">Address</label>
+                <input value={form.acc_address || ''} onChange={(e) => setForm({ ...form, acc_address: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+              </div>
+              <div>
+                <label className="text-xs font-medium">Google Maps Link</label>
+                <input value={form.acc_google_maps || ''} onChange={(e) => setForm({ ...form, acc_google_maps: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
+              </div>
+              <div>
+                <label className="text-xs font-medium">Total Rooms</label>
+                <input value={form.acc_total_rooms || ''} onChange={(e) => setForm({ ...form, acc_total_rooms: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. 4" />
+              </div>
+              <div>
+                <label className="text-xs font-medium">Check-in Time</label>
+                <input value={form.acc_check_in || ''} onChange={(e) => setForm({ ...form, acc_check_in: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. 12:00 PM" />
+              </div>
+              <div>
+                <label className="text-xs font-medium">Check-out Time</label>
+                <input value={form.acc_check_out || ''} onChange={(e) => setForm({ ...form, acc_check_out: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. 10:00 AM" />
+              </div>
+              <div>
+                <label className="text-xs font-medium">Nearby Attractions</label>
+                <textarea value={form.acc_nearby_attractions || ''} onChange={(e) => setForm({ ...form, acc_nearby_attractions: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" rows={2} placeholder="e.g. Dal Lake, Shankaracharya Temple, Mughal Gardens" />
+              </div>
+            </div>
+            <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+              <h3 className="text-sm font-semibold">Pricing (₹ per night)</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-medium">Single Room</label>
+                  <input value={form.acc_pricing_single || ''} onChange={(e) => setForm({ ...form, acc_pricing_single: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="₹" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Double Room</label>
+                  <input value={form.acc_pricing_double || ''} onChange={(e) => setForm({ ...form, acc_pricing_double: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="₹" />
+                </div>
               </div>
             </div>
           </>

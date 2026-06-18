@@ -1,4 +1,4 @@
-export type CategorySlug = 'houseboat' | 'shikara' | 'artisan' | 'guide' | 'vendor' | 'taxi';
+export type CategorySlug = 'houseboat' | 'shikara' | 'artisan' | 'guide' | 'vendor' | 'taxi' | 'homestay' | 'guest_house';
 
 export type OperatorStatus = 'pending' | 'approved' | 'rejected' | 'suspended';
 
@@ -72,6 +72,26 @@ export interface TaxiDetails {
   google_maps?: string | null;
 }
 
+export interface AccommodationDetails {
+  property_type: 'homestay' | 'guest_house';
+  owner_name?: string | null;
+  manager_name?: string | null;
+  contact?: string | null;
+  email?: string | null;
+  address?: string | null;
+  google_maps?: string | null;
+  total_rooms?: string | null;
+  room_types?: string[] | null;
+  pricing_single?: string | null;
+  pricing_double?: string | null;
+  amenities?: string[] | null;
+  meals_included?: string[] | null;
+  check_in?: string | null;
+  check_out?: string | null;
+  languages?: string[] | null;
+  nearby_attractions?: string | null;
+}
+
 export interface HouseboatDetails {
   owner: string;
   address: string;
@@ -109,6 +129,7 @@ export interface Operator {
   shikara_details: ShikaraDetails | null;
   artisan_details: ArtisanDetails | null;
   taxi_details: TaxiDetails | null;
+  accommodation_details: AccommodationDetails | null;
   lat: number | null;
   lng: number | null;
 }

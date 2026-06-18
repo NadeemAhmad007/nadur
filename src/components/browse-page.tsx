@@ -20,6 +20,8 @@ const CATEGORIES = [
   { slug: 'guide', label: 'Guides', icon: Navigation },
   { slug: 'vendor', label: 'Vendors', icon: Store },
   { slug: 'taxi', label: 'Taxis', icon: Car },
+  { slug: 'homestay', label: 'Homestays', icon: Building2 },
+  { slug: 'guest_house', label: 'Guest Houses', icon: Building2 },
 ];
 
 const GHATS = [
