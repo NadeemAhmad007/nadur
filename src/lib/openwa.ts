@@ -132,6 +132,10 @@ export async function stopSession(uuid: string): Promise<OpenWAResponse> {
   return request('POST', `/sessions/${uuid}/stop`);
 }
 
+export async function deleteSession(uuid: string): Promise<OpenWAResponse> {
+  return request('DELETE', `/sessions/${uuid}`);
+}
+
 export function clearSessionUuid(): void {
   sessionUuid = null;
 }

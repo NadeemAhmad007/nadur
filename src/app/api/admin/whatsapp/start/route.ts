@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { rateLimit } from '@/lib/rate-limit';
-import { getSessions, createSession, startSession, clearSessionUuid } from '@/lib/openwa';
+import { getSessions, createSession, startSession, deleteSession, clearSessionUuid } from '@/lib/openwa';
 import { getOpenwaConfig } from '@/lib/settings';
+
+const ACTIVE_STATUSES = ['started', 'qr_ready', 'ready', 'connected', 'active'];
+const FAILED_STATUSES = ['failed'];
 
 export async function POST() {
   const session = await auth();
@@ -23,6 +26,11 @@ export async function POST() {
     const allSessions = Array.isArray(sessionsRes) ? sessionsRes as any[] : [];
     let ourSession = allSessions.find((s: any) => s.name === sessionName);
 
+    if (ourSession && FAILED_STATUSES.includes(ourSession.status)) {
+      await deleteSession(ourSession.id);
+      ourSession = null;
+    }
+
     if (!ourSession) {
       const created = await createSession(sessionName);
       if (created.error) {
@@ -33,9 +41,9 @@ export async function POST() {
 
     clearSessionUuid();
     const sessionId = ourSession.id || ourSession.sessionId;
-    const isStarted = ourSession.status === 'started' || ourSession.status === 'qr_ready' || ourSession.status === 'ready' || ourSession.status === 'connected' || ourSession.status === 'active';
+    const isReady = ACTIVE_STATUSES.includes(ourSession.status);
 
-    if (!isStarted) {
+    if (!isReady) {
       const result = await startSession(sessionId);
       if (result.error) {
         return NextResponse.json({ error: result.error, message: 'OpenWA rejected session start. Check your API key.' }, { status: 500 });
