@@ -16,8 +16,8 @@ export const metadata: Metadata = {
     "Discover verified houseboats, shikara rides, artisans, guides and vendors across Srinagar, Kashmir.",
   manifest: "/manifest.json",
   icons: {
-    icon: "/favicon.png",
-    apple: "/icons/icon-192.png",
+    icon: "/favicon.png?v=2",
+    apple: "/icons/icon-192.png?v=2",
   },
   appleWebApp: {
     capable: true,
