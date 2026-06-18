@@ -78,6 +78,8 @@ export default function EditProfilePage() {
             const sd = op.shikara_details || {};
             const ad = op.artisan_details || {};
             const ac = op.accommodation_details || {};
+            const gd = op.guide_details || {};
+            const vd = op.vendor_details || {};
             setForm({
               name: op.name,
               short_desc: op.short_desc || '',
@@ -134,6 +136,25 @@ export default function EditProfilePage() {
               acc_check_out: ac.check_out || '',
               acc_languages: ac.languages || [],
               acc_nearby_attractions: ac.nearby_attractions || '',
+              guide_full_name: gd.full_name || '',
+              guide_contact_number: gd.contact_number || '',
+              guide_whatsapp_number: gd.whatsapp_number || '',
+              guide_email: gd.email || '',
+              guide_languages: gd.languages || [],
+              guide_specialties: gd.specialties || [],
+              guide_years_experience: gd.years_experience || '',
+              guide_certification: gd.certification || '',
+              guide_operating_areas: gd.operating_areas || [],
+              guide_google_maps: gd.google_maps || '',
+              vendor_business_name: vd.business_name || '',
+              vendor_owner_name: vd.owner_name || '',
+              vendor_contact_number: vd.contact_number || '',
+              vendor_whatsapp_number: vd.whatsapp_number || '',
+              vendor_email: vd.email || '',
+              vendor_business_type: vd.business_type || '',
+              vendor_specialties: vd.specialties || [],
+              vendor_operating_areas: vd.operating_areas || [],
+              vendor_google_maps: vd.google_maps || '',
             });
           }
         });
@@ -252,6 +273,29 @@ export default function EditProfilePage() {
         languages: form.acc_languages || null,
         nearby_attractions: form.acc_nearby_attractions || null,
       } : undefined;
+      const guidePayload = operator.category === 'guide' ? {
+        full_name: form.guide_full_name || null,
+        contact_number: form.guide_contact_number || null,
+        whatsapp_number: form.guide_whatsapp_number || null,
+        email: form.guide_email || null,
+        languages: form.guide_languages || null,
+        specialties: form.guide_specialties || null,
+        years_experience: form.guide_years_experience || null,
+        certification: form.guide_certification || null,
+        operating_areas: form.guide_operating_areas || null,
+        google_maps: form.guide_google_maps || null,
+      } : undefined;
+      const vendorPayload = operator.category === 'vendor' ? {
+        business_name: form.vendor_business_name || null,
+        owner_name: form.vendor_owner_name || null,
+        contact_number: form.vendor_contact_number || null,
+        whatsapp_number: form.vendor_whatsapp_number || null,
+        email: form.vendor_email || null,
+        business_type: form.vendor_business_type || null,
+        specialties: form.vendor_specialties || null,
+        operating_areas: form.vendor_operating_areas || null,
+        google_maps: form.vendor_google_maps || null,
+      } : undefined;
       const coords = form.google_maps ? parseGoogleMapsUrl(form.google_maps) : null;
 
       await fetch(`/api/operators/${operator.slug}`, {
@@ -271,6 +315,8 @@ export default function EditProfilePage() {
           artisan_details: artisanPayload,
           taxi_details: taxiPayload,
           accommodation_details: accommodationPayload,
+          guide_details: guidePayload,
+          vendor_details: vendorPayload,
           lat: coords?.lat ?? null,
           lng: coords?.lng ?? null,
         }),
@@ -930,6 +976,143 @@ export default function EditProfilePage() {
               <div>
                 <label className="text-xs font-medium">Google Map Link</label>
                 <input value={form.taxi_google_maps || ''} onChange={(e) => setForm({ ...form, taxi_google_maps: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
+              </div>
+            </div>
+          </>
+        )}
+
+        {operator.category === 'guide' && (
+          <>
+            <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+              <h3 className="text-sm font-semibold">Guide Details</h3>
+              <div>
+                <label className="text-xs font-medium">Full Name</label>
+                <input value={form.guide_full_name || ''} onChange={(e) => setForm({ ...form, guide_full_name: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+              </div>
+              <div>
+                <label className="text-xs font-medium">Contact Number</label>
+                <input value={form.guide_contact_number || ''} onChange={(e) => setForm({ ...form, guide_contact_number: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+              </div>
+              <div>
+                <label className="text-xs font-medium">WhatsApp Number</label>
+                <input value={form.guide_whatsapp_number || ''} onChange={(e) => setForm({ ...form, guide_whatsapp_number: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+              </div>
+              <div>
+                <label className="text-xs font-medium">Email</label>
+                <input value={form.guide_email || ''} onChange={(e) => setForm({ ...form, guide_email: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+              </div>
+              <div>
+                <label className="text-xs font-medium">Languages Spoken</label>
+                <div className="mt-1 space-y-1">
+                  {['Kashmiri', 'Urdu', 'Hindi', 'English', 'Arabic', 'French', 'German', 'Pashto'].map((lang) => (
+                    <label key={lang} className="flex items-center gap-2 text-sm">
+                      <input type="checkbox" checked={(form.guide_languages || []).includes(lang)} onChange={(e) => setForm({ ...form, guide_languages: e.target.checked ? [...(form.guide_languages || []), lang] : (form.guide_languages || []).filter((l: string) => l !== lang) })} className="rounded" />
+                      {lang}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium">Specialties</label>
+                <div className="mt-1 space-y-1">
+                  {['Historical Tours', 'Trekking', 'Food Tours', 'Cultural Tours', 'Photography Tours', 'Bird Watching', 'Shopping Tours', 'Custom Tours'].map((s) => (
+                    <label key={s} className="flex items-center gap-2 text-sm">
+                      <input type="checkbox" checked={(form.guide_specialties || []).includes(s)} onChange={(e) => setForm({ ...form, guide_specialties: e.target.checked ? [...(form.guide_specialties || []), s] : (form.guide_specialties || []).filter((x: string) => x !== s) })} className="rounded" />
+                      {s}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium">Years of Experience</label>
+                <input value={form.guide_years_experience || ''} onChange={(e) => setForm({ ...form, guide_years_experience: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+              </div>
+              <div>
+                <label className="text-xs font-medium">Certification</label>
+                <input value={form.guide_certification || ''} onChange={(e) => setForm({ ...form, guide_certification: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. JKTDC certified guide" />
+              </div>
+              <div>
+                <label className="text-xs font-medium">Operating Areas</label>
+                <div className="mt-1 space-y-1">
+                  {['Srinagar Airport', 'Dal Lake', 'Gulmarg', 'Pahalgam', 'Sonamarg', 'Yusmarg', 'Doodhpathri', 'Kokernag', 'Patnitop', 'Leh'].map((area) => (
+                    <label key={area} className="flex items-center gap-2 text-sm">
+                      <input type="checkbox" checked={(form.guide_operating_areas || []).includes(area)} onChange={(e) => setForm({ ...form, guide_operating_areas: e.target.checked ? [...(form.guide_operating_areas || []), area] : (form.guide_operating_areas || []).filter((a: string) => a !== area) })} className="rounded" />
+                      {area}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium">Google Map Link</label>
+                <input value={form.guide_google_maps || ''} onChange={(e) => setForm({ ...form, guide_google_maps: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
+              </div>
+            </div>
+          </>
+        )}
+
+        {operator.category === 'vendor' && (
+          <>
+            <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+              <h3 className="text-sm font-semibold">Vendor Details</h3>
+              <div>
+                <label className="text-xs font-medium">Business Name</label>
+                <input value={form.vendor_business_name || ''} onChange={(e) => setForm({ ...form, vendor_business_name: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+              </div>
+              <div>
+                <label className="text-xs font-medium">Owner Name</label>
+                <input value={form.vendor_owner_name || ''} onChange={(e) => setForm({ ...form, vendor_owner_name: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+              </div>
+              <div>
+                <label className="text-xs font-medium">Contact Number</label>
+                <input value={form.vendor_contact_number || ''} onChange={(e) => setForm({ ...form, vendor_contact_number: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+              </div>
+              <div>
+                <label className="text-xs font-medium">WhatsApp Number</label>
+                <input value={form.vendor_whatsapp_number || ''} onChange={(e) => setForm({ ...form, vendor_whatsapp_number: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+              </div>
+              <div>
+                <label className="text-xs font-medium">Email</label>
+                <input value={form.vendor_email || ''} onChange={(e) => setForm({ ...form, vendor_email: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+              </div>
+              <div>
+                <label className="text-xs font-medium">Business Type</label>
+                <select value={form.vendor_business_type || ''} onChange={(e) => setForm({ ...form, vendor_business_type: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                  <option value="">Select type</option>
+                  <option value="food">Food & Beverages</option>
+                  <option value="souvenirs">Souvenirs</option>
+                  <option value="flowers">Flowers & Garlands</option>
+                  <option value="handicrafts">Handicrafts</option>
+                  <option value="pashmina">Pashmina & Shawls</option>
+                  <option value="spices">Spices & Dry Fruits</option>
+                  <option value="produce">Fresh Produce</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium">Specialties</label>
+                <div className="mt-1 space-y-1">
+                  {['Food & Beverages', 'Souvenirs', 'Flowers & Garlands', 'Handicrafts', 'Pashmina & Shawls', 'Spices & Dry Fruits', 'Fresh Produce', 'Other'].map((s) => (
+                    <label key={s} className="flex items-center gap-2 text-sm">
+                      <input type="checkbox" checked={(form.vendor_specialties || []).includes(s)} onChange={(e) => setForm({ ...form, vendor_specialties: e.target.checked ? [...(form.vendor_specialties || []), s] : (form.vendor_specialties || []).filter((x: string) => x !== s) })} className="rounded" />
+                      {s}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium">Operating Areas</label>
+                <div className="mt-1 space-y-1">
+                  {['Srinagar Airport', 'Dal Lake', 'Gulmarg', 'Pahalgam', 'Sonamarg', 'Yusmarg', 'Doodhpathri', 'Kokernag', 'Patnitop', 'Leh'].map((area) => (
+                    <label key={area} className="flex items-center gap-2 text-sm">
+                      <input type="checkbox" checked={(form.vendor_operating_areas || []).includes(area)} onChange={(e) => setForm({ ...form, vendor_operating_areas: e.target.checked ? [...(form.vendor_operating_areas || []), area] : (form.vendor_operating_areas || []).filter((a: string) => a !== area) })} className="rounded" />
+                      {area}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium">Google Map Link</label>
+                <input value={form.vendor_google_maps || ''} onChange={(e) => setForm({ ...form, vendor_google_maps: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
               </div>
             </div>
           </>

@@ -9,7 +9,7 @@ import {
   ArrowLeft, BadgeCheck, Heart, Share2, MessageCircle,
   ChevronLeft, ChevronRight, Send, MapPin, Phone, Mail,
   Star, User, Map, Clock, Globe, AlertCircle, X, TrendingUp,
-  Car, Hash, Building2
+  Car, Hash, Building2, Navigation, Store
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -403,6 +403,89 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
           </Card>
         )}
 
+        {/* Guide Details */}
+        {op.guide_details && op.category === 'guide' && (
+          <Card>
+            <CardContent className="p-5 space-y-3">
+              <h2 className="font-semibold flex items-center gap-2"><Navigation className="h-4 w-4 text-muted-foreground" /> Guide Details</h2>
+              {op.guide_details.full_name && <DetailRow icon={User} label="Name" value={op.guide_details.full_name} />}
+              {op.guide_details.contact_number && <DetailRow icon={Phone} label="Contact" value={op.guide_details.contact_number} />}
+              {op.guide_details.whatsapp_number && <DetailRow icon={MessageCircle} label="WhatsApp" value={op.guide_details.whatsapp_number} />}
+              {op.guide_details.years_experience && <DetailRow icon={Clock} label="Experience" value={`${op.guide_details.years_experience} years`} />}
+              {op.guide_details.certification && <DetailRow icon={BadgeCheck} label="Certification" value={op.guide_details.certification} />}
+              {op.guide_details.languages && op.guide_details.languages.length > 0 && (
+                <div className="flex items-start gap-2">
+                  <Globe className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Languages</p>
+                    <div className="flex flex-wrap gap-1 mt-0.5">{op.guide_details.languages.map((l: string) => <Badge key={l} variant="outline" size="sm">{l}</Badge>)}</div>
+                  </div>
+                </div>
+              )}
+              {op.guide_details.specialties && op.guide_details.specialties.length > 0 && (
+                <div className="flex items-start gap-2">
+                  <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Specialties</p>
+                    <div className="flex flex-wrap gap-1 mt-0.5">{op.guide_details.specialties.map((s: string) => <Badge key={s} variant="outline" size="sm">{s}</Badge>)}</div>
+                  </div>
+                </div>
+              )}
+              {op.guide_details.operating_areas && op.guide_details.operating_areas.length > 0 && (
+                <div className="flex items-start gap-2">
+                  <Map className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Operating Areas</p>
+                    <div className="flex flex-wrap gap-1 mt-0.5">{op.guide_details.operating_areas.map((a: string) => <Badge key={a} variant="outline" size="sm">{a}</Badge>)}</div>
+                  </div>
+                </div>
+              )}
+              {op.guide_details.google_maps && (
+                <a href={op.guide_details.google_maps} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+                  <Globe className="h-4 w-4" /> View on Google Maps
+                </a>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Vendor Details */}
+        {op.vendor_details && op.category === 'vendor' && (
+          <Card>
+            <CardContent className="p-5 space-y-3">
+              <h2 className="font-semibold flex items-center gap-2"><Store className="h-4 w-4 text-muted-foreground" /> Vendor Details</h2>
+              {op.vendor_details.business_name && <DetailRow icon={Store} label="Business" value={op.vendor_details.business_name} />}
+              {op.vendor_details.owner_name && <DetailRow icon={User} label="Owner" value={op.vendor_details.owner_name} />}
+              {op.vendor_details.contact_number && <DetailRow icon={Phone} label="Contact" value={op.vendor_details.contact_number} />}
+              {op.vendor_details.whatsapp_number && <DetailRow icon={MessageCircle} label="WhatsApp" value={op.vendor_details.whatsapp_number} />}
+              {op.vendor_details.business_type && <DetailRow icon={Building2} label="Type" value={op.vendor_details.business_type.replace('_', ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())} />}
+              {op.vendor_details.specialties && op.vendor_details.specialties.length > 0 && (
+                <div className="flex items-start gap-2">
+                  <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Specialties</p>
+                    <div className="flex flex-wrap gap-1 mt-0.5">{op.vendor_details.specialties.map((s: string) => <Badge key={s} variant="outline" size="sm">{s}</Badge>)}</div>
+                  </div>
+                </div>
+              )}
+              {op.vendor_details.operating_areas && op.vendor_details.operating_areas.length > 0 && (
+                <div className="flex items-start gap-2">
+                  <Map className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Operating Areas</p>
+                    <div className="flex flex-wrap gap-1 mt-0.5">{op.vendor_details.operating_areas.map((a: string) => <Badge key={a} variant="outline" size="sm">{a}</Badge>)}</div>
+                  </div>
+                </div>
+              )}
+              {op.vendor_details.google_maps && (
+                <a href={op.vendor_details.google_maps} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+                  <Globe className="h-4 w-4" /> View on Google Maps
+                </a>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Tariffs */}
         {op.tariffs && op.category === 'houseboat' && (
           <Card>
@@ -525,7 +608,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
 
         <div className="text-center pb-8">
           <Link href="/" className="text-sm text-primary hover:underline font-medium">
-            Browse more Dal Lake operators
+            Browse all operators
           </Link>
         </div>
       </div>

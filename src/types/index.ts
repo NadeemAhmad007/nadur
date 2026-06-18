@@ -72,6 +72,31 @@ export interface TaxiDetails {
   google_maps?: string | null;
 }
 
+export interface GuideDetails {
+  full_name?: string | null;
+  contact_number?: string | null;
+  whatsapp_number?: string | null;
+  email?: string | null;
+  languages?: string[] | null;
+  specialties?: string[] | null;
+  years_experience?: string | null;
+  certification?: string | null;
+  operating_areas?: string[] | null;
+  google_maps?: string | null;
+}
+
+export interface VendorDetails {
+  business_name?: string | null;
+  owner_name?: string | null;
+  contact_number?: string | null;
+  whatsapp_number?: string | null;
+  email?: string | null;
+  business_type?: string | null;
+  specialties?: string[] | null;
+  operating_areas?: string[] | null;
+  google_maps?: string | null;
+}
+
 export interface AccommodationDetails {
   property_type: 'homestay' | 'guest_house';
   owner_name?: string | null;
@@ -128,8 +153,10 @@ export interface Operator {
   houseboat_details: HouseboatDetails | null;
   shikara_details: ShikaraDetails | null;
   artisan_details: ArtisanDetails | null;
-  taxi_details: TaxiDetails | null;
+   taxi_details: TaxiDetails | null;
   accommodation_details: AccommodationDetails | null;
+  guide_details: GuideDetails | null;
+  vendor_details: VendorDetails | null;
   lat: number | null;
   lng: number | null;
 }

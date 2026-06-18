@@ -1,5 +1,5 @@
 import { pgTable, uuid, text, timestamp, integer, boolean, doublePrecision, json, uniqueIndex, index } from 'drizzle-orm/pg-core';
-import type { Tariffs, HouseboatDetails, ShikaraDetails, ArtisanDetails, TaxiDetails, AccommodationDetails } from '@/types';
+import type { Tariffs, HouseboatDetails, ShikaraDetails, ArtisanDetails, TaxiDetails, AccommodationDetails, GuideDetails, VendorDetails } from '@/types';
 
 export const operators = pgTable('operators', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -26,6 +26,8 @@ export const operators = pgTable('operators', {
   artisan_details: json('artisan_details').$type<ArtisanDetails | null>(),
   taxi_details: json('taxi_details').$type<TaxiDetails | null>(),
   accommodation_details: json('accommodation_details').$type<AccommodationDetails | null>(),
+  guide_details: json('guide_details').$type<GuideDetails | null>(),
+  vendor_details: json('vendor_details').$type<VendorDetails | null>(),
   lat: doublePrecision('lat'),
   lng: doublePrecision('lng'),
 }, (table) => [

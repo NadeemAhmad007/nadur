@@ -93,6 +93,31 @@ type ArtisanFormFields = {
   google_maps: string;
 };
 
+type GuideFormFields = {
+  full_name: string;
+  contact_number: string;
+  whatsapp_number: string;
+  email: string;
+  languages: string[];
+  specialties: string[];
+  years_experience: string;
+  certification: string;
+  operating_areas: string[];
+  google_maps: string;
+};
+
+type VendorFormFields = {
+  business_name: string;
+  owner_name: string;
+  contact_number: string;
+  whatsapp_number: string;
+  email: string;
+  business_type: string;
+  specialties: string[];
+  operating_areas: string[];
+  google_maps: string;
+};
+
 type AccommodationFormFields = {
   owner_name: string;
   manager_name: string;
@@ -132,6 +157,8 @@ type FormData = {
   artisan: ArtisanFormFields;
   taxi: TaxiFormFields;
   accommodation: AccommodationFormFields;
+  guide: GuideFormFields;
+  vendor: VendorFormFields;
   boat_ghat: string;
 };
 
@@ -191,6 +218,35 @@ const ROOM_TYPES = ['Single', 'Double', 'Family', 'Dormitory', 'Suite'];
 const AMENITIES_LIST = ['WiFi', 'AC', 'Parking', 'Hot Water', 'TV', 'Kitchen Access', 'Garden', 'Lake View', 'Mountain View', 'Bonfire', 'Room Service', 'Laundry'];
 const MEALS_LIST = ['Breakfast', 'Lunch', 'Dinner', 'All Meals'];
 const ACCOMMODATION_LANGUAGES = ['Kashmiri', 'Urdu', 'Hindi', 'English', 'Arabic', 'French'];
+
+const GUIDE_SPECIALTIES = ['Historical Tours', 'Trekking', 'Food Tours', 'Cultural Tours', 'Photography Tours', 'Bird Watching', 'Shopping Tours', 'Custom Tours'];
+const GUIDE_LANGUAGES = ['Kashmiri', 'Urdu', 'Hindi', 'English', 'Arabic', 'French', 'German', 'Pashto'];
+const VENDOR_SPECIALTIES = ['Food & Beverages', 'Souvenirs', 'Flowers & Garlands', 'Handicrafts', 'Pashmina & Shawls', 'Spices & Dry Fruits', 'Fresh Produce', 'Other'];
+
+const defaultGuide: GuideFormFields = {
+  full_name: '',
+  contact_number: '',
+  whatsapp_number: '',
+  email: '',
+  languages: [],
+  specialties: [],
+  years_experience: '',
+  certification: '',
+  operating_areas: [],
+  google_maps: '',
+};
+
+const defaultVendor: VendorFormFields = {
+  business_name: '',
+  owner_name: '',
+  contact_number: '',
+  whatsapp_number: '',
+  email: '',
+  business_type: '',
+  specialties: [],
+  operating_areas: [],
+  google_maps: '',
+};
 
 const defaultAccommodation: AccommodationFormFields = {
   owner_name: '',
@@ -252,6 +308,8 @@ export default function JoinPage() {
     artisan: { ...defaultArtisan },
     taxi: { ...defaultTaxi },
     accommodation: { ...defaultAccommodation },
+    guide: { ...defaultGuide },
+    vendor: { ...defaultVendor },
     boat_ghat: '',
   });
 
@@ -384,6 +442,29 @@ export default function JoinPage() {
         years_in_business: form.artisan.years_in_business || null,
         google_maps: form.artisan.google_maps || null,
       } : null;
+      const guidePayload = form.category === 'guide' ? {
+        full_name: form.guide.full_name || null,
+        contact_number: form.guide.contact_number || null,
+        whatsapp_number: form.guide.whatsapp_number || null,
+        email: form.guide.email || null,
+        languages: form.guide.languages.length > 0 ? form.guide.languages : null,
+        specialties: form.guide.specialties.length > 0 ? form.guide.specialties : null,
+        years_experience: form.guide.years_experience || null,
+        certification: form.guide.certification || null,
+        operating_areas: form.guide.operating_areas.length > 0 ? form.guide.operating_areas : null,
+        google_maps: form.guide.google_maps || null,
+      } : null;
+      const vendorPayload = form.category === 'vendor' ? {
+        business_name: form.vendor.business_name || null,
+        owner_name: form.vendor.owner_name || null,
+        contact_number: form.vendor.contact_number || null,
+        whatsapp_number: form.vendor.whatsapp_number || null,
+        email: form.vendor.email || null,
+        business_type: form.vendor.business_type || null,
+        specialties: form.vendor.specialties.length > 0 ? form.vendor.specialties : null,
+        operating_areas: form.vendor.operating_areas.length > 0 ? form.vendor.operating_areas : null,
+        google_maps: form.vendor.google_maps || null,
+      } : null;
       const coords = form.google_maps ? parseGoogleMapsUrl(form.google_maps) : null;
 
       const res = await fetch('/api/operators', {
@@ -403,6 +484,8 @@ export default function JoinPage() {
           artisan_details: artisanPayload,
           taxi_details: taxiPayload,
           accommodation_details: accommodationPayload,
+          guide_details: guidePayload,
+          vendor_details: vendorPayload,
           lat: coords?.lat ?? null,
           lng: coords?.lng ?? null,
         }),
@@ -917,6 +1000,91 @@ export default function JoinPage() {
                 </div>
               </div>
             )}
+            {form.category === 'guide' && (
+              <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+                <h3 className="text-sm font-semibold">Guide Details</h3>
+                <div>
+                  <label className="text-xs font-medium">Full Name *</label>
+                  <input value={form.guide.full_name} onChange={(e) => setForm((prev) => ({ ...prev, guide: { ...prev.guide, full_name: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Contact Number *</label>
+                  <input value={form.guide.contact_number} onChange={(e) => setForm((prev) => ({ ...prev, guide: { ...prev.guide, contact_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium">WhatsApp Number</label>
+                  <input value={form.guide.whatsapp_number} onChange={(e) => setForm((prev) => ({ ...prev, guide: { ...prev.guide, whatsapp_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Languages Spoken</label>
+                  <div className="mt-1 space-y-1">
+                    {GUIDE_LANGUAGES.map((lang) => (
+                      <label key={lang} className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={form.guide.languages.includes(lang)} onChange={(e) => setForm((prev) => ({ ...prev, guide: { ...prev.guide, languages: e.target.checked ? [...prev.guide.languages, lang] : prev.guide.languages.filter((l) => l !== lang) } }))} className="accent-[#2C5F8A]" />
+                        {lang}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Specialties</label>
+                  <div className="mt-1 space-y-1">
+                    {GUIDE_SPECIALTIES.map((s) => (
+                      <label key={s} className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={form.guide.specialties.includes(s)} onChange={(e) => setForm((prev) => ({ ...prev, guide: { ...prev.guide, specialties: e.target.checked ? [...prev.guide.specialties, s] : prev.guide.specialties.filter((x) => x !== s) } }))} className="accent-[#2C5F8A]" />
+                        {s}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+            {form.category === 'vendor' && (
+              <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+                <h3 className="text-sm font-semibold">Vendor Details</h3>
+                <div>
+                  <label className="text-xs font-medium">Business Name *</label>
+                  <input value={form.vendor.business_name} onChange={(e) => setForm((prev) => ({ ...prev, vendor: { ...prev.vendor, business_name: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Owner Name</label>
+                  <input value={form.vendor.owner_name} onChange={(e) => setForm((prev) => ({ ...prev, vendor: { ...prev.vendor, owner_name: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Contact Number *</label>
+                  <input value={form.vendor.contact_number} onChange={(e) => setForm((prev) => ({ ...prev, vendor: { ...prev.vendor, contact_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium">WhatsApp Number</label>
+                  <input value={form.vendor.whatsapp_number} onChange={(e) => setForm((prev) => ({ ...prev, vendor: { ...prev.vendor, whatsapp_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Business Type</label>
+                  <select value={form.vendor.business_type} onChange={(e) => setForm((prev) => ({ ...prev, vendor: { ...prev.vendor, business_type: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                    <option value="">Select type</option>
+                    <option value="food">Food & Beverages</option>
+                    <option value="souvenirs">Souvenirs</option>
+                    <option value="flowers">Flowers & Garlands</option>
+                    <option value="handicrafts">Handicrafts</option>
+                    <option value="pashmina">Pashmina & Shawls</option>
+                    <option value="spices">Spices & Dry Fruits</option>
+                    <option value="produce">Fresh Produce</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Specialties</label>
+                  <div className="mt-1 space-y-1">
+                    {VENDOR_SPECIALTIES.map((s) => (
+                      <label key={s} className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={form.vendor.specialties.includes(s)} onChange={(e) => setForm((prev) => ({ ...prev, vendor: { ...prev.vendor, specialties: e.target.checked ? [...prev.vendor.specialties, s] : prev.vendor.specialties.filter((x) => x !== s) } }))} className="accent-[#2C5F8A]" />
+                        {s}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
             <div>
               <label className="text-sm font-medium">Short Description (max 500 chars)</label>
               <textarea
@@ -1186,6 +1354,58 @@ export default function JoinPage() {
                 </div>
               </div>
             )}
+            {form.category === 'guide' && (
+              <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+                <h3 className="text-sm font-semibold">About You</h3>
+                <div>
+                  <label className="text-xs font-medium">Years of Experience</label>
+                  <input value={form.guide.years_experience} onChange={(e) => setForm((prev) => ({ ...prev, guide: { ...prev.guide, years_experience: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. 5 years" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Certification</label>
+                  <input value={form.guide.certification} onChange={(e) => setForm((prev) => ({ ...prev, guide: { ...prev.guide, certification: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. JKTDC certified guide" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Operating Areas</label>
+                  <div className="mt-1 space-y-1">
+                    {['Srinagar Airport', 'Dal Lake', 'Gulmarg', 'Pahalgam', 'Sonamarg', 'Yusmarg', 'Doodhpathri', 'Kokernag', 'Patnitop', 'Leh'].map((area) => (
+                      <label key={area} className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={form.guide.operating_areas.includes(area)} onChange={(e) => setForm((prev) => ({ ...prev, guide: { ...prev.guide, operating_areas: e.target.checked ? [...prev.guide.operating_areas, area] : prev.guide.operating_areas.filter((a) => a !== area) } }))} className="rounded" />
+                        {area}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Google Map Link</label>
+                  <input value={form.guide.google_maps} onChange={(e) => setForm((prev) => ({ ...prev, guide: { ...prev.guide, google_maps: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
+                </div>
+              </div>
+            )}
+            {form.category === 'vendor' && (
+              <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+                <h3 className="text-sm font-semibold">About Your Business</h3>
+                <div>
+                  <label className="text-xs font-medium">Email Address</label>
+                  <input type="email" value={form.vendor.email} onChange={(e) => setForm((prev) => ({ ...prev, vendor: { ...prev.vendor, email: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Operating Areas</label>
+                  <div className="mt-1 space-y-1">
+                    {['Srinagar Airport', 'Dal Lake', 'Gulmarg', 'Pahalgam', 'Sonamarg', 'Yusmarg', 'Doodhpathri', 'Kokernag', 'Patnitop', 'Leh'].map((area) => (
+                      <label key={area} className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={form.vendor.operating_areas.includes(area)} onChange={(e) => setForm((prev) => ({ ...prev, vendor: { ...prev.vendor, operating_areas: e.target.checked ? [...prev.vendor.operating_areas, area] : prev.vendor.operating_areas.filter((a) => a !== area) } }))} className="rounded" />
+                        {area}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Google Map Link</label>
+                  <input value={form.vendor.google_maps} onChange={(e) => setForm((prev) => ({ ...prev, vendor: { ...prev.vendor, google_maps: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
+                </div>
+              </div>
+            )}
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setStep(1)} className="flex-1">
                 <ArrowLeft className="w-4 h-4 mr-1" /> Back
@@ -1339,6 +1559,29 @@ export default function JoinPage() {
                   <div><strong>Airport:</strong> {form.taxi.airport_flat_rate ? `₹${form.taxi.airport_flat_rate}` : '—'}</div>
                   <div><strong>Extra/Km:</strong> {form.taxi.extra_per_km ? `₹${form.taxi.extra_per_km}` : '—'}</div>
                   {form.taxi.years_experience && <div><strong>Experience:</strong> {form.taxi.years_experience} years</div>}
+                </>
+              )}
+              {form.category === 'guide' && (
+                <>
+                  <div><strong>Full Name:</strong> {form.guide.full_name || '—'}</div>
+                  <div><strong>Contact:</strong> {form.guide.contact_number || '—'}</div>
+                  <div><strong>WhatsApp:</strong> {form.guide.whatsapp_number || '—'}</div>
+                  {form.guide.languages.length > 0 && <div><strong>Languages:</strong> {form.guide.languages.join(', ')}</div>}
+                  {form.guide.specialties.length > 0 && <div><strong>Specialties:</strong> {form.guide.specialties.join(', ')}</div>}
+                  {form.guide.years_experience && <div><strong>Experience:</strong> {form.guide.years_experience} years</div>}
+                  {form.guide.certification && <div><strong>Certification:</strong> {form.guide.certification}</div>}
+                  {form.guide.operating_areas.length > 0 && <div><strong>Areas:</strong> {form.guide.operating_areas.join(', ')}</div>}
+                </>
+              )}
+              {form.category === 'vendor' && (
+                <>
+                  <div><strong>Business:</strong> {form.vendor.business_name || '—'}</div>
+                  <div><strong>Owner:</strong> {form.vendor.owner_name || '—'}</div>
+                  <div><strong>Contact:</strong> {form.vendor.contact_number || '—'}</div>
+                  <div><strong>WhatsApp:</strong> {form.vendor.whatsapp_number || '—'}</div>
+                  {form.vendor.business_type && <div><strong>Type:</strong> {form.vendor.business_type}</div>}
+                  {form.vendor.specialties.length > 0 && <div><strong>Specialties:</strong> {form.vendor.specialties.join(', ')}</div>}
+                  {form.vendor.operating_areas.length > 0 && <div><strong>Areas:</strong> {form.vendor.operating_areas.join(', ')}</div>}
                 </>
               )}
               <p><strong>Photos:</strong> {form.photos.length} uploaded</p>

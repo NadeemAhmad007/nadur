@@ -152,6 +152,12 @@ const run = async () => {
     ALTER TABLE operators ADD COLUMN IF NOT EXISTS accommodation_details JSONB
   `;
   await sql`
+    ALTER TABLE operators ADD COLUMN IF NOT EXISTS guide_details JSONB
+  `;
+  await sql`
+    ALTER TABLE operators ADD COLUMN IF NOT EXISTS vendor_details JSONB
+  `;
+  await sql`
     ALTER TABLE operators ADD COLUMN IF NOT EXISTS lat DOUBLE PRECISION
   `;
   await sql`

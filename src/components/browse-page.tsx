@@ -124,8 +124,8 @@ export default function BrowsePage() {
   };
 
   const categoriesWithGhat = ['houseboat', 'shikara'];
-  const categoriesWithArea = ['shikara', 'taxi'];
-  const categoriesWithLanguage = ['shikara', 'taxi'];
+  const categoriesWithArea = ['shikara', 'taxi', 'guide', 'vendor', 'homestay', 'guest_house'];
+  const categoriesWithLanguage = ['shikara', 'taxi', 'guide', 'homestay', 'guest_house'];
   const showGhatFilter = !activeCategory || categoriesWithGhat.includes(activeCategory);
   const showAreaFilter = !activeCategory || categoriesWithArea.includes(activeCategory);
   const showLanguageFilter = !activeCategory || categoriesWithLanguage.includes(activeCategory);

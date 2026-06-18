@@ -15,9 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Kashmir360 - Discover Dal Lake Operators",
+  title: "Kashmir360 - Explore Srinagar",
   description:
-    "Discover verified houseboats, shikara rides, artisans, guides and vendors at Dal Lake, Kashmir.",
+    "Discover verified houseboats, shikara rides, artisans, guides and vendors across Srinagar, Kashmir.",
   manifest: "/manifest.json",
   icons: {
     icon: "/favicon.png",

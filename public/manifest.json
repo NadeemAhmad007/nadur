@@ -1,7 +1,7 @@
 {
-  "name": "Kashmir360 - Dal Lake Operators",
+  "name": "Kashmir360 - Explore Srinagar",
   "short_name": "Kashmir360",
-  "description": "Discover verified houseboats, shikara rides, artisans, guides and vendors at Dal Lake, Kashmir.",
+  "description": "Discover verified houseboats, shikara rides, artisans, guides and vendors across Srinagar, Kashmir.",
   "start_url": "/?src=pwa",
   "display": "standalone",
   "orientation": "portrait",

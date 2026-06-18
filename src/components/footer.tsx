@@ -29,7 +29,7 @@ export function Footer() {
           </nav>
         </div>
         <p className="text-xs text-muted-foreground text-center sm:text-left mt-4">
-          &copy; {new Date().getFullYear()} Kashmir360. Discover Dal Lake operators.
+          &copy; {new Date().getFullYear()} Kashmir360. Explore Srinagar operators.
         </p>
       </div>
     </footer>

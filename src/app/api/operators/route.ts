@@ -52,6 +52,9 @@ export async function GET(req: Request) {
         shikara_details: operators.shikara_details,
         artisan_details: operators.artisan_details,
         taxi_details: operators.taxi_details,
+        accommodation_details: operators.accommodation_details,
+        guide_details: operators.guide_details,
+        vendor_details: operators.vendor_details,
         lat: operators.lat,
         lng: operators.lng,
       })
@@ -134,6 +137,9 @@ export async function GET(req: Request) {
         or(
           sql`${operators.shikara_details}->'operating_areas' ?| ${areas}::text[]`,
           sql`${operators.taxi_details}->'operating_areas' ?| ${areas}::text[]`,
+          sql`${operators.guide_details}->'operating_areas' ?| ${areas}::text[]`,
+          sql`${operators.vendor_details}->'operating_areas' ?| ${areas}::text[]`,
+          sql`${operators.accommodation_details}->'operating_areas' ?| ${areas}::text[]`,
         )
       );
     }
@@ -144,6 +150,8 @@ export async function GET(req: Request) {
         or(
           sql`${operators.shikara_details}->'languages' ?| ${langs}::text[]`,
           sql`${operators.taxi_details}->'languages' ?| ${langs}::text[]`,
+          sql`${operators.guide_details}->'languages' ?| ${langs}::text[]`,
+          sql`${operators.accommodation_details}->'languages' ?| ${langs}::text[]`,
         )
       );
     }
@@ -231,7 +239,7 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const { name, category, short_desc, long_desc, whatsapp, email, pricing_note, photos, tariffs, houseboat_details, shikara_details, artisan_details, taxi_details, lat, lng } = body;
+    const { name, category, short_desc, long_desc, whatsapp, email, pricing_note, photos, tariffs, houseboat_details, shikara_details, artisan_details, taxi_details, accommodation_details, guide_details, vendor_details, lat, lng } = body;
 
     if (!name || !category || !whatsapp) {
       return NextResponse.json({ error: 'Name, category, and WhatsApp are required' }, { status: 400 });
@@ -260,6 +268,9 @@ export async function POST(req: Request) {
         shikara_details: shikara_details || null,
         artisan_details: artisan_details || null,
         taxi_details: taxi_details || null,
+        accommodation_details: accommodation_details || null,
+        guide_details: guide_details || null,
+        vendor_details: vendor_details || null,
         lat: lat != null ? lat : null,
         lng: lng != null ? lng : null,
         slug,
