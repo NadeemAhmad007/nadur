@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { rateLimit } from '@/lib/rate-limit';
-import { getSessions, createSession, startSession, clearSessionUuid } from '@/lib/openwa';
+import { getSessions, createSession, clearSessionUuid } from '@/lib/openwa';
 import { getOpenwaConfig } from '@/lib/settings';
 
 export async function POST() {
@@ -14,6 +13,8 @@ export async function POST() {
   try {
     const config = await getOpenwaConfig();
     const sessionName = config.sessionName;
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://nadur-mu.vercel.app';
+    const webhookUrl = `${appUrl}/api/whatsapp-webhook`;
 
     const sessionsRes = await getSessions();
     if (sessionsRes.error) {
@@ -26,25 +27,21 @@ export async function POST() {
     if (!ourSession) {
       const created = await createSession(sessionName);
       if (created.error) {
-        return NextResponse.json({ error: created.error, message: 'Failed to create session on OpenWA.' }, { status: 500 });
+        return NextResponse.json({ error: created.error, message: 'Failed to create session.' }, { status: 500 });
       }
       ourSession = (created as any).data || created;
     }
 
     clearSessionUuid();
     const sessionId = ourSession.id || ourSession.sessionId;
-    const isStarted = ourSession.status === 'started' || ourSession.status === 'qr_ready' || ourSession.status === 'ready' || ourSession.status === 'connected' || ourSession.status === 'active';
 
-    if (!isStarted) {
-      const result = await startSession(sessionId);
-      if (result.error) {
-        return NextResponse.json({ error: result.error, message: 'OpenWA rejected session start. Check your API key.' }, { status: 500 });
-      }
-    }
-
-    return NextResponse.json({ success: true, message: 'Session started. Scan the QR code to connect.' });
+    return NextResponse.json({
+      success: true,
+      webhookUrl,
+      message: 'Configure this URL as the webhook in your OpenWA session settings.',
+      sessionId,
+    });
   } catch (error: any) {
-    console.error('whatsapp-start error:', error);
-    return NextResponse.json({ error: error.message || 'Failed to start session' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Failed to get webhook URL' }, { status: 500 });
   }
 }

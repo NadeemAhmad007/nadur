@@ -62,32 +62,34 @@ export async function GET(req: Request) {
     const sUser = session?.user as unknown as Record<string, unknown> | undefined;
     const isAuthenticated = !!session;
 
+    const conditions = [];
+
     if (id) {
       if (!isAuthenticated) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
-      query = query.where(eq(operators.id, id));
+      conditions.push(eq(operators.id, id));
     } else if (user_id) {
       if (!isAuthenticated) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
-      query = query.where(eq(operators.id, user_id));
+      conditions.push(eq(operators.user_id, user_id));
     } else if (email) {
       if (!isAuthenticated) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
-      query = query.where(eq(operators.email, email));
+      conditions.push(eq(operators.email, email));
     } else {
-      query = query.where(and(eq(operators.status, 'approved'), eq(operators.hidden, false)));
+      conditions.push(eq(operators.status, 'approved'), eq(operators.hidden, false));
     }
 
     if (category) {
-      query = query.where(eq(operators.category, category as any));
+      conditions.push(eq(operators.category, category as any));
     }
 
     if (q) {
       const searchTerm = `%${q}%`;
-      query = query.where(
+      conditions.push(
         or(
           like(operators.name, searchTerm),
           like(operators.short_desc, searchTerm),
@@ -100,7 +102,7 @@ export async function GET(req: Request) {
       const pMin = price_min ? parseFloat(price_min) : 0;
       const pMax = price_max ? parseFloat(price_max) : 999999;
       if (!isNaN(pMin) && !isNaN(pMax)) {
-        query = query.where(
+        conditions.push(
           or(
             and(
               eq(operators.category, 'houseboat'),
@@ -118,7 +120,7 @@ export async function GET(req: Request) {
     // Ghat filter (houseboat + shikara)
     if (ghat) {
       const ghats = ghat.split(',').map(g => g.trim());
-      query = query.where(
+      conditions.push(
         or(
           sql`${operators.houseboat_details}->>'boat_ghat' = ANY(${ghats}::text[])`,
           sql`${operators.shikara_details}->>'ghat_number' = ANY(${ghats}::text[])`,
@@ -128,7 +130,7 @@ export async function GET(req: Request) {
 
     if (area) {
       const areas = area.split(',').map(a => a.trim());
-      query = query.where(
+      conditions.push(
         or(
           sql`${operators.shikara_details}->'operating_areas' ?| ${areas}::text[]`,
           sql`${operators.taxi_details}->'operating_areas' ?| ${areas}::text[]`,
@@ -138,7 +140,7 @@ export async function GET(req: Request) {
 
     if (language) {
       const langs = language.split(',').map(l => l.trim());
-      query = query.where(
+      conditions.push(
         or(
           sql`${operators.shikara_details}->'languages' ?| ${langs}::text[]`,
           sql`${operators.taxi_details}->'languages' ?| ${langs}::text[]`,
@@ -148,7 +150,7 @@ export async function GET(req: Request) {
 
     // Verified only
     if (verified_only) {
-      query = query.where(eq(operators.verified, true));
+      conditions.push(eq(operators.verified, true));
     }
 
     if (lat && lng && radius) {
@@ -156,10 +158,14 @@ export async function GET(req: Request) {
       const lngNum = parseFloat(lng);
       const radiusMeters = parseFloat(radius) * 1000;
       if (!isNaN(latNum) && !isNaN(lngNum) && !isNaN(radiusMeters)) {
-        query = query.where(
+        conditions.push(
           sql`earth_box(ll_to_earth(${latNum}, ${lngNum}), ${radiusMeters}) @> ll_to_earth(${operators.lat}, ${operators.lng})`
         );
       }
+    }
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
     }
 
     // Sort
@@ -179,7 +185,7 @@ export async function GET(req: Request) {
     }
 
     const result = await query
-      .orderBy(orderBy)
+      .orderBy(...(Array.isArray(orderBy) ? orderBy : [orderBy]))
       .limit(limit + 1)
       .offset(offset);
 

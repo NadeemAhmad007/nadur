@@ -79,3 +79,9 @@ export const categories = pgTable('categories', {
   active: boolean('active').default(true),
   sort_order: integer('sort_order').default(0),
 });
+
+export const settings = pgTable('settings', {
+  key: text('key').primaryKey(),
+  value: text('value').notNull(),
+  updated_at: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+});

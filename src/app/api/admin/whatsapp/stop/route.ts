@@ -1,29 +1,25 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { rateLimit } from '@/lib/rate-limit';
 import { getSessions, stopSession, clearSessionUuid } from '@/lib/openwa';
+import { getOpenwaConfig } from '@/lib/settings';
 
-export async function POST(req: Request) {
+export async function POST() {
   const session = await auth();
   const isAdmin = (session?.user as unknown as Record<string, unknown> | undefined)?.is_admin;
   if (!isAdmin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const ip = req.headers.get('x-forwarded-for') || 'anon';
-  const { allowed } = rateLimit(`whatsapp-stop:${ip}`, 5, 60000);
-  if (!allowed) {
-    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
-  }
-
   try {
+    const config = await getOpenwaConfig();
+    const sessionName = config.sessionName;
+
     const sessionsRes = await getSessions();
     if (sessionsRes.error) {
       return NextResponse.json({ error: 'Cannot reach OpenWA server.' }, { status: 503 });
     }
 
     const allSessions = Array.isArray(sessionsRes) ? sessionsRes as any[] : [];
-    const sessionName = process.env.OPENWA_SESSION || 'nadur-bot';
     const ourSession = allSessions.find((s: any) => s.name === sessionName);
 
     if (!ourSession) {

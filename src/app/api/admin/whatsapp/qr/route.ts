@@ -2,22 +2,18 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { rateLimit } from '@/lib/rate-limit';
 import { getQR, getSessions, createSession, startSession, clearSessionUuid } from '@/lib/openwa';
+import { getOpenwaConfig } from '@/lib/settings';
 
-export async function GET(req: Request) {
+export async function GET() {
   const session = await auth();
   const isAdmin = (session?.user as unknown as Record<string, unknown> | undefined)?.is_admin;
   if (!isAdmin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const ip = req.headers.get('x-forwarded-for') || 'anon';
-  const { allowed } = rateLimit(`whatsapp-qr:${ip}`, 10, 60000);
-  if (!allowed) {
-    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
-  }
-
   try {
-    const sessionName = process.env.OPENWA_SESSION || 'nadur-bot';
+    const config = await getOpenwaConfig();
+    const sessionName = config.sessionName;
 
     const sessionsRes = await getSessions();
     if (sessionsRes.error) {
@@ -46,13 +42,13 @@ export async function GET(req: Request) {
     if (!isStarted) {
       const started = await startSession(sessionId);
       if (started.error) {
-        return NextResponse.json({ error: started.error, message: 'Failed to start session.' }, { status: 500 });
+        return NextResponse.json({ error: started.error, message: 'Failed to start session. Check your API key.' }, { status: 500 });
       }
     }
 
     const qrRes = await getQR();
     if (qrRes.error) {
-      return NextResponse.json({ error: qrRes.error, message: 'Failed to get QR code.' }, { status: 500 });
+      return NextResponse.json({ error: qrRes.error, message: 'Failed to get QR code from OpenWA.' }, { status: 500 });
     }
 
     const qrData = (qrRes as any).qrCode || (qrRes as any).qr || qrRes.data;
@@ -60,11 +56,7 @@ export async function GET(req: Request) {
       ? (qrData.startsWith('data:') ? qrData : `data:image/png;base64,${qrData}`)
       : null;
 
-    return NextResponse.json({
-      qr: qrBase64,
-      sessionId,
-      sessionName,
-    });
+    return NextResponse.json({ qr: qrBase64, sessionId, sessionName });
   } catch (error) {
     console.error('whatsapp-qr error:', error);
     return NextResponse.json({ error: 'Failed to get QR code' }, { status: 500 });

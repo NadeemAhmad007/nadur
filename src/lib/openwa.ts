@@ -1,6 +1,23 @@
-const BASE_URL = process.env.OPENWA_API_URL || 'http://localhost:2785/api';
-const API_KEY = process.env.OPENWA_API_KEY;
-const SESSION_NAME = process.env.OPENWA_SESSION || 'kashmir360-bot';
+import { getOpenwaConfig } from '@/lib/settings';
+
+let baseUrl = '';
+let apiKey = '';
+let sessionName = 'nadur-bot';
+let configLoaded = false;
+
+async function loadConfig() {
+  if (configLoaded) return;
+  const config = await getOpenwaConfig();
+  baseUrl = config.apiUrl;
+  apiKey = config.apiKey;
+  sessionName = config.sessionName;
+  configLoaded = true;
+}
+
+function resetConfig() {
+  configLoaded = false;
+  sessionUuid = null;
+}
 
 let sessionUuid: string | null = null;
 
@@ -11,10 +28,11 @@ interface OpenWAResponse {
 }
 
 async function request(method: string, path: string, body?: unknown): Promise<OpenWAResponse> {
-  const url = `${BASE_URL}${path}`;
+  await loadConfig();
+  const url = `${baseUrl}${path}`;
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  if (API_KEY) {
-    headers['X-API-Key'] = API_KEY;
+  if (apiKey) {
+    headers['X-API-Key'] = apiKey;
   }
   try {
     const res = await fetch(url, {
@@ -41,12 +59,12 @@ async function resolveSessionUuid(): Promise<string | null> {
     console.error('[OpenWA] Failed to list sessions');
     return null;
   }
-  const session = (res as any[]).find((s: any) => s.name === SESSION_NAME);
-  if (!session) {
-    console.error(`[OpenWA] Session "${SESSION_NAME}" not found`);
+  const found = (res as any[]).find((s: any) => s.name === sessionName);
+  if (!found) {
+    console.error(`[OpenWA] Session "${sessionName}" not found`);
     return null;
   }
-  sessionUuid = session.id;
+  sessionUuid = found.id;
   return sessionUuid;
 }
 
@@ -116,4 +134,8 @@ export async function stopSession(uuid: string): Promise<OpenWAResponse> {
 
 export function clearSessionUuid(): void {
   sessionUuid = null;
+}
+
+export function resetOpenwaConfig(): void {
+  resetConfig();
 }
