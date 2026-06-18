@@ -125,8 +125,8 @@ export async function GET(req: Request) {
       const ghats = ghat.split(',').map(g => g.trim());
       conditions.push(
         or(
-          sql`${operators.houseboat_details}->>'boat_ghat' = ANY(${ghats}::text[])`,
-          sql`${operators.shikara_details}->>'ghat_number' = ANY(${ghats}::text[])`,
+          sql`${operators.houseboat_details}->>'boat_ghat' = ANY(ARRAY[${sql.join(ghats, sql`, `)}]::text[])`,
+          sql`${operators.shikara_details}->>'ghat_number' = ANY(ARRAY[${sql.join(ghats, sql`, `)}]::text[])`,
         )
       );
     }
@@ -135,11 +135,10 @@ export async function GET(req: Request) {
       const areas = area.split(',').map(a => a.trim());
       conditions.push(
         or(
-          sql`${operators.shikara_details}->'operating_areas' ?| ${areas}::text[]`,
-          sql`${operators.taxi_details}->'operating_areas' ?| ${areas}::text[]`,
-          sql`${operators.guide_details}->'operating_areas' ?| ${areas}::text[]`,
-          sql`${operators.vendor_details}->'operating_areas' ?| ${areas}::text[]`,
-          sql`${operators.accommodation_details}->'operating_areas' ?| ${areas}::text[]`,
+          sql`${operators.shikara_details}->'operating_areas' ?| ARRAY[${sql.join(areas, sql`, `)}]::text[]`,
+          sql`${operators.taxi_details}->'operating_areas' ?| ARRAY[${sql.join(areas, sql`, `)}]::text[]`,
+          sql`${operators.guide_details}->'operating_areas' ?| ARRAY[${sql.join(areas, sql`, `)}]::text[]`,
+          sql`${operators.vendor_details}->'operating_areas' ?| ARRAY[${sql.join(areas, sql`, `)}]::text[]`,
         )
       );
     }
@@ -148,10 +147,10 @@ export async function GET(req: Request) {
       const langs = language.split(',').map(l => l.trim());
       conditions.push(
         or(
-          sql`${operators.shikara_details}->'languages' ?| ${langs}::text[]`,
-          sql`${operators.taxi_details}->'languages' ?| ${langs}::text[]`,
-          sql`${operators.guide_details}->'languages' ?| ${langs}::text[]`,
-          sql`${operators.accommodation_details}->'languages' ?| ${langs}::text[]`,
+          sql`${operators.shikara_details}->'languages' ?| ARRAY[${sql.join(langs, sql`, `)}]::text[]`,
+          sql`${operators.taxi_details}->'languages' ?| ARRAY[${sql.join(langs, sql`, `)}]::text[]`,
+          sql`${operators.guide_details}->'languages' ?| ARRAY[${sql.join(langs, sql`, `)}]::text[]`,
+          sql`${operators.accommodation_details}->'languages' ?| ARRAY[${sql.join(langs, sql`, `)}]::text[]`,
         )
       );
     }
