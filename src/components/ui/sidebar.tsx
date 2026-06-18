@@ -60,7 +60,7 @@ export function Sidebar({ brand, logo, groups, type }: SidebarProps) {
           'fixed inset-y-0 left-0 z-40 flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-300',
           open ? 'translate-x-0' : '-translate-x-full',
           collapsed ? 'w-16' : 'w-64',
-          'lg:translate-x-0 lg:static lg:z-auto'
+          'lg:translate-x-0 lg:sticky lg:z-auto lg:h-screen lg:top-0'
         )}
       >
         {/* Brand */}

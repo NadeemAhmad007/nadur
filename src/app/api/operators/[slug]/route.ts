@@ -15,7 +15,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
       long_desc: true, whatsapp: true, email: true, pricing_note: true,
       status: true, hidden: true, verified: true, plan: true,
       lead_month: true, photos: true, tariffs: true,
-      houseboat_details: true, shikara_details: true, artisan_details: true,
+      houseboat_details: true, shikara_details: true, artisan_details: true, taxi_details: true,
       lat: true, lng: true,
     },
   });

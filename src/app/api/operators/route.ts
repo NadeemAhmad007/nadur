@@ -96,7 +96,6 @@ export async function GET(req: Request) {
       );
     }
 
-    // Price range filter (houseboat tariffs / taxi price_per_km)
     if (price_min || price_max) {
       const pMin = price_min ? parseFloat(price_min) : 0;
       const pMax = price_max ? parseFloat(price_max) : 999999;
@@ -127,7 +126,6 @@ export async function GET(req: Request) {
       );
     }
 
-    // Operating area filter (shikara + taxi)
     if (area) {
       const areas = area.split(',').map(a => a.trim());
       query = query.where(
@@ -138,7 +136,6 @@ export async function GET(req: Request) {
       );
     }
 
-    // Language filter (shikara + taxi)
     if (language) {
       const langs = language.split(',').map(l => l.trim());
       query = query.where(
