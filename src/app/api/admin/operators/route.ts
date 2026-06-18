@@ -26,7 +26,32 @@ export async function GET(req: Request) {
   const hidden = searchParams.get('hidden');
   const q = searchParams.get('q');
 
-  let query = db.select().from(operators).$dynamic();
+  let query = db.select({
+    id: operators.id,
+    created_at: operators.created_at,
+    updated_at: operators.updated_at,
+    user_id: operators.user_id,
+    slug: operators.slug,
+    name: operators.name,
+    category: operators.category,
+    short_desc: operators.short_desc,
+    long_desc: operators.long_desc,
+    whatsapp: operators.whatsapp,
+    email: operators.email,
+    pricing_note: operators.pricing_note,
+    status: operators.status,
+    hidden: operators.hidden,
+    verified: operators.verified,
+    plan: operators.plan,
+    lead_month: operators.lead_month,
+    photos: operators.photos,
+    tariffs: operators.tariffs,
+    houseboat_details: operators.houseboat_details,
+    shikara_details: operators.shikara_details,
+    artisan_details: operators.artisan_details,
+    lat: operators.lat,
+    lng: operators.lng,
+  }).from(operators).$dynamic();
   const filters: any[] = [];
 
   if (id) {

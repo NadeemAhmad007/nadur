@@ -21,7 +21,32 @@ export async function GET(req: Request) {
 
   try {
     let query = db
-      .select()
+      .select({
+        id: operators.id,
+        created_at: operators.created_at,
+        updated_at: operators.updated_at,
+        user_id: operators.user_id,
+        slug: operators.slug,
+        name: operators.name,
+        category: operators.category,
+        short_desc: operators.short_desc,
+        long_desc: operators.long_desc,
+        whatsapp: operators.whatsapp,
+        email: operators.email,
+        pricing_note: operators.pricing_note,
+        status: operators.status,
+        hidden: operators.hidden,
+        verified: operators.verified,
+        plan: operators.plan,
+        lead_month: operators.lead_month,
+        photos: operators.photos,
+        tariffs: operators.tariffs,
+        houseboat_details: operators.houseboat_details,
+        shikara_details: operators.shikara_details,
+        artisan_details: operators.artisan_details,
+        lat: operators.lat,
+        lng: operators.lng,
+      })
       .from(operators)
       .$dynamic();
 
@@ -121,7 +146,7 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const { name, category, short_desc, long_desc, whatsapp, email, pricing_note, photos, tariffs, houseboat_details, shikara_details, artisan_details, lat, lng } = body;
+    const { name, category, short_desc, long_desc, whatsapp, email, pricing_note, photos, tariffs, houseboat_details, shikara_details, artisan_details, taxi_details, lat, lng } = body;
 
     if (!name || !category || !whatsapp) {
       return NextResponse.json({ error: 'Name, category, and WhatsApp are required' }, { status: 400 });
@@ -149,6 +174,7 @@ export async function POST(req: Request) {
         houseboat_details: houseboat_details || null,
         shikara_details: shikara_details || null,
         artisan_details: artisan_details || null,
+        taxi_details: taxi_details || null,
         lat: lat != null ? lat : null,
         lng: lng != null ? lng : null,
         slug,

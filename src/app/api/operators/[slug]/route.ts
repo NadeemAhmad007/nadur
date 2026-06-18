@@ -9,6 +9,15 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
 
   const op = await db.query.operators.findFirst({
     where: eq(operators.slug, slug),
+    columns: {
+      id: true, created_at: true, updated_at: true, user_id: true,
+      slug: true, name: true, category: true, short_desc: true,
+      long_desc: true, whatsapp: true, email: true, pricing_note: true,
+      status: true, hidden: true, verified: true, plan: true,
+      lead_month: true, photos: true, tariffs: true,
+      houseboat_details: true, shikara_details: true, artisan_details: true,
+      lat: true, lng: true,
+    },
   });
 
   if (!op || (op.status !== 'approved' && op.status !== 'pending')) {
@@ -70,6 +79,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ slug: 
   }
   if (body.artisan_details !== undefined) {
     updateData.artisan_details = body.artisan_details;
+    updateData.status = 'pending';
+  }
+  if (body.taxi_details !== undefined) {
+    updateData.taxi_details = body.taxi_details;
     updateData.status = 'pending';
   }
   if (body.lat !== undefined) {
