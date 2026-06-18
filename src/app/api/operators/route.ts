@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
 import { operators } from '@/db/schema';
-import { eq, and, like, or, sql } from 'drizzle-orm';
+import { eq, and, like, or, sql, asc, desc } from 'drizzle-orm';
 import { auth } from '@/lib/auth';
 import { rateLimit } from '@/lib/rate-limit';
 
@@ -15,6 +15,13 @@ export async function GET(req: Request) {
   const lat = searchParams.get('lat');
   const lng = searchParams.get('lng');
   const radius = searchParams.get('radius');
+  const sort = searchParams.get('sort') || 'relevance';
+  const price_min = searchParams.get('price_min');
+  const price_max = searchParams.get('price_max');
+  const ghat = searchParams.get('ghat');
+  const area = searchParams.get('area');
+  const language = searchParams.get('language');
+  const verified_only = searchParams.get('verified') === 'true';
   const page = parseInt(searchParams.get('page') || '1');
   const limit = parseInt(searchParams.get('limit') || '20');
   const offset = (page - 1) * limit;
@@ -44,6 +51,7 @@ export async function GET(req: Request) {
         houseboat_details: operators.houseboat_details,
         shikara_details: operators.shikara_details,
         artisan_details: operators.artisan_details,
+        taxi_details: operators.taxi_details,
         lat: operators.lat,
         lng: operators.lng,
       })
@@ -88,6 +96,64 @@ export async function GET(req: Request) {
       );
     }
 
+    // Price range filter (houseboat tariffs / taxi price_per_km)
+    if (price_min || price_max) {
+      const pMin = price_min ? parseFloat(price_min) : 0;
+      const pMax = price_max ? parseFloat(price_max) : 999999;
+      if (!isNaN(pMin) && !isNaN(pMax)) {
+        query = query.where(
+          or(
+            and(
+              eq(operators.category, 'houseboat'),
+              sql`COALESCE(NULLIF(${operators.tariffs}->>'double_ep', '')::numeric, 0) BETWEEN ${pMin} AND ${pMax}`,
+            ),
+            and(
+              eq(operators.category, 'taxi'),
+              sql`COALESCE(NULLIF(${operators.taxi_details}->>'price_per_km', '')::numeric, 0) BETWEEN ${pMin} AND ${pMax}`,
+            ),
+          )
+        );
+      }
+    }
+
+    // Ghat filter (houseboat + shikara)
+    if (ghat) {
+      const ghats = ghat.split(',').map(g => g.trim());
+      query = query.where(
+        or(
+          sql`${operators.houseboat_details}->>'boat_ghat' = ANY(${ghats}::text[])`,
+          sql`${operators.shikara_details}->>'ghat_number' = ANY(${ghats}::text[])`,
+        )
+      );
+    }
+
+    // Operating area filter (shikara + taxi)
+    if (area) {
+      const areas = area.split(',').map(a => a.trim());
+      query = query.where(
+        or(
+          sql`${operators.shikara_details}->'operating_areas' ?| ${areas}::text[]`,
+          sql`${operators.taxi_details}->'operating_areas' ?| ${areas}::text[]`,
+        )
+      );
+    }
+
+    // Language filter (shikara + taxi)
+    if (language) {
+      const langs = language.split(',').map(l => l.trim());
+      query = query.where(
+        or(
+          sql`${operators.shikara_details}->'languages' ?| ${langs}::text[]`,
+          sql`${operators.taxi_details}->'languages' ?| ${langs}::text[]`,
+        )
+      );
+    }
+
+    // Verified only
+    if (verified_only) {
+      query = query.where(eq(operators.verified, true));
+    }
+
     if (lat && lng && radius) {
       const latNum = parseFloat(lat);
       const lngNum = parseFloat(lng);
@@ -99,8 +165,24 @@ export async function GET(req: Request) {
       }
     }
 
+    // Sort
+    let orderBy: any;
+    switch (sort) {
+      case 'newest':
+        orderBy = desc(operators.created_at);
+        break;
+      case 'name':
+        orderBy = asc(operators.name);
+        break;
+      case '-name':
+        orderBy = desc(operators.name);
+        break;
+      default:
+        orderBy = [desc(operators.verified), asc(operators.name)];
+    }
+
     const result = await query
-      .orderBy(operators.verified, operators.name)
+      .orderBy(orderBy)
       .limit(limit + 1)
       .offset(offset);
 
