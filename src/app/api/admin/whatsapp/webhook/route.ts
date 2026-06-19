@@ -13,7 +13,7 @@ export async function POST() {
   try {
     const config = await getOpenwaConfig();
     const sessionName = config.sessionName;
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://nadur-mu.vercel.app';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kasheer360.com';
     const webhookUrl = `${appUrl}/api/whatsapp-webhook`;
 
     const sessionsRes = await getSessions();

@@ -13,9 +13,9 @@ export async function sendOtpEmail(email: string, otp: string): Promise<void> {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'Kashmir360 <noreply@formaspacestudio.com>',
+      from: 'Kasheer360 <noreply@formaspacestudio.com>',
       to: email,
-      subject: 'Your Kashmir360 OTP Code',
+      subject: 'Your Kasheer360 OTP Code',
       html: `
         <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
           <h2>Your OTP Code</h2>

@@ -66,14 +66,14 @@ export async function POST(req: Request) {
       console.error(`[leads/verify-otp] Failed to notify operator ${op.name}:`, err);
     });
 
-    const adminNotify = process.env.KASHMIR360_ADMIN_WHATSAPP;
+    const adminNotify = process.env.KASHEER360_ADMIN_WHATSAPP;
     if (adminNotify && adminNotify !== op.whatsapp) {
       notifyLead(adminNotify, op.name, visitor_name, visitor_phone, true).catch((err) => {
         console.error(`[leads/verify-otp] Failed to notify admin:`, err);
       });
     }
 
-    const waUrl = `https://wa.me/${op.whatsapp}?text=${encodeURIComponent(`Hi! I found you on Kashmir360. I'm interested in your services.`)}`;
+    const waUrl = `https://wa.me/${op.whatsapp}?text=${encodeURIComponent(`Hi! I found you on Kasheer360. I'm interested in your services.`)}`;
 
     return NextResponse.json({ ok: true, whatsapp: op.whatsapp, waUrl });
   } catch (error) {

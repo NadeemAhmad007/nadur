@@ -80,12 +80,12 @@ export async function sendText(phone: string, text: string): Promise<OpenWARespo
 }
 
 export async function sendOtp(phone: string, otp: string): Promise<OpenWAResponse> {
-  const message = `Your Kashmir360 OTP code is: ${otp}\nValid for 5 minutes.`;
+  const message = `Your Kasheer360 OTP code is: ${otp}\nValid for 5 minutes.`;
   return sendText(phone, message);
 }
 
 export async function notifyLead(operatorPhone: string, operatorName: string, visitorName?: string, visitorPhone?: string, isAdmin = false): Promise<OpenWAResponse> {
-  const prefix = isAdmin ? `*New Lead: ${operatorName}*` : `*New Inquiry on Kashmir360!*`;
+  const prefix = isAdmin ? `*New Lead: ${operatorName}*` : `*New Inquiry on Kasheer360!*`;
   let message = `${prefix}\n\n`;
   if (!isAdmin) {
     message += `A visitor has contacted *${operatorName}*.\n\n`;
@@ -96,7 +96,7 @@ export async function notifyLead(operatorPhone: string, operatorName: string, vi
   if (visitorPhone) {
     message += `Phone: ${visitorPhone}\n`;
   }
-  message += `\nLogin to your dashboard to view details:\n${process.env.NEXT_PUBLIC_APP_URL || 'https://kashmir360.com'}${isAdmin ? '/admin' : '/portal'}`;
+  message += `\nLogin to your dashboard to view details:\n${process.env.NEXT_PUBLIC_APP_URL || 'https://kasheer360.com'}${isAdmin ? '/admin' : '/portal'}`;
   const result = await sendText(operatorPhone, message);
   if (result.error) {
     throw new Error(result.error);

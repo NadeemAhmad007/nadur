@@ -174,16 +174,16 @@ const run = async () => {
 
   // Backfill email for existing operators where email is null
   await sql`
-    UPDATE operators SET email = lower(regexp_replace(whatsapp, '\D', '', 'g')) || '@kashmir360.com'
+    UPDATE operators SET email = lower(regexp_replace(whatsapp, '\D', '', 'g')) || '@kasheer360.com'
     WHERE email IS NULL AND whatsapp IS NOT NULL
   `;
 
   // Backfill email from houseboat_details / artisan_details JSON columns
-  // These take priority over the synthetic @kashmir360.com fallback
+  // These take priority over the synthetic @kasheer360.com fallback
   await sql`
     UPDATE operators
     SET email = LOWER(TRIM(houseboat_details->>'email'))
-    WHERE (email IS NULL OR email LIKE '%@kashmir360.com')
+    WHERE (email IS NULL OR email LIKE '%@kasheer360.com')
       AND houseboat_details IS NOT NULL
       AND houseboat_details->>'email' IS NOT NULL
       AND houseboat_details->>'email' != ''
@@ -191,7 +191,7 @@ const run = async () => {
   await sql`
     UPDATE operators
     SET email = LOWER(TRIM(artisan_details->>'email'))
-    WHERE (email IS NULL OR email LIKE '%@kashmir360.com')
+    WHERE (email IS NULL OR email LIKE '%@kasheer360.com')
       AND artisan_details IS NOT NULL
       AND artisan_details->>'email' IS NOT NULL
       AND artisan_details->>'email' != ''

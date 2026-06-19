@@ -57,7 +57,7 @@ export async function POST(req: Request) {
     await db.update(operators).set({ lead_month: monthCount + 1 }).where(eq(operators.id, operator_id));
 
     if (overflow) {
-      const adminNotify = process.env.KASHMIR360_ADMIN_WHATSAPP;
+      const adminNotify = process.env.KASHEER360_ADMIN_WHATSAPP;
       if (adminNotify) {
         notifyLead(adminNotify, op.name, visitor_name, visitor_phone, true).catch((err) => {
           console.error(`[leads] Failed to notify admin of overflow:`, err);
@@ -71,7 +71,7 @@ export async function POST(req: Request) {
         console.error(`[leads] Failed to notify operator ${op.name} (${op.whatsapp}):`, err);
       });
 
-      const adminNotify = process.env.KASHMIR360_ADMIN_WHATSAPP;
+      const adminNotify = process.env.KASHEER360_ADMIN_WHATSAPP;
       if (adminNotify && adminNotify !== op.whatsapp) {
         notifyLead(adminNotify, op.name, visitor_name, visitor_phone, true).catch((err) => {
           console.error(`[leads] Failed to notify admin:`, err);

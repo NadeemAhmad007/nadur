@@ -144,7 +144,7 @@ export default function BrowsePage() {
         <div className="max-w-5xl mx-auto px-4">
           <div className="flex items-center justify-between py-3 min-h-24">
             <Link href="/" className="flex items-center gap-3 shrink-0">
-              <img src="/logo.png" alt="Kashmir360" className="h-32 w-auto object-contain" />
+              <img src="/logo.png" alt="Kasheer360" className="h-32 w-auto object-contain" />
             </Link>
             <div className="flex items-center gap-2">
               <button
@@ -201,7 +201,7 @@ export default function BrowsePage() {
               Explore Srinagar & Kashmir Like Never Before
             </div>
             <h1 className="text-3xl sm:text-5xl font-black text-foreground tracking-tight max-w-2xl mx-auto leading-tight">
-              Connect Direct, <span className="text-accent">Book Local</span> on Kashmir360
+              Connect Direct, <span className="text-accent">Book Local</span> on Kasheer360
             </h1>
             <p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-xl mx-auto">
               Your premium gateway to verified houseboats, shikara rides, authentic local artisans, tourist guides, and local taxi services across Srinagar and Kashmir. 100% direct connection—no middlemen, no hidden commissions.
@@ -226,7 +226,7 @@ export default function BrowsePage() {
             </div>
             <h3 className="text-base font-bold text-foreground mb-2">No Hidden Commissions</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Travel portals charge up to 30% commission. Kashmir360 connects you directly with the owner so you pay fair, local rates.
+              Travel portals charge up to 30% commission. Kasheer360 connects you directly with the owner so you pay fair, local rates.
             </p>
           </div>
           <div className="bg-card p-6 rounded-2xl border border-border/50 hover:border-accent/30 transition-all shadow-sm">

@@ -7,7 +7,7 @@ services:
       - "2785:2785"   # REST API
       - "2886:2886"   # Web dashboard
     environment:
-      API_KEY: ${OPENWA_API_KEY:-kashmir360-dev-key}
+      API_KEY: ${OPENWA_API_KEY:-kasheer360-dev-key}
     volumes:
       - openwa-data:/app/data
     healthcheck:

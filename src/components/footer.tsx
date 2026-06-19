@@ -11,7 +11,7 @@ export function Footer() {
           {/* Brand */}
           <div className="space-y-3">
             <Link href="/" className="flex items-center gap-3">
-              <img src="/logo.png" alt="Kashmir360" className="h-24 w-auto object-contain" />
+              <img src="/logo.png" alt="Kasheer360" className="h-24 w-auto object-contain" />
             </Link>
             <p className="text-xs text-muted-foreground/70 leading-relaxed max-w-xs">
               Connect directly with verified houseboats, shikara rides, artisans, guides, and local businesses across Srinagar, Kashmir.
@@ -62,7 +62,7 @@ export function Footer() {
 
         <div className="flex flex-col sm:flex-row items-center justify-between gap-2 mt-10 pt-6 border-t border-border/40">
           <p className="text-xs text-muted-foreground/70">
-            &copy; {new Date().getFullYear()} Kashmir360. All rights reserved.
+            &copy; {new Date().getFullYear()} Kasheer360. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
             <Link href="/privacy" className="text-xs text-muted-foreground/60 hover:text-accent transition-colors">

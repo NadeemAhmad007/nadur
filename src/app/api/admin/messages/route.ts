@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
 
   // Forward message to operator's WhatsApp via OpenWA
   if (op.whatsapp) {
-    const waMsg = `📩 *Message from Kashmir360 Admin*\n\n${message.trim()}`;
+    const waMsg = `📩 *Message from Kasheer360 Admin*\n\n${message.trim()}`;
     sendText(op.whatsapp, waMsg).catch((err) =>
       console.error('[admin/messages] WhatsApp delivery failed:', err)
     );

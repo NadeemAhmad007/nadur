@@ -11,7 +11,7 @@ export default function FavoritesPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const stored = localStorage.getItem('kashmir360-favorites');
+    const stored = localStorage.getItem('kasheer360-favorites');
     if (stored) {
       const ids = JSON.parse(stored) as string[];
       if (ids.length > 0) {
@@ -34,7 +34,7 @@ export default function FavoritesPage() {
           <Link href="/" className="flex h-9 w-9 items-center justify-center rounded-xl hover:bg-secondary transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <img src="/logo.png" alt="Kashmir360" className="h-56 w-auto object-contain" />
+          <img src="/logo.png" alt="Kasheer360" className="h-56 w-auto object-contain" />
           <h1 className="text-lg font-semibold ml-1">Favorites</h1>
         </div>
       </header>

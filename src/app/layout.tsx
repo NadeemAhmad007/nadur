@@ -11,18 +11,21 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Kashmir360 - Explore Srinagar",
+  title: {
+    template: "%s | Kasheer360",
+    default: "Kasheer360",
+  },
   description:
     "Discover verified houseboats, shikara rides, artisans, guides and vendors across Srinagar, Kashmir.",
   manifest: "/manifest.json",
   icons: {
-    icon: "/favicon.png?v=3",
-    apple: "/icons/icon-192.png?v=3",
+    icon: "/favicon.png?v=4",
+    apple: "/icons/icon-192.png?v=4",
   },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Kashmir360",
+    title: "Kasheer360",
   },
 };
 

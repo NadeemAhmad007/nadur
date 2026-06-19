@@ -158,7 +158,7 @@ export function LeadFormModal({ operator, onClose }: { operator: Operator; onClo
       setOverflow(data.overflow);
     } catch { setSubmitting(false); return; }
     setSubmitting(false);
-    const waUrl = `https://wa.me/${operator.whatsapp}?text=${encodeURIComponent('Hi! I found you on Kashmir360.')}`;
+    const waUrl = `https://wa.me/${operator.whatsapp}?text=${encodeURIComponent('Hi! I found you on Kasheer360.')}`;
     window.open(waUrl, '_blank');
     onClose();
   };

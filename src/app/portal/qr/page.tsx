@@ -63,7 +63,7 @@ export default function QRPage() {
           <Link href="/portal" className="p-1">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <img src="/logo.png" alt="Kashmir360" className="h-56 w-auto object-contain" />
+          <img src="/logo.png" alt="Kasheer360" className="h-56 w-auto object-contain" />
           <h1 className="text-lg font-semibold">Your QR Code</h1>
         </div>
       </header>
@@ -76,7 +76,7 @@ export default function QRPage() {
             )}
             <p className="text-sm font-medium mt-3">{operator.name}</p>
             <p className="text-xs text-gray-500 mt-1">
-              {process.env.NEXT_PUBLIC_APP_URL || 'https://kashmir360.app'}/o/{operator.slug}
+              {process.env.NEXT_PUBLIC_APP_URL || 'https://kasheer360.com'}/o/{operator.slug}
             </p>
           </CardContent>
         </Card>

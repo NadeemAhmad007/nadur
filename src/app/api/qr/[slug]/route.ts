@@ -3,7 +3,7 @@ import QRCode from 'qrcode';
 
 export async function GET(req: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kashmir360.app';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kasheer360.com';
   const url = `${appUrl}/o/${slug}?src=qr`;
   const format = new URL(req.url).searchParams.get('format') || 'svg';
 

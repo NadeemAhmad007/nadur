@@ -243,7 +243,7 @@ export default function PortalPage() {
             </div>
           </div>
           <h2 className="text-xl font-semibold text-foreground">No profile yet</h2>
-          <p className="text-sm text-muted-foreground mt-2">Register your business to get started on Kashmir360</p>
+          <p className="text-sm text-muted-foreground mt-2">Register your business to get started on Kasheer360</p>
           <Link href="/join">
             <Button className="mt-6">Register Now</Button>
           </Link>

@@ -1,4 +1,4 @@
-const CACHE = 'kashmir360-v1';
+const CACHE = 'kasheer360-v1';
 const STATIC_URLS = ['/', '/offline', '/manifest.json'];
 
 self.addEventListener('install', (event) => {

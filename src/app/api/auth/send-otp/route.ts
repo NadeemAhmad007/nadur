@@ -24,7 +24,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
 
-    const isBackfilled = email.endsWith('@kashmir360.com');
+    const isBackfilled = email.endsWith('@kasheer360.com');
     if (isBackfilled) {
       const op = await db.query.operators.findFirst({
         where: eq(operators.email, email),

@@ -129,7 +129,7 @@ export default function LoginPage() {
         {/* Brand */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex flex-col items-center gap-3">
-            <img src="/logo.png" alt="Kashmir360" className="h-36 w-auto object-contain" />
+            <img src="/logo.png" alt="Kasheer360" className="h-36 w-auto object-contain" />
           </Link>
           <p className="text-sm text-muted-foreground mt-3">Sign in to your account</p>
         </div>
@@ -291,7 +291,7 @@ export default function LoginPage() {
               </Button>
 
               <p className="text-center text-xs text-muted-foreground">
-                New to Kashmir360?{' '}
+                New to Kasheer360?{' '}
                 <Link href="/join" className="text-accent font-medium hover:underline">Register your business</Link>
               </p>
             </div>

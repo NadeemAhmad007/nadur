@@ -40,7 +40,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
   const photos = op.photos?.length ? op.photos : [];
 
   useEffect(() => {
-    const stored = localStorage.getItem('kashmir360-favorites');
+    const stored = localStorage.getItem('kasheer360-favorites');
     if (stored) {
       const ids = JSON.parse(stored) as string[];
       setFavorited(ids.includes(op.id));
@@ -50,12 +50,12 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
   const toggleFavorite = () => {
     const next = !favorited;
     setFavorited(next);
-    const stored = localStorage.getItem('kashmir360-favorites');
+    const stored = localStorage.getItem('kasheer360-favorites');
     const ids: string[] = stored ? JSON.parse(stored) : [];
     const updated = next
       ? [...ids, op.id]
       : ids.filter((id) => id !== op.id);
-    localStorage.setItem('kashmir360-favorites', JSON.stringify(updated));
+    localStorage.setItem('kasheer360-favorites', JSON.stringify(updated));
   };
 
   const handleSubmit = async () => {
@@ -91,7 +91,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
     } catch { setSubmitting(false); return; }
     setShowForm(false);
     setSubmitting(false);
-    const waUrl = `https://wa.me/${op.whatsapp}?text=${encodeURIComponent(`Hi! I found you on Kashmir360. I'm interested in your ${op.category ? (categoryLabels[op.category] || op.category) : ''}.`)}`;
+    const waUrl = `https://wa.me/${op.whatsapp}?text=${encodeURIComponent(`Hi! I found you on Kasheer360. I'm interested in your ${op.category ? (categoryLabels[op.category] || op.category) : ''}.`)}`;
     window.location.href = waUrl;
   };
 

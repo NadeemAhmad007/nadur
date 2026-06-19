@@ -186,7 +186,7 @@ fi
 
 if [ -z "$API_KEY" ]; then
   echo "ERROR: Could not find API key"
-  echo "  It's set in docker-compose.openwa.yml as: \${OPENWA_API_KEY:-kashmir360-dev-key}"
+  echo "  It's set in docker-compose.openwa.yml as: \${OPENWA_API_KEY:-kasheer360-dev-key}"
   echo "  Check: docker exec nadur-openwa env | grep API_KEY"
   exit 1
 fi
@@ -198,7 +198,7 @@ node scripts/update-openwa-config.cjs "$NGROK_URL" "$API_KEY"
 echo "  Updating .env..."
 _upsert_env "OPENWA_API_URL" "${NGROK_URL}/api"
 _upsert_env "OPENWA_API_KEY" "$API_KEY"
-_upsert_env "OPENWA_SESSION" "kashmir360-bot"
+_upsert_env "OPENWA_SESSION" "kasheer360-bot"
 
 # ── 5. Verify ─────────────────────────────────────────────
 echo "[5/5] Verification..."
