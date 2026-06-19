@@ -257,12 +257,38 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Name, category, and WhatsApp are required' }, { status: 400 });
     }
 
-    const slug = name
+    // Check if operator with same WhatsApp already exists
+    const existing = await db.query.operators.findFirst({
+      where: eq(operators.whatsapp, whatsapp),
+      columns: { id: true, name: true, slug: true, status: true },
+    });
+    if (existing) {
+      return NextResponse.json({
+        error: 'An operator with this WhatsApp number is already registered',
+        existing: { id: existing.id, name: existing.name, slug: existing.slug, status: existing.status },
+      }, { status: 409 });
+    }
+
+    let slug = name
       .toLowerCase()
       .replace(/[^\w\s-]/g, '')
       .replace(/[\s_]+/g, '-')
       .replace(/^-+|-+$/g, '')
       .substring(0, 100);
+
+    // Ensure unique slug
+    let slugSuffix = 0;
+    let finalSlug = slug;
+    while (true) {
+      const slugExists = await db.query.operators.findFirst({
+        where: eq(operators.slug, finalSlug),
+        columns: { id: true },
+      });
+      if (!slugExists) break;
+      slugSuffix++;
+      finalSlug = `${slug}-${slugSuffix}`;
+    }
+    slug = finalSlug;
 
     const result = await db
       .insert(operators)
