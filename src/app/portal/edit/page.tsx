@@ -380,8 +380,8 @@ export default function EditProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <header className="border-b border-gray-200">
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border">
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3 min-h-24">
           <Link href="/portal" className="p-1">
             <ArrowLeft className="w-5 h-5" />
@@ -397,7 +397,7 @@ export default function EditProfilePage() {
           <input
             value={form.name || ''}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg text-sm"
+            className="w-full mt-1 px-4 py-3 border border-input rounded-lg text-sm"
             maxLength={100}
           />
         </div>
@@ -407,7 +407,7 @@ export default function EditProfilePage() {
           <textarea
             value={form.short_desc || ''}
             onChange={(e) => setForm({ ...form, short_desc: e.target.value })}
-            className="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg text-sm"
+            className="w-full mt-1 px-4 py-3 border border-input rounded-lg text-sm"
             rows={3}
             maxLength={500}
           />
@@ -418,7 +418,7 @@ export default function EditProfilePage() {
           <textarea
             value={form.long_desc || ''}
             onChange={(e) => setForm({ ...form, long_desc: e.target.value })}
-            className="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg text-sm"
+            className="w-full mt-1 px-4 py-3 border border-input rounded-lg text-sm"
             rows={5}
             maxLength={2000}
           />
@@ -429,7 +429,7 @@ export default function EditProfilePage() {
           <input
             value={form.pricing_note || ''}
             onChange={(e) => setForm({ ...form, pricing_note: e.target.value })}
-            className="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg text-sm"
+            className="w-full mt-1 px-4 py-3 border border-input rounded-lg text-sm"
             maxLength={300}
             placeholder="e.g. ₹2000/night/room, contact for actual offers"
           />
@@ -448,11 +448,11 @@ export default function EditProfilePage() {
                 setEmailOtpError('');
               }}
               disabled={emailOtpSent}
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2C5F8A] disabled:bg-gray-100"
+              className="flex-1 px-4 py-3 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:bg-secondary"
               placeholder="you@example.com"
             />
             {operator.verified && form.operatorEmail === operator.email ? (
-              <span className="flex items-center gap-1 px-3 text-sm text-green-600">
+              <span className="flex items-center gap-1 px-3 text-sm text-success">
                 <Check className="w-4 h-4" /> Verified
               </span>
             ) : !emailOtpSent ? (
@@ -491,7 +491,7 @@ export default function EditProfilePage() {
                 type="text"
                 value={emailOtp}
                 onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                className="w-32 px-4 py-3 border border-gray-300 rounded-lg text-sm text-center tracking-widest text-lg"
+                className="w-32 px-4 py-3 border border-input rounded-lg text-sm text-center tracking-widest text-lg"
                 placeholder="000000"
                 maxLength={6}
                 autoFocus
@@ -524,15 +524,15 @@ export default function EditProfilePage() {
               </Button>
               <button
                 onClick={() => { setEmailOtpSent(false); setEmailOtp(''); setEmailOtpError(''); }}
-                className="text-sm text-gray-500 hover:text-gray-700"
+                className="text-sm text-muted-foreground hover:text-foreground"
               >
                 Cancel
               </button>
             </div>
           )}
-          {emailOtpError && <p className="text-xs text-red-600 mt-1">{emailOtpError}</p>}
+          {emailOtpError && <p className="text-xs text-danger mt-1">{emailOtpError}</p>}
           {!operator.verified && !emailOtpSent && (
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Enter your email and click Send OTP to verify it. Your profile is unverified until email is confirmed.
             </p>
           )}
@@ -543,41 +543,41 @@ export default function EditProfilePage() {
           <input
             value={form.whatsapp || ''}
             onChange={(e) => setForm({ ...form, whatsapp: e.target.value })}
-            className="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg text-sm"
+            className="w-full mt-1 px-4 py-3 border border-input rounded-lg text-sm"
           />
         </div>
 
         {operator.category === 'houseboat' && (
           <>
-            <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+            <div className="space-y-3 p-3 bg-secondary rounded-lg">
               <h3 className="text-sm font-semibold">Houseboat Details</h3>
               <div>
                 <label className="text-xs font-medium">Owner Name</label>
-                <input value={form.owner || ''} onChange={(e) => setForm({ ...form, owner: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                <input value={form.owner || ''} onChange={(e) => setForm({ ...form, owner: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
               </div>
               <div>
                 <label className="text-xs font-medium">Address</label>
-                <input value={form.address || ''} onChange={(e) => setForm({ ...form, address: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                <input value={form.address || ''} onChange={(e) => setForm({ ...form, address: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
               </div>
               <div>
                 <label className="text-xs font-medium">Contact</label>
-                <input value={form.hb_contact || ''} onChange={(e) => setForm({ ...form, hb_contact: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Alternate phone number" />
+                <input value={form.hb_contact || ''} onChange={(e) => setForm({ ...form, hb_contact: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="Alternate phone number" />
               </div>
               <div>
                 <label className="text-xs font-medium">Alternate Contact 2</label>
-                <input value={form.hb_contact2 || ''} onChange={(e) => setForm({ ...form, hb_contact2: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Another alternate phone number" />
+                <input value={form.hb_contact2 || ''} onChange={(e) => setForm({ ...form, hb_contact2: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="Another alternate phone number" />
               </div>
               <div>
                 <label className="text-xs font-medium">Email</label>
-                <input type="email" value={form.email || ''} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                <input type="email" value={form.email || ''} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
               </div>
               <div>
                 <label className="text-xs font-medium">Google Maps Link</label>
-                <input value={form.google_maps || ''} onChange={(e) => setForm({ ...form, google_maps: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
+                <input value={form.google_maps || ''} onChange={(e) => setForm({ ...form, google_maps: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
               </div>
               <div>
                 <label className="text-xs font-medium">Grade</label>
-                <select value={form.grade || 'Grade A'} onChange={(e) => setForm({ ...form, grade: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                <select value={form.grade || 'Grade A'} onChange={(e) => setForm({ ...form, grade: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm bg-card">
                   <option value="Grade A">Grade A</option>
                   <option value="Grade B">Grade B</option>
                   <option value="Grade C">Grade C</option>
@@ -587,7 +587,7 @@ export default function EditProfilePage() {
               </div>
               <div>
                 <label className="text-xs font-medium">Shikara Ghat (used to arrive to boat)</label>
-                <select value={form.boat_ghat || ''} onChange={(e) => setForm({ ...form, boat_ghat: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                <select value={form.boat_ghat || ''} onChange={(e) => setForm({ ...form, boat_ghat: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm bg-card">
                   <option value="">Select Ghat</option>
                   {ghats.map((g) => (
                     <option key={g.name} value={g.name}>{g.name}</option>
@@ -598,11 +598,11 @@ export default function EditProfilePage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-medium">Total Rooms</label>
-                  <input value={form.hb_total_rooms || ''} onChange={(e) => setForm({ ...form, hb_total_rooms: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. 6" />
+                  <input value={form.hb_total_rooms || ''} onChange={(e) => setForm({ ...form, hb_total_rooms: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="e.g. 6" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Max Guest Capacity</label>
-                  <input value={form.hb_capacity || ''} onChange={(e) => setForm({ ...form, hb_capacity: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. 20" />
+                  <input value={form.hb_capacity || ''} onChange={(e) => setForm({ ...form, hb_capacity: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="e.g. 20" />
                 </div>
               </div>
               <div>
@@ -630,7 +630,7 @@ export default function EditProfilePage() {
             </div>
             <div className="space-y-3">
             <h3 className="text-sm font-semibold">Houseboat Tariffs (₹)</h3>
-            <p className="text-xs text-gray-500">EP=Room only, CP=+Breakfast, MAP=+Breakfast&Dinner, AP=+Breakfast,Lunch&Dinner</p>
+            <p className="text-xs text-muted-foreground">EP=Room only, CP=+Breakfast, MAP=+Breakfast&Dinner, AP=+Breakfast,Lunch&Dinner</p>
             <div className="grid grid-cols-2 gap-3">
               {([
                 ['double_ep', 'Double Bed (EP)'],
@@ -643,22 +643,22 @@ export default function EditProfilePage() {
                 ['single_ap', 'Single Bed (AP)'],
               ] as const).map(([key, label]) => (
                 <div key={key}>
-                  <label className="text-xs text-gray-500">{label}</label>
+                  <label className="text-xs text-muted-foreground">{label}</label>
                   <input
                     value={form.tariffs?.[key] || ''}
                     onChange={(e) => setForm({ ...form, tariffs: { ...form.tariffs, [key]: e.target.value } })}
-                    className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm"
                     placeholder="₹"
                   />
                 </div>
               ))}
             </div>
             <div>
-              <label className="text-xs text-gray-500">Tariff Note</label>
+              <label className="text-xs text-muted-foreground">Tariff Note</label>
               <textarea
                 value={form.tariffs?.note || ''}
                 onChange={(e) => setForm({ ...form, tariffs: { ...form.tariffs, note: e.target.value } })}
-                className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm"
                 rows={3}
                 placeholder="Children below 5 yrs FREE. Heating charges extra in winter @ ₹600/room/day"
               />
@@ -669,27 +669,27 @@ export default function EditProfilePage() {
 
         {operator.category === 'shikara' && (
           <>
-            <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+            <div className="space-y-3 p-3 bg-secondary rounded-lg">
               <h3 className="text-sm font-semibold">Basic Register Info</h3>
               <div>
                 <label className="text-xs font-medium">Full Name *</label>
-                <input value={form.full_name || ''} onChange={(e) => setForm({ ...form, full_name: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                <input value={form.full_name || ''} onChange={(e) => setForm({ ...form, full_name: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
               </div>
               <div>
                 <label className="text-xs font-medium">Mobile Number *</label>
-                <input value={form.mobile_number || ''} onChange={(e) => setForm({ ...form, mobile_number: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                <input value={form.mobile_number || ''} onChange={(e) => setForm({ ...form, mobile_number: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
               </div>
               <div>
                 <label className="text-xs font-medium">WhatsApp Number *</label>
-                <input value={form.whatsapp_number || ''} onChange={(e) => setForm({ ...form, whatsapp_number: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                <input value={form.whatsapp_number || ''} onChange={(e) => setForm({ ...form, whatsapp_number: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
               </div>
               <div>
                 <label className="text-xs font-medium">Shikara Number *</label>
-                <input value={form.shikara_number || ''} onChange={(e) => setForm({ ...form, shikara_number: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                <input value={form.shikara_number || ''} onChange={(e) => setForm({ ...form, shikara_number: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
               </div>
               <div>
                 <label className="text-xs font-medium">Ghat Number / Location</label>
-                <select value={form.ghat_number || ''} onChange={(e) => setForm({ ...form, ghat_number: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                <select value={form.ghat_number || ''} onChange={(e) => setForm({ ...form, ghat_number: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm bg-card">
                   <option value="">Select Ghat</option>
                   {ghats.map((g: any) => (
                     <option key={g.name} value={g.name}>{g.name}</option>
@@ -719,11 +719,11 @@ export default function EditProfilePage() {
                 </div>
               </div>
             </div>
-            <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+            <div className="space-y-3 p-3 bg-secondary rounded-lg">
               <h3 className="text-sm font-semibold">About You</h3>
               <div>
                 <label className="text-xs font-medium">Years of Experience</label>
-                <input value={form.years_experience || ''} onChange={(e) => setForm({ ...form, years_experience: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                <input value={form.years_experience || ''} onChange={(e) => setForm({ ...form, years_experience: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
               </div>
               <div>
                 <label className="text-xs font-medium">Languages Spoken</label>
@@ -769,7 +769,7 @@ export default function EditProfilePage() {
               </div>
               <div>
                 <label className="text-xs font-medium">Typical Tour Duration</label>
-                <select value={form.tour_duration || ''} onChange={(e) => setForm({ ...form, tour_duration: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                <select value={form.tour_duration || ''} onChange={(e) => setForm({ ...form, tour_duration: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm bg-card">
                   <option value="">Select Duration</option>
                   <option value="1 Hour">1 Hour</option>
                   <option value="2 Hours">2 Hours</option>
@@ -799,25 +799,25 @@ export default function EditProfilePage() {
               {form.registered_shikara === 'Yes' && (
                 <div>
                   <label className="text-xs font-medium">Registration Number (if available)</label>
-                  <input value={form.registration_number || ''} onChange={(e) => setForm({ ...form, registration_number: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input value={form.registration_number || ''} onChange={(e) => setForm({ ...form, registration_number: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                 </div>
               )}
             </div>
-            <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+            <div className="space-y-3 p-3 bg-secondary rounded-lg">
               <h3 className="text-sm font-semibold">Pricing</h3>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-medium">Price per Ride (₹)</label>
-                  <input value={form.price_per_ride || ''} onChange={(e) => setForm({ ...form, price_per_ride: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="₹" />
+                  <input value={form.price_per_ride || ''} onChange={(e) => setForm({ ...form, price_per_ride: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="₹" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Price per Hour (₹)</label>
-                  <input value={form.price_per_hour || ''} onChange={(e) => setForm({ ...form, price_per_hour: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="₹" />
+                  <input value={form.price_per_hour || ''} onChange={(e) => setForm({ ...form, price_per_hour: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="₹" />
                 </div>
               </div>
               <div>
                 <label className="text-xs font-medium">Price Note (Optional)</label>
-                <textarea value={form.price_note || ''} onChange={(e) => setForm({ ...form, price_note: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" rows={2} placeholder="e.g. Contact for group discounts" />
+                <textarea value={form.price_note || ''} onChange={(e) => setForm({ ...form, price_note: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" rows={2} placeholder="e.g. Contact for group discounts" />
               </div>
             </div>
           </>
@@ -825,11 +825,11 @@ export default function EditProfilePage() {
 
         {operator.category === 'artisan' && (
           <>
-            <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+            <div className="space-y-3 p-3 bg-secondary rounded-lg">
               <h3 className="text-sm font-semibold">Business Details</h3>
               <div>
                 <label className="text-xs font-medium">Select one</label>
-                <select value={form.business_type || ''} onChange={(e) => setForm({ ...form, business_type: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                <select value={form.business_type || ''} onChange={(e) => setForm({ ...form, business_type: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm bg-card">
                   <option value="">Select Business Type</option>
                   {businessTypes.map((t: any) => (
                     <option key={t} value={t}>{t}</option>
@@ -876,45 +876,45 @@ export default function EditProfilePage() {
                 </div>
               </div>
             </div>
-            <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+            <div className="space-y-3 p-3 bg-secondary rounded-lg">
               <h3 className="text-sm font-semibold">Owner Information</h3>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-medium">Owner Name</label>
-                  <input value={form.owner_name || ''} onChange={(e) => setForm({ ...form, owner_name: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input value={form.owner_name || ''} onChange={(e) => setForm({ ...form, owner_name: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Contact Number</label>
-                  <input value={form.contact_number || ''} onChange={(e) => setForm({ ...form, contact_number: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input value={form.contact_number || ''} onChange={(e) => setForm({ ...form, contact_number: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">WhatsApp Number</label>
-                  <input value={form.artisan_whatsapp || ''} onChange={(e) => setForm({ ...form, artisan_whatsapp: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input value={form.artisan_whatsapp || ''} onChange={(e) => setForm({ ...form, artisan_whatsapp: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Email Address</label>
-                  <input type="email" value={form.email_address || ''} onChange={(e) => setForm({ ...form, email_address: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input type="email" value={form.email_address || ''} onChange={(e) => setForm({ ...form, email_address: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Website (Optional)</label>
-                  <input value={form.website || ''} onChange={(e) => setForm({ ...form, website: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="https://" />
+                  <input value={form.website || ''} onChange={(e) => setForm({ ...form, website: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="https://" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">GST Number (Optional)</label>
-                  <input value={form.gst_number || ''} onChange={(e) => setForm({ ...form, gst_number: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input value={form.gst_number || ''} onChange={(e) => setForm({ ...form, gst_number: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Export License Number (Optional)</label>
-                  <input value={form.export_license || ''} onChange={(e) => setForm({ ...form, export_license: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input value={form.export_license || ''} onChange={(e) => setForm({ ...form, export_license: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Years in Business</label>
-                  <input value={form.years_in_business || ''} onChange={(e) => setForm({ ...form, years_in_business: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input value={form.years_in_business || ''} onChange={(e) => setForm({ ...form, years_in_business: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                 </div>
               </div>
               <div>
                 <label className="text-xs font-medium">Google Map Link</label>
-                <input value={form.artisan_google_maps || ''} onChange={(e) => setForm({ ...form, artisan_google_maps: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
+                <input value={form.artisan_google_maps || ''} onChange={(e) => setForm({ ...form, artisan_google_maps: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
               </div>
             </div>
           </>
@@ -922,59 +922,59 @@ export default function EditProfilePage() {
 
         {(operator.category === 'homestay' || operator.category === 'guest_house') && (
           <>
-            <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+            <div className="space-y-3 p-3 bg-secondary rounded-lg">
               <h3 className="text-sm font-semibold">Property Details</h3>
               <div>
                 <label className="text-xs font-medium">Owner Name</label>
-                <input value={form.acc_owner_name || ''} onChange={(e) => setForm({ ...form, acc_owner_name: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                <input value={form.acc_owner_name || ''} onChange={(e) => setForm({ ...form, acc_owner_name: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
               </div>
               <div>
                 <label className="text-xs font-medium">Manager Name</label>
-                <input value={form.acc_manager_name || ''} onChange={(e) => setForm({ ...form, acc_manager_name: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                <input value={form.acc_manager_name || ''} onChange={(e) => setForm({ ...form, acc_manager_name: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
               </div>
               <div>
                 <label className="text-xs font-medium">Contact Number</label>
-                <input value={form.acc_contact || ''} onChange={(e) => setForm({ ...form, acc_contact: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                <input value={form.acc_contact || ''} onChange={(e) => setForm({ ...form, acc_contact: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
               </div>
               <div>
                 <label className="text-xs font-medium">Email</label>
-                <input value={form.acc_email || ''} onChange={(e) => setForm({ ...form, acc_email: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                <input value={form.acc_email || ''} onChange={(e) => setForm({ ...form, acc_email: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
               </div>
               <div>
                 <label className="text-xs font-medium">Address</label>
-                <input value={form.acc_address || ''} onChange={(e) => setForm({ ...form, acc_address: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                <input value={form.acc_address || ''} onChange={(e) => setForm({ ...form, acc_address: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
               </div>
               <div>
                 <label className="text-xs font-medium">Google Maps Link</label>
-                <input value={form.acc_google_maps || ''} onChange={(e) => setForm({ ...form, acc_google_maps: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
+                <input value={form.acc_google_maps || ''} onChange={(e) => setForm({ ...form, acc_google_maps: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
               </div>
               <div>
                 <label className="text-xs font-medium">Total Rooms</label>
-                <input value={form.acc_total_rooms || ''} onChange={(e) => setForm({ ...form, acc_total_rooms: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. 4" />
+                <input value={form.acc_total_rooms || ''} onChange={(e) => setForm({ ...form, acc_total_rooms: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="e.g. 4" />
               </div>
               <div>
                 <label className="text-xs font-medium">Check-in Time</label>
-                <input value={form.acc_check_in || ''} onChange={(e) => setForm({ ...form, acc_check_in: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. 12:00 PM" />
+                <input value={form.acc_check_in || ''} onChange={(e) => setForm({ ...form, acc_check_in: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="e.g. 12:00 PM" />
               </div>
               <div>
                 <label className="text-xs font-medium">Check-out Time</label>
-                <input value={form.acc_check_out || ''} onChange={(e) => setForm({ ...form, acc_check_out: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. 10:00 AM" />
+                <input value={form.acc_check_out || ''} onChange={(e) => setForm({ ...form, acc_check_out: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="e.g. 10:00 AM" />
               </div>
               <div>
                 <label className="text-xs font-medium">Nearby Attractions</label>
-                <textarea value={form.acc_nearby_attractions || ''} onChange={(e) => setForm({ ...form, acc_nearby_attractions: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" rows={2} placeholder="e.g. Dal Lake, Shankaracharya Temple, Mughal Gardens" />
+                <textarea value={form.acc_nearby_attractions || ''} onChange={(e) => setForm({ ...form, acc_nearby_attractions: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" rows={2} placeholder="e.g. Dal Lake, Shankaracharya Temple, Mughal Gardens" />
               </div>
             </div>
-            <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+            <div className="space-y-3 p-3 bg-secondary rounded-lg">
               <h3 className="text-sm font-semibold">Pricing (₹ per night)</h3>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-medium">Single Room</label>
-                  <input value={form.acc_pricing_single || ''} onChange={(e) => setForm({ ...form, acc_pricing_single: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="₹" />
+                  <input value={form.acc_pricing_single || ''} onChange={(e) => setForm({ ...form, acc_pricing_single: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="₹" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Double Room</label>
-                  <input value={form.acc_pricing_double || ''} onChange={(e) => setForm({ ...form, acc_pricing_double: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="₹" />
+                  <input value={form.acc_pricing_double || ''} onChange={(e) => setForm({ ...form, acc_pricing_double: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="₹" />
                 </div>
               </div>
             </div>
@@ -983,15 +983,15 @@ export default function EditProfilePage() {
 
         {operator.category === 'taxi' && (
           <>
-            <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+            <div className="space-y-3 p-3 bg-secondary rounded-lg">
               <h3 className="text-sm font-semibold">Vehicle & Driver Details</h3>
               <div>
                 <label className="text-xs font-medium">Driver Name</label>
-                <input value={form.driver_name || ''} onChange={(e) => setForm({ ...form, driver_name: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                <input value={form.driver_name || ''} onChange={(e) => setForm({ ...form, driver_name: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
               </div>
               <div>
                 <label className="text-xs font-medium">Vehicle Type</label>
-                <select value={form.vehicle_type || ''} onChange={(e) => setForm({ ...form, vehicle_type: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                <select value={form.vehicle_type || ''} onChange={(e) => setForm({ ...form, vehicle_type: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm bg-card">
                   <option value="">Select</option>
                   <option value="sedan">Sedan</option>
                   <option value="suv">SUV</option>
@@ -1002,11 +1002,11 @@ export default function EditProfilePage() {
               </div>
               <div>
                 <label className="text-xs font-medium">Vehicle Model</label>
-                <input value={form.vehicle_model || ''} onChange={(e) => setForm({ ...form, vehicle_model: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. Dzire, Innova" />
+                <input value={form.vehicle_model || ''} onChange={(e) => setForm({ ...form, vehicle_model: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="e.g. Dzire, Innova" />
               </div>
               <div>
                 <label className="text-xs font-medium">Registration Number</label>
-                <input value={form.registration_number || ''} onChange={(e) => setForm({ ...form, registration_number: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="JK01AB1234" />
+                <input value={form.registration_number || ''} onChange={(e) => setForm({ ...form, registration_number: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="JK01AB1234" />
               </div>
               <div>
                 <label className="text-xs font-medium">Operating Areas</label>
@@ -1031,24 +1031,24 @@ export default function EditProfilePage() {
                 </div>
               </div>
             </div>
-            <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+            <div className="space-y-3 p-3 bg-secondary rounded-lg">
               <h3 className="text-sm font-semibold">Pricing & Tours</h3>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-medium">Price per Km (₹)</label>
-                  <input value={form.price_per_km || ''} onChange={(e) => setForm({ ...form, price_per_km: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="₹" />
+                  <input value={form.price_per_km || ''} onChange={(e) => setForm({ ...form, price_per_km: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="₹" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Price per Day (₹)</label>
-                  <input value={form.price_per_day || ''} onChange={(e) => setForm({ ...form, price_per_day: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="₹ (8hrs/80km)" />
+                  <input value={form.price_per_day || ''} onChange={(e) => setForm({ ...form, price_per_day: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="₹ (8hrs/80km)" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Airport Flat Rate (₹)</label>
-                  <input value={form.airport_flat_rate || ''} onChange={(e) => setForm({ ...form, airport_flat_rate: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="₹" />
+                  <input value={form.airport_flat_rate || ''} onChange={(e) => setForm({ ...form, airport_flat_rate: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="₹" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Extra per Km (₹)</label>
-                  <input value={form.extra_per_km || ''} onChange={(e) => setForm({ ...form, extra_per_km: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="₹" />
+                  <input value={form.extra_per_km || ''} onChange={(e) => setForm({ ...form, extra_per_km: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="₹" />
                 </div>
               </div>
               <div>
@@ -1064,11 +1064,11 @@ export default function EditProfilePage() {
               </div>
               <div>
                 <label className="text-xs font-medium">Years of Experience</label>
-                <input value={form.years_experience || ''} onChange={(e) => setForm({ ...form, years_experience: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                <input value={form.years_experience || ''} onChange={(e) => setForm({ ...form, years_experience: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
               </div>
               <div>
                 <label className="text-xs font-medium">Google Map Link</label>
-                <input value={form.taxi_google_maps || ''} onChange={(e) => setForm({ ...form, taxi_google_maps: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
+                <input value={form.taxi_google_maps || ''} onChange={(e) => setForm({ ...form, taxi_google_maps: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
               </div>
             </div>
           </>
@@ -1076,23 +1076,23 @@ export default function EditProfilePage() {
 
         {operator.category === 'guide' && (
           <>
-            <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+            <div className="space-y-3 p-3 bg-secondary rounded-lg">
               <h3 className="text-sm font-semibold">Guide Details</h3>
               <div>
                 <label className="text-xs font-medium">Full Name</label>
-                <input value={form.guide_full_name || ''} onChange={(e) => setForm({ ...form, guide_full_name: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                <input value={form.guide_full_name || ''} onChange={(e) => setForm({ ...form, guide_full_name: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
               </div>
               <div>
                 <label className="text-xs font-medium">Contact Number</label>
-                <input value={form.guide_contact_number || ''} onChange={(e) => setForm({ ...form, guide_contact_number: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                <input value={form.guide_contact_number || ''} onChange={(e) => setForm({ ...form, guide_contact_number: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
               </div>
               <div>
                 <label className="text-xs font-medium">WhatsApp Number</label>
-                <input value={form.guide_whatsapp_number || ''} onChange={(e) => setForm({ ...form, guide_whatsapp_number: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                <input value={form.guide_whatsapp_number || ''} onChange={(e) => setForm({ ...form, guide_whatsapp_number: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
               </div>
               <div>
                 <label className="text-xs font-medium">Email</label>
-                <input value={form.guide_email || ''} onChange={(e) => setForm({ ...form, guide_email: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                <input value={form.guide_email || ''} onChange={(e) => setForm({ ...form, guide_email: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
               </div>
               <div>
                 <label className="text-xs font-medium">Languages Spoken</label>
@@ -1118,11 +1118,11 @@ export default function EditProfilePage() {
               </div>
               <div>
                 <label className="text-xs font-medium">Years of Experience</label>
-                <input value={form.guide_years_experience || ''} onChange={(e) => setForm({ ...form, guide_years_experience: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                <input value={form.guide_years_experience || ''} onChange={(e) => setForm({ ...form, guide_years_experience: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
               </div>
               <div>
                 <label className="text-xs font-medium">Certification</label>
-                <input value={form.guide_certification || ''} onChange={(e) => setForm({ ...form, guide_certification: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. JKTDC certified guide" />
+                <input value={form.guide_certification || ''} onChange={(e) => setForm({ ...form, guide_certification: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="e.g. JKTDC certified guide" />
               </div>
               <div>
                 <label className="text-xs font-medium">Operating Areas</label>
@@ -1137,7 +1137,7 @@ export default function EditProfilePage() {
               </div>
               <div>
                 <label className="text-xs font-medium">Google Map Link</label>
-                <input value={form.guide_google_maps || ''} onChange={(e) => setForm({ ...form, guide_google_maps: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
+                <input value={form.guide_google_maps || ''} onChange={(e) => setForm({ ...form, guide_google_maps: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
               </div>
             </div>
           </>
@@ -1145,31 +1145,31 @@ export default function EditProfilePage() {
 
         {operator.category === 'vendor' && (
           <>
-            <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+            <div className="space-y-3 p-3 bg-secondary rounded-lg">
               <h3 className="text-sm font-semibold">Vendor Details</h3>
               <div>
                 <label className="text-xs font-medium">Business Name</label>
-                <input value={form.vendor_business_name || ''} onChange={(e) => setForm({ ...form, vendor_business_name: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                <input value={form.vendor_business_name || ''} onChange={(e) => setForm({ ...form, vendor_business_name: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
               </div>
               <div>
                 <label className="text-xs font-medium">Owner Name</label>
-                <input value={form.vendor_owner_name || ''} onChange={(e) => setForm({ ...form, vendor_owner_name: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                <input value={form.vendor_owner_name || ''} onChange={(e) => setForm({ ...form, vendor_owner_name: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
               </div>
               <div>
                 <label className="text-xs font-medium">Contact Number</label>
-                <input value={form.vendor_contact_number || ''} onChange={(e) => setForm({ ...form, vendor_contact_number: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                <input value={form.vendor_contact_number || ''} onChange={(e) => setForm({ ...form, vendor_contact_number: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
               </div>
               <div>
                 <label className="text-xs font-medium">WhatsApp Number</label>
-                <input value={form.vendor_whatsapp_number || ''} onChange={(e) => setForm({ ...form, vendor_whatsapp_number: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                <input value={form.vendor_whatsapp_number || ''} onChange={(e) => setForm({ ...form, vendor_whatsapp_number: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
               </div>
               <div>
                 <label className="text-xs font-medium">Email</label>
-                <input value={form.vendor_email || ''} onChange={(e) => setForm({ ...form, vendor_email: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                <input value={form.vendor_email || ''} onChange={(e) => setForm({ ...form, vendor_email: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
               </div>
               <div>
                 <label className="text-xs font-medium">Business Type</label>
-                <select value={form.vendor_business_type || ''} onChange={(e) => setForm({ ...form, vendor_business_type: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                <select value={form.vendor_business_type || ''} onChange={(e) => setForm({ ...form, vendor_business_type: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm bg-card">
                   <option value="">Select type</option>
                   <option value="food">Food & Beverages</option>
                   <option value="souvenirs">Souvenirs</option>
@@ -1205,7 +1205,7 @@ export default function EditProfilePage() {
               </div>
               <div>
                 <label className="text-xs font-medium">Google Map Link</label>
-                <input value={form.vendor_google_maps || ''} onChange={(e) => setForm({ ...form, vendor_google_maps: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
+                <input value={form.vendor_google_maps || ''} onChange={(e) => setForm({ ...form, vendor_google_maps: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
               </div>
             </div>
           </>
@@ -1215,32 +1215,32 @@ export default function EditProfilePage() {
           <label className="text-sm font-medium">Photos (max 5)</label>
           <div className="grid grid-cols-3 gap-2 mt-1">
             {photos.map((url, i) => (
-              <div key={`existing-${i}`} className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
+              <div key={`existing-${i}`} className="relative aspect-square bg-secondary rounded-lg overflow-hidden">
                 <img src={url} alt="" className="w-full h-full object-cover" />
-                <button onClick={() => removeExisting(i)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center">
+                <button onClick={() => removeExisting(i)} className="absolute top-1 right-1 bg-danger text-danger-foreground rounded-full w-5 h-5 text-xs flex items-center justify-center">
                   <X className="w-3 h-3" />
                 </button>
               </div>
             ))}
             {photoPreviews.map((preview, i) => (
-              <div key={`new-${i}`} className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
+              <div key={`new-${i}`} className="relative aspect-square bg-secondary rounded-lg overflow-hidden">
                 <img src={preview} alt="" className="w-full h-full object-cover" />
-                <button onClick={() => removeNew(i)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center">
+                <button onClick={() => removeNew(i)} className="absolute top-1 right-1 bg-danger text-danger-foreground rounded-full w-5 h-5 text-xs flex items-center justify-center">
                   <X className="w-3 h-3" />
                 </button>
               </div>
             ))}
             {photos.length + newPhotos.length < 5 && (
-              <label className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-[#2C5F8A]">
+              <label className="aspect-square border-2 border-dashed border-input rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-[#2C5F8A]">
                 <Upload className="w-6 h-6 text-gray-400" />
-                <span className="text-xs text-gray-500 mt-1">Add photo</span>
+                <span className="text-xs text-muted-foreground mt-1">Add photo</span>
                 <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
               </label>
             )}
           </div>
         </div>
 
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-muted-foreground">
           Changing photos will reset status to pending (requires admin re-approval).
         </p>
 

@@ -117,39 +117,49 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
       {/* Gallery */}
       <div className="relative bg-muted">
         {photos.length > 0 ? (
-          <div className="aspect-[16/9] sm:aspect-[21/9] relative overflow-hidden">
-            <img
-              src={photos[currentPhoto]}
-              alt={op.name}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10" />
+          <>
+            <div className="aspect-[16/9] sm:aspect-[21/9] relative overflow-hidden">
+              <img
+                src={photos[currentPhoto]}
+                alt={op.name}
+                className="w-full h-full object-cover transition-opacity duration-300"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10" />
+              {photos.length > 1 && (
+                <>
+                  <button
+                    onClick={() => setCurrentPhoto(p => p === 0 ? photos.length - 1 : p - 1)}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 backdrop-blur shadow-lg hover:bg-white transition-all active:scale-95"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    onClick={() => setCurrentPhoto(p => p === photos.length - 1 ? 0 : p + 1)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 backdrop-blur shadow-lg hover:bg-white transition-all active:scale-95"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </>
+              )}
+            </div>
             {photos.length > 1 && (
-              <>
-                <button
-                  onClick={() => setCurrentPhoto(p => p === 0 ? photos.length - 1 : p - 1)}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 backdrop-blur shadow-lg hover:bg-white transition-all active:scale-95"
-                >
-                  <ChevronLeft className="h-5 w-5" />
-                </button>
-                <button
-                  onClick={() => setCurrentPhoto(p => p === photos.length - 1 ? 0 : p + 1)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 backdrop-blur shadow-lg hover:bg-white transition-all active:scale-95"
-                >
-                  <ChevronRight className="h-5 w-5" />
-                </button>
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
-                  {photos.map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setCurrentPhoto(i)}
-                      className={`w-2 h-2 rounded-full transition-all ${i === currentPhoto ? 'bg-white w-5' : 'bg-white/50 hover:bg-white/70'}`}
-                    />
-                  ))}
-                </div>
-              </>
+              <div className="flex gap-2 px-4 py-3 overflow-x-auto scrollbar-none bg-card/80 backdrop-blur-sm">
+                {photos.map((photo, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentPhoto(i)}
+                    className={`shrink-0 w-16 h-12 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+                      i === currentPhoto
+                        ? 'border-accent ring-1 ring-accent/30 opacity-100'
+                        : 'border-transparent opacity-60 hover:opacity-90'
+                    }`}
+                  >
+                    <img src={photo} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
             )}
-          </div>
+          </>
         ) : (
           <div className="aspect-[16/9] sm:aspect-[21/9] flex items-center justify-center bg-gradient-to-br from-muted to-border/50">
             <div className="text-center">

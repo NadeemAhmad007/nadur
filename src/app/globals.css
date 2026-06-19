@@ -100,14 +100,18 @@
     line-height: 1.6;
   }
 
+  * {
+    scroll-margin-top: 6rem;
+  }
+
   h1, h2, h3, h4, h5, h6 {
     font-weight: 600;
     line-height: 1.3;
     letter-spacing: -0.01em;
   }
 
-  h1 { font-size: 1.75rem; }
-  h2 { font-size: 1.375rem; }
+  h1 { font-size: 2.5rem; line-height: 1.15; }
+  h2 { font-size: 1.75rem; }
   h3 { font-size: 1.125rem; }
   h4 { font-size: 1rem; }
 
@@ -140,7 +144,17 @@
   background: #B8B2A2;
 }
 
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
 @layer utilities {
+  .shimmer {
+    background: linear-gradient(90deg, var(--secondary) 0%, var(--border) 40%, var(--secondary) 80%);
+    background-size: 200% 100%;
+    animation: shimmer 1.8s ease-in-out infinite;
+  }
   .scrollbar-none {
     -ms-overflow-style: none;
     scrollbar-width: none;

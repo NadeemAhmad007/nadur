@@ -144,7 +144,7 @@ export default function BrowsePage() {
         <div className="max-w-5xl mx-auto px-4">
           <div className="flex items-center justify-between py-3 min-h-24">
             <Link href="/" className="flex items-center gap-3 shrink-0">
-              <img src="/logo.png" alt="Kashmir360" className="h-56 w-auto object-contain" />
+              <img src="/logo.png" alt="Kashmir360" className="h-32 w-auto object-contain" />
             </Link>
             <div className="flex items-center gap-2">
               <button
@@ -189,17 +189,24 @@ export default function BrowsePage() {
 
       <main className="max-w-5xl mx-auto px-4 pt-8 pb-12">
         {/* Hero Section */}
-        <div className="mb-10 text-center bg-gradient-to-br from-[#16314D]/5 to-[#2C5F8A]/5 rounded-3xl p-8 sm:p-12 border border-border/40">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-semibold uppercase tracking-wider mb-4">
-            <Sparkles className="h-3.5 w-3.5 animate-pulse" />
-            Explore Srinagar & Kashmir Like Never Before
+        <div className="relative mb-10 text-center overflow-hidden rounded-3xl border border-border/40">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-accent/5 to-primary/5" />
+          <div className="absolute inset-0 opacity-[0.04]" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2316314D' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            backgroundSize: '30px 30px'
+          }} />
+          <div className="relative p-8 sm:p-14">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-semibold uppercase tracking-wider mb-4">
+              <Sparkles className="h-3.5 w-3.5 animate-pulse" />
+              Explore Srinagar & Kashmir Like Never Before
+            </div>
+            <h1 className="text-3xl sm:text-5xl font-black text-foreground tracking-tight max-w-2xl mx-auto leading-tight">
+              Connect Direct, <span className="text-accent">Book Local</span> on Kashmir360
+            </h1>
+            <p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-xl mx-auto">
+              Your premium gateway to verified houseboats, shikara rides, authentic local artisans, tourist guides, and local taxi services across Srinagar and Kashmir. 100% direct connection—no middlemen, no hidden commissions.
+            </p>
           </div>
-          <h1 className="text-3xl sm:text-5xl font-black text-foreground tracking-tight max-w-2xl mx-auto leading-tight">
-            Connect Direct, <span className="text-accent">Book Local</span> on Kashmir360
-          </h1>
-          <p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-xl mx-auto">
-            Your premium gateway to verified houseboats, shikara rides, authentic local artisans, tourist guides, and local taxi services across Srinagar and Kashmir. 100% direct connection—no middlemen, no hidden commissions.
-          </p>
         </div>
 
         {/* Why Choose Us Section */}

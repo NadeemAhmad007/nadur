@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import type { Operator } from '@/types';
 import { cn } from '@/lib/utils';
-import { BadgeCheck, MapPin, ExternalLink, X, Send, ChevronDown, Info, MessageCircle, Phone } from 'lucide-react';
+import { BadgeCheck, MapPin, ExternalLink, X, Send, ChevronDown, Info, MessageCircle, Phone, IndianRupee } from 'lucide-react';
 import { countryOptions } from '@/data/country-codes';
 
 const categoryLabels: Record<string, string> = {
@@ -15,6 +15,35 @@ const categoryLabels: Record<string, string> = {
   guide: 'Local Guide', vendor: 'Floating Vendor', taxi: 'Taxi & Transfers',
   homestay: 'Homestay', guest_house: 'Guest House',
 };
+
+function getPriceLabel(op: Operator): string | null {
+  const c = op.category;
+  if (c === 'shikara') {
+    const d = op.shikara_details;
+    if (d?.price_per_ride) return `₹${d.price_per_ride}/ride`;
+    if (d?.price_per_hour) return `₹${d.price_per_hour}/hr`;
+  }
+  if (c === 'taxi') {
+    const d = op.taxi_details;
+    if (d?.price_per_km) return `₹${d.price_per_km}/km`;
+    if (d?.price_per_day) return `₹${d.price_per_day}/day`;
+    if (d?.airport_flat_rate) return `₹${d.airport_flat_rate} airport`;
+  }
+  if (c === 'homestay' || c === 'guest_house') {
+    const d = op.accommodation_details;
+    if (d?.pricing_single) return `₹${d.pricing_single}/night`;
+    if (d?.pricing_double) return `₹${d.pricing_double}/night`;
+  }
+  if (c === 'houseboat') {
+    const t = op.tariffs;
+    if (t) {
+      const v = t.double_ep || t.double_cp || t.single_ep || t.single_cp;
+      if (v) return `₹${v}/night`;
+    }
+  }
+  if (op.pricing_note) return 'See pricing';
+  return null;
+}
 
 export function OperatorCard({ operator, className }: { operator: Operator; className?: string }) {
   const router = useRouter();
@@ -55,9 +84,17 @@ export function OperatorCard({ operator, className }: { operator: Operator; clas
         </div>
         <div className="p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
           <div>
-            <h3 className="font-semibold text-foreground truncate hover:text-accent transition-colors">
-              {operator.name}
-            </h3>
+            <div className="flex items-start justify-between gap-2">
+              <h3 className="font-semibold text-foreground truncate hover:text-accent transition-colors">
+                {operator.name}
+              </h3>
+              {getPriceLabel(operator) && (
+                <span className="shrink-0 inline-flex items-center gap-0.5 text-xs font-bold text-accent whitespace-nowrap bg-accent/10 px-2 py-0.5 rounded-lg">
+                  <IndianRupee className="h-2.5 w-2.5" />
+                  {getPriceLabel(operator)!.replace('₹', '')}
+                </span>
+              )}
+            </div>
             {operator.short_desc && (
               <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">{operator.short_desc}</p>
             )}

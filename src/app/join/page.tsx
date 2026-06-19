@@ -533,13 +533,13 @@ export default function JoinPage() {
 
   if (typeof window !== 'undefined' && window.location.search.includes('success=true')) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center px-4">
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <div className="text-center max-w-sm">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Check className="w-8 h-8 text-green-600" />
+          <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Check className="w-8 h-8 text-success" />
           </div>
           <h1 className="text-xl font-bold">Profile Submitted!</h1>
-          <p className="text-sm text-gray-600 mt-2">
+          <p className="text-sm text-muted-foreground mt-2">
             Your profile is under review. We will WhatsApp you within 24 hours.
           </p>
           <div className="flex flex-col gap-2 mt-6">
@@ -556,8 +556,8 @@ export default function JoinPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <header className="border-b border-gray-200">
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border">
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3 min-h-24">
           <Link href="/" className="p-1">
             <ArrowLeft className="w-5 h-5" />
@@ -569,24 +569,24 @@ export default function JoinPage() {
       <div className="max-w-lg mx-auto px-4 py-6">
         <div className="flex gap-1 mb-6">
           {steps.map((s, i) => (
-            <div key={s} className={`flex-1 h-1 rounded-full ${i <= step ? 'bg-[#2C5F8A]' : 'bg-gray-200'}`} />
+            <div key={s} className={`flex-1 h-1 rounded-full ${i <= step ? 'bg-[#2C5F8A]' : 'bg-border'}`} />
           ))}
         </div>
 
         {step === 0 && (
           <div className="space-y-4">
             <h2 className="text-lg font-semibold">Verify Your Contact</h2>
-            <p className="text-sm text-gray-600">Verify your email or WhatsApp to get started.</p>
-            <div className="flex rounded-lg border border-gray-300 overflow-hidden">
+            <p className="text-sm text-muted-foreground">Verify your email or WhatsApp to get started.</p>
+            <div className="flex rounded-lg border border-input overflow-hidden">
               <button
                 onClick={() => { setOtpMethod('email'); setOtpVerified(false); setOtpSent(false); setOtp(''); setOtpError(''); setPhoneOtpSent(false); setPhoneOtp(''); }}
-                className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium transition-colors ${otpMethod === 'email' ? 'bg-[#2C5F8A] text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium transition-colors ${otpMethod === 'email' ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-secondary'}`}
               >
                 <Mail className="h-4 w-4" /> Email
               </button>
               <button
                 onClick={() => { setOtpMethod('whatsapp'); setOtpVerified(false); setOtpSent(false); setOtp(''); setOtpError(''); setPhoneOtpSent(false); setPhoneOtp(''); }}
-                className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium transition-colors ${otpMethod === 'whatsapp' ? 'bg-[#2C5F8A] text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium transition-colors ${otpMethod === 'whatsapp' ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-secondary'}`}
               >
                 <MessageCircle className="h-4 w-4" /> WhatsApp
               </button>
@@ -599,7 +599,7 @@ export default function JoinPage() {
                   value={form.email}
                   onChange={(e) => { update('email', e.target.value); setOtpVerified(false); setOtpSent(false); setOtp(''); }}
                   disabled={otpSent && !otpVerified}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2C5F8A] disabled:bg-gray-100"
+                  className="w-full px-4 py-3 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:bg-muted"
                 />
                 {!otpVerified && (
                   <>
@@ -637,7 +637,7 @@ export default function JoinPage() {
                             type="text"
                             value={otp}
                             onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                            className="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2C5F8A] tracking-widest text-center text-lg"
+                            className="w-full mt-1 px-4 py-3 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring tracking-widest text-center text-lg"
                             placeholder="000000"
                             maxLength={6}
                             autoFocus
@@ -670,7 +670,7 @@ export default function JoinPage() {
                         <div className="flex items-center justify-between text-sm">
                           <button
                             onClick={() => { setOtpSent(false); setOtp(''); setOtpCooldown(0); }}
-                            className="text-gray-500 hover:text-gray-700"
+                            className="text-muted-foreground hover:text-foreground"
                           >
                             Change email
                           </button>
@@ -692,7 +692,7 @@ export default function JoinPage() {
                               finally { setOtpLoading(false); }
                             }}
                             disabled={otpCooldown > 0 || otpLoading}
-                            className="text-[#2C5F8A] font-medium disabled:text-gray-400"
+                            className="text-primary font-medium disabled:text-gray-400"
                           >
                             {otpCooldown > 0 ? `Resend in ${otpCooldown}s` : 'Resend OTP'}
                           </button>
@@ -711,7 +711,7 @@ export default function JoinPage() {
                   value={phoneOtp}
                   onChange={(e) => { setPhoneOtp(e.target.value); setOtpVerified(false); setPhoneOtpSent(false); setOtp(''); setOtpError(''); }}
                   disabled={phoneOtpSent && !otpVerified}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2C5F8A] disabled:bg-gray-100"
+                  className="w-full px-4 py-3 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:bg-muted"
                 />
                 {!otpVerified && (
                   <>
@@ -749,7 +749,7 @@ export default function JoinPage() {
                             type="text"
                             value={otp}
                             onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                            className="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2C5F8A] tracking-widest text-center text-lg"
+                            className="w-full mt-1 px-4 py-3 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring tracking-widest text-center text-lg"
                             placeholder="000000"
                             maxLength={6}
                             autoFocus
@@ -784,7 +784,7 @@ export default function JoinPage() {
                         <div className="flex items-center justify-between text-sm">
                           <button
                             onClick={() => { setPhoneOtpSent(false); setOtp(''); setOtpCooldown(0); }}
-                            className="text-gray-500 hover:text-gray-700"
+                            className="text-muted-foreground hover:text-foreground"
                           >
                             Change number
                           </button>
@@ -806,7 +806,7 @@ export default function JoinPage() {
                               finally { setOtpLoading(false); }
                             }}
                             disabled={otpCooldown > 0 || otpLoading}
-                            className="text-[#2C5F8A] font-medium disabled:text-gray-400"
+                            className="text-primary font-medium disabled:text-gray-400"
                           >
                             {otpCooldown > 0 ? `Resend in ${otpCooldown}s` : 'Resend OTP'}
                           </button>
@@ -817,9 +817,9 @@ export default function JoinPage() {
                 )}
               </>
             )}
-            {otpError && <p className="text-sm text-red-600 text-center">{otpError}</p>}
+            {otpError && <p className="text-sm text-danger text-center">{otpError}</p>}
             {otpVerified && (
-              <div className="flex items-center gap-2 text-green-600 text-sm">
+              <div className="flex items-center gap-2 text-success text-sm">
                 <Check className="w-4 h-4" />
                 {otpMethod === 'email' ? 'Email verified' : 'WhatsApp verified'}
               </div>
@@ -838,7 +838,7 @@ export default function JoinPage() {
               <input
                 value={form.name}
                 onChange={(e) => update('name', e.target.value)}
-                className="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2C5F8A]"
+                className="w-full mt-1 px-4 py-3 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 maxLength={100}
               />
             </div>
@@ -847,7 +847,7 @@ export default function JoinPage() {
               <select
                 value={form.category}
                 onChange={(e) => update('category', e.target.value)}
-                className="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2C5F8A] bg-white"
+                className="w-full mt-1 px-4 py-3 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring bg-white"
               >
                 <option value="houseboat">Houseboat</option>
                 <option value="shikara">Shikara Ride</option>
@@ -865,40 +865,40 @@ export default function JoinPage() {
                 type="tel"
                 value={form.phone}
                 onChange={(e) => update('phone', e.target.value)}
-                className="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2C5F8A]"
+                className="w-full mt-1 px-4 py-3 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 placeholder="+91 1234567890"
               />
             </div>
             {form.category === 'houseboat' && (
-              <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+              <div className="space-y-3 p-3 bg-secondary rounded-lg">
                 <h3 className="text-sm font-semibold">Houseboat Details</h3>
                 <div>
                   <label className="text-xs font-medium">Owner Name *</label>
-                  <input value={form.owner} onChange={(e) => update('owner', e.target.value)} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input value={form.owner} onChange={(e) => update('owner', e.target.value)} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Address *</label>
-                  <input value={form.address} onChange={(e) => update('address', e.target.value)} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input value={form.address} onChange={(e) => update('address', e.target.value)} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Contact</label>
-                  <input value={form.hb_contact} onChange={(e) => update('hb_contact', e.target.value)} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Alternate phone number" />
+                  <input value={form.hb_contact} onChange={(e) => update('hb_contact', e.target.value)} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="Alternate phone number" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Alternate Contact 2</label>
-                  <input value={form.hb_contact2} onChange={(e) => update('hb_contact2', e.target.value)} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Another alternate phone number" />
+                  <input value={form.hb_contact2} onChange={(e) => update('hb_contact2', e.target.value)} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="Another alternate phone number" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Email</label>
-                  <input type="email" value={form.email} onChange={(e) => update('email', e.target.value)} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input type="email" value={form.email} onChange={(e) => update('email', e.target.value)} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Google Maps Link</label>
-                  <input value={form.google_maps} onChange={(e) => update('google_maps', e.target.value)} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
+                  <input value={form.google_maps} onChange={(e) => update('google_maps', e.target.value)} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Grade</label>
-                  <select value={form.grade} onChange={(e) => update('grade', e.target.value)} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                  <select value={form.grade} onChange={(e) => update('grade', e.target.value)} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm bg-card">
                     <option value="Grade A">Grade A</option>
                     <option value="Grade B">Grade B</option>
                     <option value="Grade C">Grade C</option>
@@ -908,7 +908,7 @@ export default function JoinPage() {
                 </div>
                 <div>
                   <label className="text-xs font-medium">Shikara Ghat (used to arrive to boat) *</label>
-                  <select value={form.boat_ghat} onChange={(e) => update('boat_ghat', e.target.value)} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                  <select value={form.boat_ghat} onChange={(e) => update('boat_ghat', e.target.value)} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm bg-card">
                     <option value="">Select Ghat</option>
                     {ghats.map((g) => (
                       <option key={g.name} value={g.name}>{g.name}</option>
@@ -919,11 +919,11 @@ export default function JoinPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs font-medium">Total Rooms</label>
-                    <input value={form.hb_total_rooms} onChange={(e) => update('hb_total_rooms', e.target.value)} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. 6" />
+                    <input value={form.hb_total_rooms} onChange={(e) => update('hb_total_rooms', e.target.value)} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="e.g. 6" />
                   </div>
                   <div>
                     <label className="text-xs font-medium">Max Guest Capacity</label>
-                    <input value={form.hb_capacity} onChange={(e) => update('hb_capacity', e.target.value)} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. 20" />
+                    <input value={form.hb_capacity} onChange={(e) => update('hb_capacity', e.target.value)} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="e.g. 20" />
                   </div>
                 </div>
                 <div>
@@ -951,27 +951,27 @@ export default function JoinPage() {
               </div>
             )}
             {form.category === 'shikara' && (
-              <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+              <div className="space-y-3 p-3 bg-secondary rounded-lg">
                 <h3 className="text-sm font-semibold">Basic Register Info</h3>
                 <div>
                   <label className="text-xs font-medium">Full Name *</label>
-                  <input value={form.shikara.full_name} onChange={(e) => setForm((prev) => ({ ...prev, shikara: { ...prev.shikara, full_name: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input value={form.shikara.full_name} onChange={(e) => setForm((prev) => ({ ...prev, shikara: { ...prev.shikara, full_name: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Mobile Number *</label>
-                  <input value={form.shikara.mobile_number} onChange={(e) => setForm((prev) => ({ ...prev, shikara: { ...prev.shikara, mobile_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input value={form.shikara.mobile_number} onChange={(e) => setForm((prev) => ({ ...prev, shikara: { ...prev.shikara, mobile_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">WhatsApp Number *</label>
-                  <input value={form.shikara.whatsapp_number} onChange={(e) => setForm((prev) => ({ ...prev, shikara: { ...prev.shikara, whatsapp_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input value={form.shikara.whatsapp_number} onChange={(e) => setForm((prev) => ({ ...prev, shikara: { ...prev.shikara, whatsapp_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Shikara Number *</label>
-                  <input value={form.shikara.shikara_number} onChange={(e) => setForm((prev) => ({ ...prev, shikara: { ...prev.shikara, shikara_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input value={form.shikara.shikara_number} onChange={(e) => setForm((prev) => ({ ...prev, shikara: { ...prev.shikara, shikara_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Ghat Number / Location *</label>
-                  <select value={form.shikara.ghat_number} onChange={(e) => setForm((prev) => ({ ...prev, shikara: { ...prev.shikara, ghat_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                  <select value={form.shikara.ghat_number} onChange={(e) => setForm((prev) => ({ ...prev, shikara: { ...prev.shikara, ghat_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm bg-card">
                     <option value="">Select Ghat</option>
                     {ghats.map((g) => (
                       <option key={g.name} value={g.name}>{g.name}</option>
@@ -1003,11 +1003,11 @@ export default function JoinPage() {
               </div>
             )}
             {form.category === 'artisan' && (
-              <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+              <div className="space-y-3 p-3 bg-secondary rounded-lg">
                 <h3 className="text-sm font-semibold">Business Details</h3>
                 <div>
                   <label className="text-xs font-medium">Select one *</label>
-                  <select value={form.artisan.business_type} onChange={(e) => setForm((prev) => ({ ...prev, artisan: { ...prev.artisan, business_type: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                  <select value={form.artisan.business_type} onChange={(e) => setForm((prev) => ({ ...prev, artisan: { ...prev.artisan, business_type: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm bg-card">
                     <option value="">Select Business Type</option>
                     {businessTypes.map((t) => (
                       <option key={t} value={t}>{t}</option>
@@ -1056,35 +1056,35 @@ export default function JoinPage() {
               </div>
             )}
             {(form.category === 'homestay' || form.category === 'guest_house') && (
-              <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+              <div className="space-y-3 p-3 bg-secondary rounded-lg">
                 <h3 className="text-sm font-semibold">Property Details</h3>
                 <div>
                   <label className="text-xs font-medium">Owner Name *</label>
-                  <input value={form.accommodation.owner_name} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, owner_name: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input value={form.accommodation.owner_name} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, owner_name: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Manager Name (if different)</label>
-                  <input value={form.accommodation.manager_name} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, manager_name: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input value={form.accommodation.manager_name} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, manager_name: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Contact Number *</label>
-                  <input value={form.accommodation.contact} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, contact: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input value={form.accommodation.contact} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, contact: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Email</label>
-                  <input type="email" value={form.accommodation.email} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, email: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input type="email" value={form.accommodation.email} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, email: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Address *</label>
-                  <input value={form.accommodation.address} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, address: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input value={form.accommodation.address} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, address: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Google Maps Link</label>
-                  <input value={form.accommodation.google_maps} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, google_maps: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
+                  <input value={form.accommodation.google_maps} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, google_maps: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Total Rooms</label>
-                  <input type="number" value={form.accommodation.total_rooms} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, total_rooms: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. 4" />
+                  <input type="number" value={form.accommodation.total_rooms} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, total_rooms: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="e.g. 4" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Room Types (select all that apply)</label>
@@ -1110,11 +1110,11 @@ export default function JoinPage() {
                 </div>
                 <div>
                   <label className="text-xs font-medium">Check-in Time</label>
-                  <input value={form.accommodation.check_in} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, check_in: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. 12:00 PM" />
+                  <input value={form.accommodation.check_in} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, check_in: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="e.g. 12:00 PM" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Check-out Time</label>
-                  <input value={form.accommodation.check_out} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, check_out: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. 10:00 AM" />
+                  <input value={form.accommodation.check_out} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, check_out: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="e.g. 10:00 AM" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Amenities (select all that apply)</label>
@@ -1140,20 +1140,20 @@ export default function JoinPage() {
                 </div>
                 <div>
                   <label className="text-xs font-medium">Nearby Attractions</label>
-                  <textarea value={form.accommodation.nearby_attractions} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, nearby_attractions: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" rows={2} placeholder="e.g. Dal Lake, Shankaracharya Temple, Mughal Gardens" />
+                  <textarea value={form.accommodation.nearby_attractions} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, nearby_attractions: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" rows={2} placeholder="e.g. Dal Lake, Shankaracharya Temple, Mughal Gardens" />
                 </div>
               </div>
             )}
             {form.category === 'taxi' && (
-              <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+              <div className="space-y-3 p-3 bg-secondary rounded-lg">
                 <h3 className="text-sm font-semibold">Vehicle & Driver Details</h3>
                 <div>
                   <label className="text-xs font-medium">Driver Name *</label>
-                  <input value={form.taxi.driver_name} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, driver_name: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input value={form.taxi.driver_name} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, driver_name: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Vehicle Type *</label>
-                  <select value={form.taxi.vehicle_type} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, vehicle_type: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                  <select value={form.taxi.vehicle_type} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, vehicle_type: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm bg-card">
                     <option value="">Select vehicle type</option>
                     <option value="sedan">Sedan</option>
                     <option value="suv">SUV</option>
@@ -1164,11 +1164,11 @@ export default function JoinPage() {
                 </div>
                 <div>
                   <label className="text-xs font-medium">Vehicle Model</label>
-                  <input value={form.taxi.vehicle_model} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, vehicle_model: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. Dzire, Innova, Ertiga" />
+                  <input value={form.taxi.vehicle_model} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, vehicle_model: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="e.g. Dzire, Innova, Ertiga" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Registration Number *</label>
-                  <input value={form.taxi.registration_number} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, registration_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. JK01AB1234" />
+                  <input value={form.taxi.registration_number} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, registration_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="e.g. JK01AB1234" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Operating Areas</label>
@@ -1195,19 +1195,19 @@ export default function JoinPage() {
               </div>
             )}
             {form.category === 'guide' && (
-              <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+              <div className="space-y-3 p-3 bg-secondary rounded-lg">
                 <h3 className="text-sm font-semibold">Guide Details</h3>
                 <div>
                   <label className="text-xs font-medium">Full Name *</label>
-                  <input value={form.guide.full_name} onChange={(e) => setForm((prev) => ({ ...prev, guide: { ...prev.guide, full_name: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input value={form.guide.full_name} onChange={(e) => setForm((prev) => ({ ...prev, guide: { ...prev.guide, full_name: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Contact Number *</label>
-                  <input value={form.guide.contact_number} onChange={(e) => setForm((prev) => ({ ...prev, guide: { ...prev.guide, contact_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input value={form.guide.contact_number} onChange={(e) => setForm((prev) => ({ ...prev, guide: { ...prev.guide, contact_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">WhatsApp Number</label>
-                  <input value={form.guide.whatsapp_number} onChange={(e) => setForm((prev) => ({ ...prev, guide: { ...prev.guide, whatsapp_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input value={form.guide.whatsapp_number} onChange={(e) => setForm((prev) => ({ ...prev, guide: { ...prev.guide, whatsapp_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Languages Spoken</label>
@@ -1234,27 +1234,27 @@ export default function JoinPage() {
               </div>
             )}
             {form.category === 'vendor' && (
-              <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+              <div className="space-y-3 p-3 bg-secondary rounded-lg">
                 <h3 className="text-sm font-semibold">Vendor Details</h3>
                 <div>
                   <label className="text-xs font-medium">Business Name *</label>
-                  <input value={form.vendor.business_name} onChange={(e) => setForm((prev) => ({ ...prev, vendor: { ...prev.vendor, business_name: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input value={form.vendor.business_name} onChange={(e) => setForm((prev) => ({ ...prev, vendor: { ...prev.vendor, business_name: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Owner Name</label>
-                  <input value={form.vendor.owner_name} onChange={(e) => setForm((prev) => ({ ...prev, vendor: { ...prev.vendor, owner_name: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input value={form.vendor.owner_name} onChange={(e) => setForm((prev) => ({ ...prev, vendor: { ...prev.vendor, owner_name: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Contact Number *</label>
-                  <input value={form.vendor.contact_number} onChange={(e) => setForm((prev) => ({ ...prev, vendor: { ...prev.vendor, contact_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input value={form.vendor.contact_number} onChange={(e) => setForm((prev) => ({ ...prev, vendor: { ...prev.vendor, contact_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">WhatsApp Number</label>
-                  <input value={form.vendor.whatsapp_number} onChange={(e) => setForm((prev) => ({ ...prev, vendor: { ...prev.vendor, whatsapp_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input value={form.vendor.whatsapp_number} onChange={(e) => setForm((prev) => ({ ...prev, vendor: { ...prev.vendor, whatsapp_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Business Type</label>
-                  <select value={form.vendor.business_type} onChange={(e) => setForm((prev) => ({ ...prev, vendor: { ...prev.vendor, business_type: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                  <select value={form.vendor.business_type} onChange={(e) => setForm((prev) => ({ ...prev, vendor: { ...prev.vendor, business_type: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm bg-card">
                     <option value="">Select type</option>
                     <option value="food">Food & Beverages</option>
                     <option value="souvenirs">Souvenirs</option>
@@ -1284,7 +1284,7 @@ export default function JoinPage() {
               <textarea
                 value={form.short_desc}
                 onChange={(e) => update('short_desc', e.target.value)}
-                className="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2C5F8A]"
+                className="w-full mt-1 px-4 py-3 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 rows={3}
                 maxLength={500}
               />
@@ -1308,7 +1308,7 @@ export default function JoinPage() {
               <textarea
                 value={form.long_desc}
                 onChange={(e) => update('long_desc', e.target.value)}
-                className="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2C5F8A]"
+                className="w-full mt-1 px-4 py-3 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 rows={5}
                 maxLength={2000}
                 placeholder="Tell tourists about your story, what to expect, tips..."
@@ -1319,17 +1319,17 @@ export default function JoinPage() {
               <input
                 value={form.pricing_note}
                 onChange={(e) => update('pricing_note', e.target.value)}
-                className="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2C5F8A]"
+                className="w-full mt-1 px-4 py-3 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 placeholder={form.category === 'shikara' ? 'e.g. ₹500/hour, contact for actual offers' : 'e.g. ₹2000/night/room, contact for actual offers'}
                 maxLength={300}
               />
             </div>
             {form.category === 'shikara' && (
-              <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+              <div className="space-y-3 p-3 bg-secondary rounded-lg">
                 <h3 className="text-sm font-semibold">Section 2: About You</h3>
                 <div>
                   <label className="text-xs font-medium">Years of Experience</label>
-                  <input value={form.shikara.years_experience} onChange={(e) => setForm((prev) => ({ ...prev, shikara: { ...prev.shikara, years_experience: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input value={form.shikara.years_experience} onChange={(e) => setForm((prev) => ({ ...prev, shikara: { ...prev.shikara, years_experience: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Languages Spoken</label>
@@ -1375,7 +1375,7 @@ export default function JoinPage() {
                 </div>
                 <div>
                   <label className="text-xs font-medium">Typical Tour Duration</label>
-                  <select value={form.shikara.tour_duration} onChange={(e) => setForm((prev) => ({ ...prev, shikara: { ...prev.shikara, tour_duration: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                  <select value={form.shikara.tour_duration} onChange={(e) => setForm((prev) => ({ ...prev, shikara: { ...prev.shikara, tour_duration: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm bg-card">
                     <option value="">Select Duration</option>
                     <option value="1 Hour">1 Hour</option>
                     <option value="2 Hours">2 Hours</option>
@@ -1405,77 +1405,77 @@ export default function JoinPage() {
                 {form.shikara.registered_shikara === 'Yes' && (
                   <div>
                     <label className="text-xs font-medium">Registration Number (if available)</label>
-                    <input value={form.shikara.registration_number} onChange={(e) => setForm((prev) => ({ ...prev, shikara: { ...prev.shikara, registration_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                    <input value={form.shikara.registration_number} onChange={(e) => setForm((prev) => ({ ...prev, shikara: { ...prev.shikara, registration_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                   </div>
                 )}
               </div>
             )}
             {form.category === 'shikara' && (
-              <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+              <div className="space-y-3 p-3 bg-secondary rounded-lg">
                 <h3 className="text-sm font-semibold">Pricing</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs font-medium">Price per Ride (₹)</label>
-                    <input value={form.shikara.price_per_ride} onChange={(e) => setForm((prev) => ({ ...prev, shikara: { ...prev.shikara, price_per_ride: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="₹" />
+                    <input value={form.shikara.price_per_ride} onChange={(e) => setForm((prev) => ({ ...prev, shikara: { ...prev.shikara, price_per_ride: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="₹" />
                   </div>
                   <div>
                     <label className="text-xs font-medium">Price per Hour (₹)</label>
-                    <input value={form.shikara.price_per_hour} onChange={(e) => setForm((prev) => ({ ...prev, shikara: { ...prev.shikara, price_per_hour: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="₹" />
+                    <input value={form.shikara.price_per_hour} onChange={(e) => setForm((prev) => ({ ...prev, shikara: { ...prev.shikara, price_per_hour: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="₹" />
                   </div>
                 </div>
                 <div>
                   <label className="text-xs font-medium">Price Note (Optional)</label>
-                  <textarea value={form.shikara.price_note} onChange={(e) => setForm((prev) => ({ ...prev, shikara: { ...prev.shikara, price_note: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" rows={2} placeholder="e.g. Contact for group discounts" />
+                  <textarea value={form.shikara.price_note} onChange={(e) => setForm((prev) => ({ ...prev, shikara: { ...prev.shikara, price_note: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" rows={2} placeholder="e.g. Contact for group discounts" />
                 </div>
               </div>
             )}
             {form.category === 'artisan' && (
-              <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+              <div className="space-y-3 p-3 bg-secondary rounded-lg">
                 <h3 className="text-sm font-semibold">Owner Information</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs font-medium">Owner Name *</label>
-                    <input value={form.artisan.owner_name} onChange={(e) => setForm((prev) => ({ ...prev, artisan: { ...prev.artisan, owner_name: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                    <input value={form.artisan.owner_name} onChange={(e) => setForm((prev) => ({ ...prev, artisan: { ...prev.artisan, owner_name: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                   </div>
                   <div>
                     <label className="text-xs font-medium">Contact Number *</label>
-                    <input value={form.artisan.contact_number} onChange={(e) => setForm((prev) => ({ ...prev, artisan: { ...prev.artisan, contact_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                    <input value={form.artisan.contact_number} onChange={(e) => setForm((prev) => ({ ...prev, artisan: { ...prev.artisan, contact_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                   </div>
                   <div>
                     <label className="text-xs font-medium">WhatsApp Number</label>
-                    <input value={form.artisan.whatsapp_number} onChange={(e) => setForm((prev) => ({ ...prev, artisan: { ...prev.artisan, whatsapp_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                    <input value={form.artisan.whatsapp_number} onChange={(e) => setForm((prev) => ({ ...prev, artisan: { ...prev.artisan, whatsapp_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                   </div>
                   <div>
                     <label className="text-xs font-medium">Email Address</label>
-                    <input type="email" value={form.artisan.email_address} onChange={(e) => setForm((prev) => ({ ...prev, artisan: { ...prev.artisan, email_address: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                    <input type="email" value={form.artisan.email_address} onChange={(e) => setForm((prev) => ({ ...prev, artisan: { ...prev.artisan, email_address: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                   </div>
                   <div>
                     <label className="text-xs font-medium">Website (Optional)</label>
-                    <input value={form.artisan.website} onChange={(e) => setForm((prev) => ({ ...prev, artisan: { ...prev.artisan, website: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="https://" />
+                    <input value={form.artisan.website} onChange={(e) => setForm((prev) => ({ ...prev, artisan: { ...prev.artisan, website: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="https://" />
                   </div>
                   <div>
                     <label className="text-xs font-medium">GST Number (Optional)</label>
-                    <input value={form.artisan.gst_number} onChange={(e) => setForm((prev) => ({ ...prev, artisan: { ...prev.artisan, gst_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                    <input value={form.artisan.gst_number} onChange={(e) => setForm((prev) => ({ ...prev, artisan: { ...prev.artisan, gst_number: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                   </div>
                   <div>
                     <label className="text-xs font-medium">Export License Number (Optional)</label>
-                    <input value={form.artisan.export_license} onChange={(e) => setForm((prev) => ({ ...prev, artisan: { ...prev.artisan, export_license: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                    <input value={form.artisan.export_license} onChange={(e) => setForm((prev) => ({ ...prev, artisan: { ...prev.artisan, export_license: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                   </div>
                   <div>
                     <label className="text-xs font-medium">Years in Business</label>
-                    <input value={form.artisan.years_in_business} onChange={(e) => setForm((prev) => ({ ...prev, artisan: { ...prev.artisan, years_in_business: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                    <input value={form.artisan.years_in_business} onChange={(e) => setForm((prev) => ({ ...prev, artisan: { ...prev.artisan, years_in_business: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                   </div>
                 </div>
                 <div>
                   <label className="text-xs font-medium">Google Map Link</label>
-                  <input value={form.artisan.google_maps} onChange={(e) => setForm((prev) => ({ ...prev, artisan: { ...prev.artisan, google_maps: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
+                  <input value={form.artisan.google_maps} onChange={(e) => setForm((prev) => ({ ...prev, artisan: { ...prev.artisan, google_maps: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
                 </div>
               </div>
             )}
             {form.category === 'houseboat' && (
               <div className="space-y-3">
                 <h3 className="text-sm font-semibold">Houseboat Tariffs (₹)</h3>
-                <p className="text-xs text-gray-500">EP=Room only, CP=+Breakfast, MAP=+Breakfast&Dinner, AP=+Breakfast,Lunch&Dinner</p>
+                <p className="text-xs text-muted-foreground">EP=Room only, CP=+Breakfast, MAP=+Breakfast&Dinner, AP=+Breakfast,Lunch&Dinner</p>
                 <div className="grid grid-cols-2 gap-3">
                   {([
                     ['double_ep', 'Double Bed (EP)'],
@@ -1488,22 +1488,22 @@ export default function JoinPage() {
                     ['single_ap', 'Single Bed (AP)'],
                   ] as const).map(([key, label]) => (
                     <div key={key}>
-                      <label className="text-xs text-gray-500">{label}</label>
+                      <label className="text-xs text-muted-foreground">{label}</label>
                       <input
                         value={(form.tariffs as any)[key]}
                         onChange={(e) => setForm((prev) => ({ ...prev, tariffs: { ...prev.tariffs, [key]: e.target.value } }))}
-                        className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2C5F8A]"
+                        className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                         placeholder="₹"
                       />
                     </div>
                   ))}
                 </div>
                   <div>
-                    <label className="text-xs text-gray-500">Tariff Note</label>
+                    <label className="text-xs text-muted-foreground">Tariff Note</label>
                     <textarea
                       value={form.tariffs.note}
                       onChange={(e) => setForm((prev) => ({ ...prev, tariffs: { ...prev.tariffs, note: e.target.value } }))}
-                      className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2C5F8A]"
+                      className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                       rows={3}
                       placeholder="Children below 5 yrs FREE. Heating charges extra in winter @ ₹600/room/day"
                     />
@@ -1511,39 +1511,39 @@ export default function JoinPage() {
               </div>
             )}
             {(form.category === 'homestay' || form.category === 'guest_house') && (
-              <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+              <div className="space-y-3 p-3 bg-secondary rounded-lg">
                 <h3 className="text-sm font-semibold">Pricing (₹ per night)</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs font-medium">Single Room</label>
-                    <input value={form.accommodation.pricing_single} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, pricing_single: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="₹" />
+                    <input value={form.accommodation.pricing_single} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, pricing_single: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="₹" />
                   </div>
                   <div>
                     <label className="text-xs font-medium">Double Room</label>
-                    <input value={form.accommodation.pricing_double} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, pricing_double: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="₹" />
+                    <input value={form.accommodation.pricing_double} onChange={(e) => setForm((prev) => ({ ...prev, accommodation: { ...prev.accommodation, pricing_double: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="₹" />
                   </div>
                 </div>
               </div>
             )}
             {form.category === 'taxi' && (
-              <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+              <div className="space-y-3 p-3 bg-secondary rounded-lg">
                 <h3 className="text-sm font-semibold">Pricing & Tours</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs font-medium">Price per Km (₹)</label>
-                    <input value={form.taxi.price_per_km} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, price_per_km: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="₹" />
+                    <input value={form.taxi.price_per_km} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, price_per_km: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="₹" />
                   </div>
                   <div>
                     <label className="text-xs font-medium">Price per Day (₹)</label>
-                    <input value={form.taxi.price_per_day} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, price_per_day: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="₹ (8hrs/80km)" />
+                    <input value={form.taxi.price_per_day} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, price_per_day: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="₹ (8hrs/80km)" />
                   </div>
                   <div>
                     <label className="text-xs font-medium">Airport Flat Rate (₹)</label>
-                    <input value={form.taxi.airport_flat_rate} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, airport_flat_rate: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="₹" />
+                    <input value={form.taxi.airport_flat_rate} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, airport_flat_rate: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="₹" />
                   </div>
                   <div>
                     <label className="text-xs font-medium">Extra per Km (₹)</label>
-                    <input value={form.taxi.extra_per_km} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, extra_per_km: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="₹" />
+                    <input value={form.taxi.extra_per_km} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, extra_per_km: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="₹" />
                   </div>
                 </div>
                 <div>
@@ -1559,24 +1559,24 @@ export default function JoinPage() {
                 </div>
                 <div>
                   <label className="text-xs font-medium">Years of Experience</label>
-                  <input value={form.taxi.years_experience} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, years_experience: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. 5 years" />
+                  <input value={form.taxi.years_experience} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, years_experience: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="e.g. 5 years" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Google Map Link</label>
-                  <input value={form.taxi.google_maps} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, google_maps: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
+                  <input value={form.taxi.google_maps} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, google_maps: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
                 </div>
               </div>
             )}
             {form.category === 'guide' && (
-              <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+              <div className="space-y-3 p-3 bg-secondary rounded-lg">
                 <h3 className="text-sm font-semibold">About You</h3>
                 <div>
                   <label className="text-xs font-medium">Years of Experience</label>
-                  <input value={form.guide.years_experience} onChange={(e) => setForm((prev) => ({ ...prev, guide: { ...prev.guide, years_experience: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. 5 years" />
+                  <input value={form.guide.years_experience} onChange={(e) => setForm((prev) => ({ ...prev, guide: { ...prev.guide, years_experience: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="e.g. 5 years" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Certification</label>
-                  <input value={form.guide.certification} onChange={(e) => setForm((prev) => ({ ...prev, guide: { ...prev.guide, certification: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g. JKTDC certified guide" />
+                  <input value={form.guide.certification} onChange={(e) => setForm((prev) => ({ ...prev, guide: { ...prev.guide, certification: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="e.g. JKTDC certified guide" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Operating Areas</label>
@@ -1591,16 +1591,16 @@ export default function JoinPage() {
                 </div>
                 <div>
                   <label className="text-xs font-medium">Google Map Link</label>
-                  <input value={form.guide.google_maps} onChange={(e) => setForm((prev) => ({ ...prev, guide: { ...prev.guide, google_maps: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
+                  <input value={form.guide.google_maps} onChange={(e) => setForm((prev) => ({ ...prev, guide: { ...prev.guide, google_maps: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
                 </div>
               </div>
             )}
             {form.category === 'vendor' && (
-              <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+              <div className="space-y-3 p-3 bg-secondary rounded-lg">
                 <h3 className="text-sm font-semibold">About Your Business</h3>
                 <div>
                   <label className="text-xs font-medium">Email Address</label>
-                  <input type="email" value={form.vendor.email} onChange={(e) => setForm((prev) => ({ ...prev, vendor: { ...prev.vendor, email: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input type="email" value={form.vendor.email} onChange={(e) => setForm((prev) => ({ ...prev, vendor: { ...prev.vendor, email: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="text-xs font-medium">Operating Areas</label>
@@ -1615,7 +1615,7 @@ export default function JoinPage() {
                 </div>
                 <div>
                   <label className="text-xs font-medium">Google Map Link</label>
-                  <input value={form.vendor.google_maps} onChange={(e) => setForm((prev) => ({ ...prev, vendor: { ...prev.vendor, google_maps: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
+                  <input value={form.vendor.google_maps} onChange={(e) => setForm((prev) => ({ ...prev, vendor: { ...prev.vendor, google_maps: e.target.value } }))} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" placeholder="https://maps.google.com/?q=..." />
                 </div>
               </div>
             )}
@@ -1633,7 +1633,7 @@ export default function JoinPage() {
         {step === 3 && (
           <div className="space-y-4">
             <h2 className="text-lg font-semibold">Photos</h2>
-            <p className="text-sm text-gray-600">Upload 1-5 photos (max 5MB each)</p>
+            <p className="text-sm text-muted-foreground">Upload 1-5 photos (max 5MB each)</p>
             <div className="grid grid-cols-3 gap-2">
               {photoPreviews.map((preview, i) => (
                 <div key={i} className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
@@ -1647,9 +1647,9 @@ export default function JoinPage() {
                 </div>
               ))}
               {form.photos.length < 5 && (
-                <label className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-[#2C5F8A]">
+                <label className="aspect-square border-2 border-dashed border-input rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-[#2C5F8A]">
                   <Upload className="w-6 h-6 text-gray-400" />
-                  <span className="text-xs text-gray-500 mt-1">Add photo</span>
+                  <span className="text-xs text-muted-foreground mt-1">Add photo</span>
                   <input
                     type="file"
                     accept="image/*"
@@ -1702,7 +1702,7 @@ export default function JoinPage() {
                   {form.boat_ghat && <div><strong>Boat Ghat:</strong> {form.boat_ghat} — {ghats.find((g) => g.name === form.boat_ghat) ? `${ghats.find((g) => g.name === form.boat_ghat)!.lat}, ${ghats.find((g) => g.name === form.boat_ghat)!.lng}` : ''}</div>}
                   {form.google_maps && (
                     <div>
-                      <strong>Maps:</strong> <a href={form.google_maps} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline text-xs">{form.google_maps}</a>
+                      <strong>Maps:</strong> <a href={form.google_maps} target="_blank" rel="noopener noreferrer" className="text-accent underline text-xs">{form.google_maps}</a>
                     </div>
                   )}
                   <div>
@@ -1712,7 +1712,7 @@ export default function JoinPage() {
                         <span key={k}>{k.replace('_', ' ')}: ₹{v}</span>
                       ))}
                     </div>
-                    {form.tariffs.note && <p className="text-xs text-gray-500 mt-1">{form.tariffs.note}</p>}
+                    {form.tariffs.note && <p className="text-xs text-muted-foreground mt-1">{form.tariffs.note}</p>}
                   </div>
                   {form.hb_total_rooms && <div><strong>Rooms:</strong> {form.hb_total_rooms}</div>}
                   {form.hb_capacity && <div><strong>Capacity:</strong> {form.hb_capacity} guests</div>}
