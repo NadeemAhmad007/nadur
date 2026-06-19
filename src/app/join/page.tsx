@@ -521,7 +521,14 @@ export default function JoinPage() {
 
       if (!res.ok) {
         const errBody = await res.json().catch(() => null);
-        setSubmitError(errBody?.error || `Submission failed (${res.status})`);
+        if (res.status === 409 && errBody?.existing) {
+          setSubmitError(
+            `An operator "${errBody.existing.name}" is already registered with this WhatsApp number. ` +
+            `Status: ${errBody.existing.status}. Please sign in to manage your profile.`
+          );
+        } else {
+          setSubmitError(errBody?.error || `Submission failed (${res.status})`);
+        }
         setLoading(false);
         return;
       }
@@ -1810,9 +1817,18 @@ export default function JoinPage() {
               <p><strong>Photos:</strong> {form.photos.length} uploaded</p>
             </div>
             {submitError && (
-              <div className="flex items-start gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
-                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-                <span>{submitError}</span>
+              <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm space-y-2">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                  <span>{submitError}</span>
+                </div>
+                {submitError.includes('already registered') && (
+                  <Link href="/auth/login" className="block text-center">
+                    <Button size="sm" variant="outline" className="w-full border-destructive/30 text-destructive hover:bg-destructive/10">
+                      Sign In to Manage Profile
+                    </Button>
+                  </Link>
+                )}
               </div>
             )}
             <div className="flex gap-2">
