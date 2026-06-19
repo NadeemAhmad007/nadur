@@ -1295,7 +1295,7 @@ export default function JoinPage() {
               <Button variant="outline" onClick={() => setStep(0)} className="flex-1">
                 <ArrowLeft className="w-4 h-4 mr-1" /> Back
               </Button>
-              <Button onClick={() => setStep(2)} className="flex-1" disabled={!form.name || (form.category === 'houseboat' && !form.boat_ghat) || (form.category === 'shikara' && !form.shikara.ghat_number)}>
+              <Button onClick={() => setStep(2)} className="flex-1" disabled={!form.name || !form.phone || (form.category === 'houseboat' && !form.boat_ghat) || (form.category === 'shikara' && !form.shikara.ghat_number)}>
                 Next <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
