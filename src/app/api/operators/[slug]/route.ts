@@ -32,7 +32,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ slug: string }> }) {
   const ip = req.headers.get('x-forwarded-for') || 'anon';
-  const { allowed } = rateLimit(`update-op:${ip}`, 10, 60000);
+  const { allowed } = await rateLimit(`update-op:${ip}`, 10, 60000);
   if (!allowed) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }

@@ -8,7 +8,7 @@ import { rateLimit } from '@/lib/rate-limit';
 
 export async function POST(req: Request) {
   const ip = req.headers.get('x-forwarded-for') || 'anon';
-  const { allowed } = rateLimit(`lead-create:${ip}`, 10, 60000);
+  const { allowed } = await rateLimit(`lead-create:${ip}`, 10, 60000);
   if (!allowed) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }

@@ -18,7 +18,7 @@ function validatePhone(phone: string): string | null {
 
 export async function POST(req: Request) {
   const ip = req.headers.get('x-forwarded-for') || 'anon';
-  const { allowed } = rateLimit(`lead-send-otp:${ip}`, 5, 60000);
+  const { allowed } = await rateLimit(`lead-send-otp:${ip}`, 5, 60000);
   if (!allowed) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }
@@ -59,7 +59,7 @@ export async function POST(req: Request) {
     const result = await sendOtp(visitor_phone, otp);
     if (result.error) {
       console.error(`[leads/send-otp] OpenWA delivery failed for ${visitor_phone}: ${result.error}`);
-      console.log(`[DEV] Fallback — OTP for ${visitor_phone}: ${otp}`);
+      return NextResponse.json({ error: 'Failed to send verification code. Please try again.' }, { status: 502 });
     }
 
     return NextResponse.json({ sent: true });

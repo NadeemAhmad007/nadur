@@ -18,7 +18,7 @@ function validateMagicBytes(buffer: Uint8Array, mimeType: string): boolean {
 
 export async function POST(req: Request) {
   const ip = req.headers.get('x-forwarded-for') || 'anon';
-  const { allowed } = rateLimit(`upload:${ip}`, 10, 60000);
+  const { allowed } = await rateLimit(`upload:${ip}`, 10, 60000);
   if (!allowed) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }

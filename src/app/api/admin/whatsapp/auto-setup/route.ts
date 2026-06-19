@@ -73,7 +73,7 @@ export async function POST() {
   }
 
   const ip = '127.0.0.1';
-  const { allowed } = rateLimit(`auto-setup:${ip}`, 3, 60000);
+  const { allowed } = await rateLimit(`auto-setup:${ip}`, 3, 60000);
   if (!allowed) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }

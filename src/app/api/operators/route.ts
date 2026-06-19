@@ -244,7 +244,7 @@ function distance(lat1: number, lng1: number, lat2: number, lng2: number): numbe
 
 export async function POST(req: Request) {
   const ip = req.headers.get('x-forwarded-for') || 'anon';
-  const { allowed } = rateLimit(`create-op:${ip}`, 3, 3600000);
+  const { allowed } = await rateLimit(`create-op:${ip}`, 3, 3600000);
   if (!allowed) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }

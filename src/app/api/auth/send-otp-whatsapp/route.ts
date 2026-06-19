@@ -11,7 +11,7 @@ function generateOtp(): string {
 
 export async function POST(req: Request) {
   const ip = req.headers.get('x-forwarded-for') || 'anon';
-  const { allowed } = rateLimit(`send-otp-whatsapp:${ip}`, 3, 60000);
+  const { allowed } = await rateLimit(`send-otp-whatsapp:${ip}`, 3, 60000);
   if (!allowed) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     const result = await sendOtp(phone, otp);
     if (result.error) {
       console.error(`[send-otp-whatsapp] OpenWA delivery failed for ${phone}: ${result.error}`);
-      console.log(`[DEV] Fallback — OTP for ${phone}: ${otp}`);
+      return NextResponse.json({ error: 'Failed to send OTP via WhatsApp. Try email OTP instead.', useEmail: true }, { status: 502 });
     }
 
     return NextResponse.json({ sent: true });

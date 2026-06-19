@@ -98,3 +98,9 @@ export const settings = pgTable('settings', {
   value: text('value').notNull(),
   updated_at: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
+
+export const rateLimits = pgTable('rate_limits', {
+  key: text('key').primaryKey(),
+  count: integer('count').notNull().default(1),
+  expires_at: timestamp('expires_at', { withTimezone: true }).notNull(),
+});

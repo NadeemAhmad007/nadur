@@ -13,7 +13,7 @@ export async function GET(req: Request) {
   }
 
   const ip = req.headers.get('x-forwarded-for') || 'admin-ops';
-  const { allowed } = rateLimit(`admin-ops:${ip}`, 30);
+  const { allowed } = await rateLimit(`admin-ops:${ip}`, 30);
   if (!allowed) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }

@@ -13,7 +13,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   }
 
   const ip = req.headers.get('x-forwarded-for') || 'admin-op-action';
-  const { allowed } = rateLimit(`admin-op-action:${ip}`, 20);
+  const { allowed } = await rateLimit(`admin-op-action:${ip}`, 20);
   if (!allowed) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }
