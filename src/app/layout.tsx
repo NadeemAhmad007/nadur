@@ -3,6 +3,7 @@ import { Poppins } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 import { Footer } from "@/components/footer";
+import { OrganizationSchema, LocalBusinessSchema } from "@/components/schema-markup";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -13,14 +14,23 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   title: {
     template: "%s | Kasheer360",
-    default: "Kasheer360",
+    default: "Kasheer360 | Book Houseboats, Hotels, Taxis & Tours in Kashmir",
   },
   description:
-    "Discover verified houseboats, shikara rides, artisans, guides and vendors across Srinagar, Kashmir.",
+    "Book trusted Kashmir hotels, houseboats, shikara rides, taxis, and tour packages directly with local providers. No middlemen. Best rates. Kasheer360.",
   manifest: "/manifest.json",
   icons: {
     icon: "/favicon.png?v=4",
     apple: "/icons/icon-192.png?v=4",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    siteName: "Kasheer360",
+    title: "Kasheer360 | Book Houseboats, Hotels, Taxis & Tours in Kashmir",
+    description:
+      "Book trusted Kashmir hotels, houseboats, shikara rides, taxis, and tour packages directly with local providers. No middlemen. Best rates.",
+    url: "https://kasheer360.com",
   },
   appleWebApp: {
     capable: true,
@@ -48,6 +58,8 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <SessionProvider>
+          <OrganizationSchema />
+          <LocalBusinessSchema />
           <div className="flex flex-col min-h-screen">
             <div className="flex-1">{children}</div>
             <Footer />

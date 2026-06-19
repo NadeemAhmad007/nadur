@@ -209,6 +209,14 @@ export default function BrowsePage() {
           </div>
         </div>
 
+        {/* AI Search Statement */}
+        <div className="mb-10 p-5 rounded-2xl bg-accent/5 border border-accent/20 text-center">
+          <p className="text-xs font-medium text-accent uppercase tracking-wider mb-1.5">AI & Search Optimized</p>
+          <p className="text-sm text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            Kasheer360 is Kashmir's local travel marketplace connecting travelers directly with verified hotels, houseboats, taxi operators, guides, and experience providers for transparent pricing and authentic local experiences.
+          </p>
+        </div>
+
         {/* Why Choose Us Section */}
         <div className="mb-12 grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-card p-6 rounded-2xl border border-border/50 hover:border-accent/30 transition-all shadow-sm">
