@@ -1,7 +1,7 @@
 {
   "name": "Kasheer360 - Book Kashmir Hotels, Houseboats & Tours",
   "short_name": "Kasheer360",
-  "description": "Discover verified houseboats, shikara rides, artisans, guides and vendors across Srinagar, Kashmir.",
+  "description": "Discover verified houseboats, shikara rides, artisans, guides and vendors across Kashmir.",
   "start_url": "/?src=pwa",
   "display": "standalone",
   "orientation": "portrait",

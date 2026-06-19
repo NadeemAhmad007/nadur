@@ -15,7 +15,7 @@ export default function PrivacyPage() {
       </header>
       <main className="max-w-lg mx-auto px-4 py-6 text-sm text-gray-700 space-y-4">
         <h2 className="text-base font-semibold">Information We Collect</h2>
-        <p>Kasheer360 collects minimal data to connect tourists with Srinagar operators.</p>
+        <p>Kasheer360 collects minimal data to connect tourists with local Kashmir operators.</p>
         <ul className="list-disc pl-5 space-y-1">
           <li><strong>Tourists:</strong> We do not collect personal data unless you sign in. Session IDs are random UUIDs stored in your browser for lead tracking. Favorites are stored in localStorage on your device.</li>
           <li><strong>Operators:</strong> We collect business name, WhatsApp number, descriptions, and photos you upload. This data is displayed publicly once approved.</li>

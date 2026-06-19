@@ -198,13 +198,13 @@ export default function BrowsePage() {
           <div className="relative p-8 sm:p-14">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-semibold uppercase tracking-wider mb-4">
               <Sparkles className="h-3.5 w-3.5 animate-pulse" />
-              Explore Srinagar & Kashmir Like Never Before
+              Explore Kashmir Like Never Before
             </div>
             <h1 className="text-3xl sm:text-5xl font-black text-foreground tracking-tight max-w-2xl mx-auto leading-tight">
               Connect Direct, <span className="text-accent">Book Local</span> on Kasheer360
             </h1>
             <p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-xl mx-auto">
-              Your premium gateway to verified houseboats, shikara rides, authentic local artisans, tourist guides, and local taxi services across Srinagar and Kashmir. 100% direct connection—no middlemen, no hidden commissions.
+               Your premium gateway to verified houseboats, shikara rides, authentic local artisans, tourist guides, and local taxi services across Kashmir. 100% direct connection—no middlemen, no hidden commissions.
             </p>
           </div>
         </div>

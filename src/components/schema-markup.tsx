@@ -61,7 +61,7 @@ const faqSchema = {
     },
     {
       '@type': 'Question',
-      name: 'How do I book a houseboat in Srinagar?',
+      name: 'How do I book a houseboat in Kashmir?',
       acceptedAnswer: {
         '@type': 'Answer',
         text: 'Browse verified houseboats on Kasheer360, compare tariffs and photos, and contact the houseboat owner directly via WhatsApp or phone to book.',

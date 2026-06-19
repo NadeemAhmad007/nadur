@@ -14,7 +14,7 @@ export function Footer() {
               <img src="/logo.png" alt="Kasheer360" className="h-24 w-auto object-contain" />
             </Link>
             <p className="text-xs text-muted-foreground/70 leading-relaxed max-w-xs">
-              Connect directly with verified houseboats, shikara rides, artisans, guides, and local businesses across Srinagar, Kashmir.
+              Connect directly with verified houseboats, shikara rides, artisans, guides, and local businesses across Kashmir.
             </p>
           </div>
 
@@ -50,7 +50,7 @@ export function Footer() {
               </a>
               <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
                 <Compass className="h-4 w-4 shrink-0" />
-                <span>Srinagar, Jammu &amp; Kashmir</span>
+                <span>Kashmir</span>
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground/60 pt-2">
                 <Sparkles className="h-3 w-3 text-accent" />
