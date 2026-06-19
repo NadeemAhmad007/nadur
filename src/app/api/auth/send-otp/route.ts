@@ -48,7 +48,15 @@ export async function POST(req: Request) {
 
     console.log(`[DEV] OTP for ${email}: ${otp}`);
 
-    await sendOtpEmail(email, otp);
+    try {
+      await sendOtpEmail(email, otp);
+    } catch (e) {
+      console.error('send-otp error:', e);
+      return NextResponse.json({
+        error: 'Email delivery failed. Please try WhatsApp OTP instead.',
+        useWhatsapp: true,
+      }, { status: 400 });
+    }
 
     return NextResponse.json({ sent: true });
   } catch (error) {
