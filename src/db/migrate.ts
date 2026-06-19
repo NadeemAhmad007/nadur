@@ -200,6 +200,19 @@ const run = async () => {
   await sql`
     ALTER TABLE operators ADD COLUMN IF NOT EXISTS hidden BOOLEAN DEFAULT false
   `;
+  await sql`
+    ALTER TABLE operators ADD COLUMN IF NOT EXISTS last_seen TIMESTAMPTZ
+  `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS admin_messages (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      operator_id UUID NOT NULL REFERENCES operators(id) ON DELETE CASCADE,
+      message TEXT NOT NULL,
+      sent_by TEXT NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT now(),
+      read_at TIMESTAMPTZ
+    )
+  `;
 
   console.log('Migration completed successfully');
   process.exit(0);

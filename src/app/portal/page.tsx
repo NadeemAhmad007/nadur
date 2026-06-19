@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import {
   BarChart3, Phone, QrCode, Edit3, CheckCircle2, AlertCircle,
   ArrowUp, ArrowDown, Sparkles, User, Building2, Clock,
-  TrendingUp, Target, MessageCircle, ChevronRight
+  TrendingUp, Target, MessageCircle, ChevronRight, Mail, CheckCheck
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -106,6 +106,8 @@ export default function PortalPage() {
   const router = useRouter();
   const [operator, setOperator] = useState<any>(null);
   const [leads, setLeads] = useState<any[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
@@ -144,6 +146,24 @@ export default function PortalPage() {
     else if (email) fetchOperator(`email=${email}`);
     else setLoading(false);
   }, [session]);
+
+  // Ping online status every 2 minutes
+  useEffect(() => {
+    if (!operator?.id) return;
+    const ping = () => fetch('/api/operators/ping', { method: 'PATCH' }).catch(() => {});
+    ping();
+    const interval = setInterval(ping, 120000);
+    return () => clearInterval(interval);
+  }, [operator?.id]);
+
+  // Fetch messages
+  useEffect(() => {
+    if (!operator?.id) return;
+    fetch('/api/portal/messages').then(r => r.json()).then(d => {
+      setMessages(d.messages || []);
+      setUnreadCount(d.unread || 0);
+    }).catch(() => {});
+  }, [operator?.id]);
 
   const stats = useMemo(() => {
     if (!leads.length) return null;
@@ -407,6 +427,62 @@ export default function PortalPage() {
                 </div>
               </div>
             )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Messages from admin */}
+      {messages.length > 0 && (
+        <Card>
+          <CardHeader className="p-5 border-b border-border/60">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Mail className="h-4 w-4 text-muted-foreground" />
+                <h3 className="font-semibold text-sm">Messages</h3>
+              </div>
+              {unreadCount > 0 && (
+                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-accent text-accent-foreground text-[10px] font-bold px-1.5">
+                  {unreadCount}
+                </span>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="divide-y divide-border/60">
+              {messages.slice(0, 5).map((m: any) => (
+                <div key={m.id} className="p-4 sm:p-5 flex items-start gap-3 hover:bg-secondary/30 transition-colors">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10 shrink-0 mt-0.5">
+                    <Mail className="h-4 w-4 text-accent" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-foreground">{m.message}</p>
+                    <div className="flex items-center gap-2 mt-1.5">
+                      <p className="text-[11px] text-muted-foreground">
+                        {new Date(m.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                      {m.read_at && (
+                        <span className="inline-flex items-center gap-0.5 text-[11px] text-success">
+                          <CheckCheck className="h-3 w-3" /> Read
+                        </span>
+                      )}
+                      {!m.read_at && (
+                        <button
+                          onClick={() => {
+                            fetch(`/api/portal/messages/${m.id}`, { method: 'PATCH' }).then(() => {
+                              setMessages(prev => prev.map(msg => msg.id === m.id ? { ...msg, read_at: new Date().toISOString() } : msg));
+                              setUnreadCount(c => Math.max(0, c - 1));
+                            }).catch(() => {});
+                          }}
+                          className="text-[11px] text-accent font-medium hover:underline"
+                        >
+                          Mark read
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       )}

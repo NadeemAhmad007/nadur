@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import {
-  ArrowLeft, Mail, Phone, MapPin, Star, Eye, EyeOff, Trash2,
+  ArrowLeft, Mail, Phone, MapPin, Star, Eye, EyeOff, Trash2, X,
   CheckCircle, XCircle, AlertTriangle, RefreshCw, Globe, User,
   Building2, Clock
 } from 'lucide-react';
@@ -43,6 +43,12 @@ export default function OperatorDetailPage() {
   const [newEmail, setNewEmail] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [actionLoading, setActionLoading] = useState('');
+  const [onlineStatus, setOnlineStatus] = useState<string | null>(null);
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [messageText, setMessageText] = useState('');
+  const [sending, setSending] = useState(false);
+  const [messageError, setMessageError] = useState('');
+  const [messageSuccess, setMessageSuccess] = useState('');
 
   const fetchOperator = async () => {
     const data = await fetch(`/api/admin/operators?id=${params.id}`).then(r => r.json());
@@ -51,6 +57,11 @@ export default function OperatorDetailPage() {
       fetch(`/api/admin/leads?operator_id=${params.id}`).then(r => r.json()).then(setLeads).catch(() => {});
     }
     setLoading(false);
+    fetch('/api/admin/operators/status').then(r => r.json()).then((res) => {
+      const list = Array.isArray(res) ? res : [];
+      const found = list.find((s: any) => s.id === params.id);
+      setOnlineStatus(found?.status ?? null);
+    }).catch(() => {});
   };
 
   useEffect(() => {
@@ -93,6 +104,57 @@ export default function OperatorDetailPage() {
 
   return (
     <div className="space-y-8">
+      {/* Send Message Modal */}
+      {showMessageModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={() => setShowMessageModal(false)}>
+          <div className="w-full max-w-md bg-card rounded-2xl shadow-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-5 border-b border-border/60">
+              <h3 className="font-semibold text-foreground text-base">Send Message to {op.name}</h3>
+              <button onClick={() => setShowMessageModal(false)} className="p-1.5 rounded-lg hover:bg-secondary transition-colors">
+                <X className="h-4 w-4 text-muted-foreground" />
+              </button>
+            </div>
+            <div className="p-5 space-y-4">
+              <textarea
+                value={messageText}
+                onChange={(e) => setMessageText(e.target.value)}
+                placeholder="Type your message..."
+                rows={4}
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+              />
+              {messageError && <p className="text-xs text-danger">{messageError}</p>}
+              {messageSuccess && <p className="text-xs text-success">{messageSuccess}</p>}
+              <Button
+                onClick={async () => {
+                  if (!messageText.trim()) return;
+                  setSending(true);
+                  setMessageError('');
+                  setMessageSuccess('');
+                  try {
+                    const res = await fetch('/api/admin/messages', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ operator_id: op.id, message: messageText.trim() }),
+                    });
+                    if (!res.ok) throw new Error('Failed to send');
+                    setMessageSuccess('Message sent successfully');
+                    setMessageText('');
+                    setTimeout(() => setShowMessageModal(false), 1200);
+                  } catch {
+                    setMessageError('Failed to send message. Try again.');
+                  }
+                  setSending(false);
+                }}
+                disabled={sending || !messageText.trim()}
+                className="w-full"
+              >
+                {sending ? 'Sending...' : 'Send Message'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Back + Header */}
       <div className="flex items-center gap-4">
         <Link href="/admin/operators" className="flex h-8 w-8 items-center justify-center rounded-lg border border-border hover:bg-muted transition-colors">
@@ -101,6 +163,20 @@ export default function OperatorDetailPage() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold text-foreground">{op.name}</h1>
+            {onlineStatus && (
+              <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium ${
+                onlineStatus === 'online' ? 'bg-success/10 text-success' :
+                onlineStatus === 'recent' ? 'bg-warning/10 text-warning' :
+                'bg-muted/10 text-muted-foreground'
+              }`}>
+                <span className={`h-1.5 w-1.5 rounded-full ${
+                  onlineStatus === 'online' ? 'bg-success' :
+                  onlineStatus === 'recent' ? 'bg-warning' :
+                  'bg-muted-foreground'
+                }`} />
+                {onlineStatus === 'online' ? 'Online' : onlineStatus === 'recent' ? 'Recently' : 'Offline'}
+              </span>
+            )}
             {op.plan === 'pro' && <Badge variant="accent">PRO</Badge>}
             <Badge variant={op.status === 'approved' ? 'success' : op.status === 'pending' ? 'warning' : op.status === 'rejected' ? 'danger' : 'default'}>
               {op.status}
@@ -316,6 +392,10 @@ export default function OperatorDetailPage() {
                   {op.hidden ? 'Make Visible' : 'Hide from Browse'}
                 </Button>
               </div>
+
+              <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => setShowMessageModal(true)}>
+                <Mail className="h-4 w-4 mr-2" /> Send Message
+              </Button>
 
               <Separator />
 

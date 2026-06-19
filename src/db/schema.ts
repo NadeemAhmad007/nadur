@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp, integer, boolean, doublePrecision, json, uniqueIndex, index } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, integer, boolean, doublePrecision, json, uniqueIndex, index, foreignKey } from 'drizzle-orm/pg-core';
 import type { Tariffs, HouseboatDetails, ShikaraDetails, ArtisanDetails, TaxiDetails, AccommodationDetails, GuideDetails, VendorDetails } from '@/types';
 
 export const operators = pgTable('operators', {
@@ -30,6 +30,7 @@ export const operators = pgTable('operators', {
   vendor_details: json('vendor_details').$type<VendorDetails | null>(),
   lat: doublePrecision('lat'),
   lng: doublePrecision('lng'),
+  last_seen: timestamp('last_seen', { withTimezone: true }),
 }, (table) => [
   index('operators_category_status_idx').on(table.category, table.status),
   uniqueIndex('operators_slug_idx').on(table.slug),
@@ -81,6 +82,15 @@ export const categories = pgTable('categories', {
   icon: text('icon'),
   active: boolean('active').default(true),
   sort_order: integer('sort_order').default(0),
+});
+
+export const adminMessages = pgTable('admin_messages', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  operator_id: uuid('operator_id').notNull().references(() => operators.id, { onDelete: 'cascade' }),
+  message: text('message').notNull(),
+  sent_by: text('sent_by').notNull(),
+  created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  read_at: timestamp('read_at', { withTimezone: true }),
 });
 
 export const settings = pgTable('settings', {

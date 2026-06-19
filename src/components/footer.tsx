@@ -42,11 +42,11 @@ export function Footer() {
             <h4 className="text-xs font-semibold text-foreground uppercase tracking-wider mb-4">Connect</h4>
             <div className="space-y-3">
               <a
-                href="mailto:hello@kashmir360.com"
+                href="mailto:kashmir360d@gmail.com"
                 className="flex items-center gap-2.5 text-sm text-muted-foreground hover:text-accent transition-colors"
               >
                 <Mail className="h-4 w-4" />
-                hello@kashmir360.com
+                kashmir360d@gmail.com
               </a>
               <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
                 <Compass className="h-4 w-4 shrink-0" />

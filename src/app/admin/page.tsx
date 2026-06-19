@@ -43,6 +43,7 @@ export default function AdminDashboard() {
   const [todayLeads, setTodayLeads] = useState(0);
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
+  const [onlineStatuses, setOnlineStatuses] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/auth/login');
@@ -55,6 +56,7 @@ export default function AdminDashboard() {
       setTodayLeads(d.today ?? 0);
       setLeadStats(d.byOperator ?? []);
     }).catch(() => {});
+    fetch('/api/admin/operators/status').then(r => r.json()).then(setOnlineStatuses).catch(() => {});
   }, []);
 
   const filtered = operators.filter((op) => {
@@ -147,13 +149,19 @@ export default function AdminDashboard() {
         <CardContent className="p-0">
           <Table
             columns={[
-              { key: 'name', header: 'Name', render: (op: Operator) => (
-                <div className="flex items-center gap-2">
-                  <span className="font-medium text-foreground">{op.name}</span>
-                  {op.plan === 'pro' && <Badge variant="accent" size="sm">PRO</Badge>}
-                  {op.hidden && <Badge variant="outline" size="sm">Hidden</Badge>}
-                </div>
-              )},
+              { key: 'name', header: 'Name', render: (op: Operator) => {
+                const status = onlineStatuses[op.id];
+                return (
+                  <div className="flex items-center gap-2">
+                    <span className={`h-2 w-2 rounded-full ${
+                      status === 'online' ? 'bg-success' : status === 'recent' ? 'bg-warning' : 'bg-muted-foreground/30'
+                    }`} />
+                    <span className="font-medium text-foreground">{op.name}</span>
+                    {op.plan === 'pro' && <Badge variant="accent" size="sm">PRO</Badge>}
+                    {op.hidden && <Badge variant="outline" size="sm">Hidden</Badge>}
+                  </div>
+                );
+              }},
               { key: 'category', header: 'Category', render: (op: Operator) => (
                 <span className="capitalize text-muted-foreground">{op.category}</span>
               )},
