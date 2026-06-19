@@ -25,12 +25,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           const email = credentials.email as string;
           const otp = credentials.otp as string;
 
-          console.log(`[auth] email-otp: authorize called for ${email}, admin? ${adminEmails.includes(email)}`);
-
-          if (adminEmails.includes(email)) {
-            return { id: 'admin', name: 'Admin', email, phone: '' };
-          }
-
           const hashedOtp = await hashOtp(otp);
           const verified = await db.query.emailVerifications.findFirst({
             where: and(
@@ -88,23 +82,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           const phone = credentials.phone as string;
           const otp = credentials.otp as string;
 
-          console.log(`[auth] whatsapp-otp: authorize called for ${phone}`);
-
-          if (otp !== 'verify') {
-            const hashedOtp = await hashOtp(otp);
-            const verified = await db.query.phoneVerifications.findFirst({
-              where: and(
-                eq(phoneVerifications.phone, phone),
-                eq(phoneVerifications.otp, hashedOtp),
-                eq(phoneVerifications.verified, true),
-                gt(phoneVerifications.expires_at, new Date()),
-              ),
-              orderBy: (pv, { desc }) => [desc(pv.created_at)],
-            });
-            if (!verified) {
-              console.error(`[auth] whatsapp-otp: no verified record for ${phone}`);
-              return null;
-            }
+          const hashedOtp = await hashOtp(otp);
+          const verified = await db.query.phoneVerifications.findFirst({
+            where: and(
+              eq(phoneVerifications.phone, phone),
+              eq(phoneVerifications.otp, hashedOtp),
+              eq(phoneVerifications.verified, true),
+              gt(phoneVerifications.expires_at, new Date()),
+            ),
+            orderBy: (pv, { desc }) => [desc(pv.created_at)],
+          });
+          if (!verified) {
+            console.error(`[auth] whatsapp-otp: no verified record for ${phone}`);
+            return null;
           }
 
           let stored = await db.query.operators.findFirst({
