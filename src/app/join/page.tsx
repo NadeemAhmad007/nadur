@@ -524,8 +524,10 @@ export default function JoinPage() {
         setLoading(false);
         return;
       }
+      setLoading(false);
       router.push('/join?success=true');
-    } catch {
+    } catch (err) {
+      console.error('Submit error:', err);
       setSubmitError('Network error — please check your connection');
       setLoading(false);
     }
