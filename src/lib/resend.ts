@@ -13,7 +13,7 @@ export async function sendOtpEmail(email: string, otp: string): Promise<void> {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'Kasheer360 <noreply@formaspacestudio.com>',
+      from: 'Kasheer360 <noreply@kasheer360.com>',
       to: email,
       subject: 'Your Kasheer360 OTP Code',
       html: `
