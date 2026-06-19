@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useSession, signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight, Check, Upload, MessageCircle, Mail, AlertCircle } from 'lucide-react';
@@ -297,6 +297,11 @@ export default function JoinPage() {
   const [phoneOtp, setPhoneOtp] = useState('');
   const [phoneOtpSent, setPhoneOtpSent] = useState(false);
   const [verifiedPhone, setVerifiedPhone] = useState('');
+  const [claimOtp, setClaimOtp] = useState('');
+  const [claimSent, setClaimSent] = useState(false);
+  const [claimLoading, setClaimLoading] = useState(false);
+  const [claimError, setClaimError] = useState('');
+  const [existingOperator, setExistingOperator] = useState<{ id: string; name: string; slug: string; status: string } | null>(null);
 
   useEffect(() => {
     if (otpCooldown > 0) {
@@ -522,10 +527,8 @@ export default function JoinPage() {
       if (!res.ok) {
         const errBody = await res.json().catch(() => null);
         if (res.status === 409 && errBody?.existing) {
-          setSubmitError(
-            `An operator "${errBody.existing.name}" is already registered with this WhatsApp number. ` +
-            `Status: ${errBody.existing.status}. Please sign in to manage your profile.`
-          );
+          setExistingOperator(errBody.existing);
+          setSubmitError(`Operator "${errBody.existing.name}" is already registered with this WhatsApp. Status: ${errBody.existing.status}. Verify your number to claim this profile.`);
         } else {
           setSubmitError(errBody?.error || `Submission failed (${res.status})`);
         }
@@ -538,6 +541,60 @@ export default function JoinPage() {
       console.error('Submit error:', err);
       setSubmitError('Network error — please check your connection');
       setLoading(false);
+    }
+  };
+
+  const handleClaimSendOtp = async () => {
+    setClaimLoading(true);
+    setClaimError('');
+    setClaimSent(false);
+    try {
+      const res = await fetch('/api/auth/send-otp-whatsapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: form.phone }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setClaimSent(true);
+      } else {
+        setClaimError(data.error || 'Failed to send OTP');
+      }
+    } catch {
+      setClaimError('Network error');
+    }
+    setClaimLoading(false);
+  };
+
+  const handleClaimVerify = async () => {
+    setClaimLoading(true);
+    setClaimError('');
+    try {
+      const verifyRes = await fetch('/api/auth/verify-whatsapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: form.phone, otp: claimOtp }),
+      });
+      const verifyData = await verifyRes.json();
+      if (!verifyData.success) {
+        setClaimError(verifyData.error || 'Invalid OTP');
+        setClaimLoading(false);
+        return;
+      }
+      const signInRes = await signIn('whatsapp-otp', {
+        phone: form.phone,
+        otp: claimOtp,
+        redirect: false,
+      });
+      if (signInRes?.error) {
+        setClaimError('Login failed — please try again');
+        setClaimLoading(false);
+        return;
+      }
+      router.push('/portal');
+    } catch {
+      setClaimError('Network error');
+      setClaimLoading(false);
     }
   };
 
@@ -1816,19 +1873,60 @@ export default function JoinPage() {
               )}
               <p><strong>Photos:</strong> {form.photos.length} uploaded</p>
             </div>
-            {submitError && (
-              <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm space-y-2">
+            {submitError && !existingOperator && (
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                <span>{submitError}</span>
+              </div>
+            )}
+            {existingOperator && (
+              <div className="p-4 rounded-lg border border-border space-y-4">
                 <div className="flex items-start gap-2">
-                  <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-                  <span>{submitError}</span>
+                  <AlertCircle className="h-4 w-4 mt-0.5 shrink-0 text-destructive" />
+                  <div className="text-sm text-destructive">
+                    <p className="font-medium">"{existingOperator.name}" is already registered with this number.</p>
+                    <p className="text-muted-foreground mt-1">Verify your WhatsApp to claim and manage this profile.</p>
+                  </div>
                 </div>
-                {submitError.includes('already registered') && (
-                  <Link href="/auth/login" className="block text-center">
-                    <Button size="sm" variant="outline" className="w-full border-destructive/30 text-destructive hover:bg-destructive/10">
-                      Sign In to Manage Profile
+                <div className="p-3 rounded-lg bg-secondary/50 text-sm space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">WhatsApp</span>
+                    <span className="font-medium">{form.phone}</span>
+                  </div>
+                  {!claimSent ? (
+                    <Button onClick={handleClaimSendOtp} disabled={claimLoading} size="sm" className="w-full mt-1">
+                      {claimLoading ? 'Sending...' : 'Send OTP to WhatsApp'}
                     </Button>
+                  ) : (
+                    <div className="space-y-2 mt-2">
+                      <p className="text-xs text-muted-foreground">Enter the 6-digit code sent to your WhatsApp</p>
+                      <input
+                        value={claimOtp}
+                        onChange={(e) => setClaimOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        placeholder="000000"
+                        className="w-full px-3 py-2 text-center text-lg tracking-widest border border-input rounded-lg"
+                        maxLength={6}
+                        autoFocus
+                      />
+                      <div className="flex gap-2">
+                        <Button onClick={handleClaimVerify} disabled={claimLoading || claimOtp.length !== 6} size="sm" className="flex-1">
+                          {claimLoading ? 'Verifying...' : 'Verify & Claim Profile'}
+                        </Button>
+                        <Button onClick={handleClaimSendOtp} disabled={claimLoading} variant="outline" size="sm">
+                          Resend
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  {claimError && (
+                    <p className="text-xs text-destructive mt-1">{claimError}</p>
+                  )}
+                </div>
+                <div className="text-center">
+                  <Link href="/auth/login" className="text-xs text-accent hover:underline">
+                    Already have an account? Sign in
                   </Link>
-                )}
+                </div>
               </div>
             )}
             <div className="flex gap-2">
