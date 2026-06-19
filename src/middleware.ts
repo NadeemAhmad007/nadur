@@ -21,7 +21,8 @@ export async function middleware(request: Request) {
     }
 
     if (pathname.startsWith('/portal')) {
-      if (!session) {
+      const sUser = session?.user as unknown as Record<string, unknown> | undefined;
+      if (!session || !sUser?.operator_id) {
         return NextResponse.redirect(new URL('/auth/login', request.url));
       }
     }

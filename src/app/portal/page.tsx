@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import {
   BarChart3, Phone, QrCode, Edit3, CheckCircle2, AlertCircle,
   ArrowUp, ArrowDown, Sparkles, User, Building2, Clock,
-  TrendingUp, Target, MessageCircle, ChevronRight, Mail, CheckCheck
+  TrendingUp, Target, MessageCircle, ChevronRight, Mail, CheckCheck, RefreshCw
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -156,14 +156,23 @@ export default function PortalPage() {
     return () => clearInterval(interval);
   }, [operator?.id]);
 
-  // Fetch messages
-  useEffect(() => {
+  const fetchMessages = useCallback(async () => {
     if (!operator?.id) return;
-    fetch('/api/portal/messages').then(r => r.json()).then(d => {
+    try {
+      const res = await fetch('/api/portal/messages');
+      if (!res.ok) return;
+      const d = await res.json();
       setMessages(d.messages || []);
       setUnreadCount(d.unread || 0);
-    }).catch(() => {});
+    } catch {}
   }, [operator?.id]);
+
+  // Fetch messages on mount and poll every 15s
+  useEffect(() => {
+    fetchMessages();
+    const interval = setInterval(fetchMessages, 15000);
+    return () => clearInterval(interval);
+  }, [fetchMessages]);
 
   const stats = useMemo(() => {
     if (!leads.length) return null;
@@ -432,22 +441,29 @@ export default function PortalPage() {
       )}
 
       {/* Messages from admin */}
-      {messages.length > 0 && (
-        <Card>
-          <CardHeader className="p-5 border-b border-border/60">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                <h3 className="font-semibold text-sm">Messages</h3>
-              </div>
+      <Card>
+        <CardHeader className="p-5 border-b border-border/60">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Mail className="h-4 w-4 text-muted-foreground" />
+              <h3 className="font-semibold text-sm">Messages</h3>
+            </div>
+            <div className="flex items-center gap-2">
               {unreadCount > 0 && (
                 <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-accent text-accent-foreground text-[10px] font-bold px-1.5">
                   {unreadCount}
                 </span>
               )}
+              <button onClick={fetchMessages} className="p-1.5 rounded-lg hover:bg-secondary transition-colors">
+                <RefreshCw className="h-3.5 w-3.5 text-muted-foreground" />
+              </button>
             </div>
-          </CardHeader>
-          <CardContent className="p-0">
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          {messages.length === 0 ? (
+            <div className="p-6 text-center text-muted-foreground text-sm">No messages yet</div>
+          ) : (
             <div className="divide-y divide-border/60">
               {messages.slice(0, 5).map((m: any) => (
                 <div key={m.id} className="p-4 sm:p-5 flex items-start gap-3 hover:bg-secondary/30 transition-colors">
@@ -483,9 +499,9 @@ export default function PortalPage() {
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
-      )}
+          )}
+        </CardContent>
+      </Card>
 
       {/* Recent leads */}
       <Card>

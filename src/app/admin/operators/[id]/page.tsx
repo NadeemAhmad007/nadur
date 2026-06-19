@@ -58,9 +58,7 @@ export default function OperatorDetailPage() {
     }
     setLoading(false);
     fetch('/api/admin/operators/status').then(r => r.json()).then((res) => {
-      const list = Array.isArray(res) ? res : [];
-      const found = list.find((s: any) => s.id === params.id);
-      setOnlineStatus(found?.status ?? null);
+      setOnlineStatus((res as Record<string, string>)[params.id as string] ?? null);
     }).catch(() => {});
   };
 
