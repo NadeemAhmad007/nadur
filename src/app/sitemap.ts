@@ -1,18 +1,22 @@
 import type { MetadataRoute } from 'next';
 import { db } from '@/db';
 import { operators } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { and, eq, ne } from 'drizzle-orm';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://kasheer360.com';
 
   const allOperators = await db.query.operators.findMany({
-    where: eq(operators.hidden, false),
+    where: and(
+      eq(operators.hidden, false),
+      ne(operators.status, 'suspended'),
+      ne(operators.status, 'rejected'),
+    ),
     columns: { slug: true, updated_at: true },
   });
 
   const operatorEntries: MetadataRoute.Sitemap = allOperators.map((op) => ({
-    url: `${baseUrl}/operators/${op.slug}`,
+    url: `${baseUrl}/o/${op.slug}`,
     lastModified: op.updated_at || new Date(),
     changeFrequency: 'weekly' as const,
     priority: 0.8,
