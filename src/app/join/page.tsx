@@ -302,6 +302,7 @@ export default function JoinPage() {
   const [claimLoading, setClaimLoading] = useState(false);
   const [claimError, setClaimError] = useState('');
   const [existingOperator, setExistingOperator] = useState<{ id: string; name: string; slug: string; status: string } | null>(null);
+  const [checkingDuplicate, setCheckingDuplicate] = useState(false);
 
   useEffect(() => {
     if (otpCooldown > 0) {
@@ -526,12 +527,7 @@ export default function JoinPage() {
 
       if (!res.ok) {
         const errBody = await res.json().catch(() => null);
-        if (res.status === 409 && errBody?.existing) {
-          setExistingOperator(errBody.existing);
-          setSubmitError(`Operator "${errBody.existing.name}" is already registered with this WhatsApp. Status: ${errBody.existing.status}. Verify your number to claim this profile.`);
-        } else {
-          setSubmitError(errBody?.error || `Submission failed (${res.status})`);
-        }
+        setSubmitError(errBody?.error || `Submission failed (${res.status})`);
         setLoading(false);
         return;
       }
@@ -596,6 +592,31 @@ export default function JoinPage() {
       setClaimError('Network error');
       setClaimLoading(false);
     }
+  };
+
+  const handleStep1Next = async () => {
+    if (checkingDuplicate) return;
+    setCheckingDuplicate(true);
+    setExistingOperator(null);
+    setClaimOtp('');
+    setClaimSent(false);
+    setClaimError('');
+    try {
+      const res = await fetch('/api/operators/check-whatsapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: form.phone }),
+      });
+      const data = await res.json();
+      if (data.exists && data.operator) {
+        setExistingOperator(data.operator);
+      } else {
+        setStep(2);
+      }
+    } catch {
+      setStep(2);
+    }
+    setCheckingDuplicate(false);
   };
 
   if (typeof window !== 'undefined' && window.location.search.includes('success=true')) {
@@ -1360,10 +1381,60 @@ export default function JoinPage() {
               <Button variant="outline" onClick={() => setStep(0)} className="flex-1">
                 <ArrowLeft className="w-4 h-4 mr-1" /> Back
               </Button>
-              <Button onClick={() => setStep(2)} className="flex-1" disabled={!form.name || !form.phone || (form.category === 'houseboat' && !form.boat_ghat) || (form.category === 'shikara' && !form.shikara.ghat_number)}>
-                Next <ArrowRight className="w-4 h-4 ml-1" />
+              <Button onClick={handleStep1Next} className="flex-1" disabled={!form.name || !form.phone || (form.category === 'houseboat' && !form.boat_ghat) || (form.category === 'shikara' && !form.shikara.ghat_number) || checkingDuplicate}>
+                {checkingDuplicate ? 'Checking...' : 'Next'} <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
+            {existingOperator && (
+              <div className="p-4 rounded-lg border border-border space-y-4">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="h-4 w-4 mt-0.5 shrink-0 text-destructive" />
+                  <div className="text-sm text-destructive">
+                    <p className="font-medium">"{existingOperator.name}" is already registered with this number.</p>
+                    <p className="text-muted-foreground mt-1">Verify your WhatsApp to claim and manage this profile.</p>
+                  </div>
+                </div>
+                <div className="p-3 rounded-lg bg-secondary/50 text-sm space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">WhatsApp</span>
+                    <span className="font-medium">{form.phone}</span>
+                  </div>
+                  {!claimSent ? (
+                    <Button onClick={handleClaimSendOtp} disabled={claimLoading} size="sm" className="w-full mt-1">
+                      {claimLoading ? 'Sending...' : 'Send OTP to WhatsApp'}
+                    </Button>
+                  ) : (
+                    <div className="space-y-2 mt-2">
+                      <p className="text-xs text-muted-foreground">Enter the 6-digit code sent to your WhatsApp</p>
+                      <input
+                        value={claimOtp}
+                        onChange={(e) => setClaimOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        placeholder="000000"
+                        className="w-full px-3 py-2 text-center text-lg tracking-widest border border-input rounded-lg"
+                        maxLength={6}
+                        autoFocus
+                      />
+                      <div className="flex gap-2">
+                        <Button onClick={handleClaimVerify} disabled={claimLoading || claimOtp.length !== 6} size="sm" className="flex-1">
+                          {claimLoading ? 'Verifying...' : 'Verify & Claim Profile'}
+                        </Button>
+                        <Button onClick={handleClaimSendOtp} disabled={claimLoading} variant="outline" size="sm">
+                          Resend
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  {claimError && (
+                    <p className="text-xs text-destructive mt-1">{claimError}</p>
+                  )}
+                </div>
+                <div className="text-center">
+                  <Link href="/auth/login" className="text-xs text-accent hover:underline">
+                    Already have an account? Sign in
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -1873,60 +1944,10 @@ export default function JoinPage() {
               )}
               <p><strong>Photos:</strong> {form.photos.length} uploaded</p>
             </div>
-            {submitError && !existingOperator && (
+            {submitError && (
               <div className="flex items-start gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
                 <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
                 <span>{submitError}</span>
-              </div>
-            )}
-            {existingOperator && (
-              <div className="p-4 rounded-lg border border-border space-y-4">
-                <div className="flex items-start gap-2">
-                  <AlertCircle className="h-4 w-4 mt-0.5 shrink-0 text-destructive" />
-                  <div className="text-sm text-destructive">
-                    <p className="font-medium">"{existingOperator.name}" is already registered with this number.</p>
-                    <p className="text-muted-foreground mt-1">Verify your WhatsApp to claim and manage this profile.</p>
-                  </div>
-                </div>
-                <div className="p-3 rounded-lg bg-secondary/50 text-sm space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">WhatsApp</span>
-                    <span className="font-medium">{form.phone}</span>
-                  </div>
-                  {!claimSent ? (
-                    <Button onClick={handleClaimSendOtp} disabled={claimLoading} size="sm" className="w-full mt-1">
-                      {claimLoading ? 'Sending...' : 'Send OTP to WhatsApp'}
-                    </Button>
-                  ) : (
-                    <div className="space-y-2 mt-2">
-                      <p className="text-xs text-muted-foreground">Enter the 6-digit code sent to your WhatsApp</p>
-                      <input
-                        value={claimOtp}
-                        onChange={(e) => setClaimOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                        placeholder="000000"
-                        className="w-full px-3 py-2 text-center text-lg tracking-widest border border-input rounded-lg"
-                        maxLength={6}
-                        autoFocus
-                      />
-                      <div className="flex gap-2">
-                        <Button onClick={handleClaimVerify} disabled={claimLoading || claimOtp.length !== 6} size="sm" className="flex-1">
-                          {claimLoading ? 'Verifying...' : 'Verify & Claim Profile'}
-                        </Button>
-                        <Button onClick={handleClaimSendOtp} disabled={claimLoading} variant="outline" size="sm">
-                          Resend
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                  {claimError && (
-                    <p className="text-xs text-destructive mt-1">{claimError}</p>
-                  )}
-                </div>
-                <div className="text-center">
-                  <Link href="/auth/login" className="text-xs text-accent hover:underline">
-                    Already have an account? Sign in
-                  </Link>
-                </div>
               </div>
             )}
             <div className="flex gap-2">
