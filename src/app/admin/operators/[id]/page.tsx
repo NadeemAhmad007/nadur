@@ -224,6 +224,20 @@ export default function OperatorDetailPage() {
                   </p>
                 </div>
               </div>
+              {(() => {
+                const detailField = op.category === 'shikara' ? op.shikara_details
+                  : op.category === 'taxi' ? op.taxi_details
+                  : op.category === 'guide' ? op.guide_details
+                  : op.category === 'vendor' ? op.vendor_details
+                  : null;
+                const opAreas = (detailField as any)?.operating_areas;
+                return opAreas?.length > 0 ? (
+                  <div>
+                    <p className="text-xs text-muted-foreground font-medium">Operating Areas</p>
+                    <p className="text-sm text-foreground mt-0.5">{opAreas.join(', ')}</p>
+                  </div>
+                ) : null;
+              })()}
               {op.short_desc && (
                 <div>
                   <p className="text-xs text-muted-foreground font-medium">Short Description</p>

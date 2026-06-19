@@ -9,6 +9,7 @@ import Link from 'next/link';
 import imageCompression from 'browser-image-compression';
 import { parseGoogleMapsUrl } from '@/lib/location';
 import { ghats } from '@/lib/ghats';
+import { KASHMIR_AREAS, SHIKARA_AREAS } from '@/lib/areas';
 
 type TariffFields = {
   double_ep: string;
@@ -984,7 +985,7 @@ export default function JoinPage() {
                 <div>
                   <label className="text-xs font-medium">Operating Area</label>
                   <div className="mt-1 space-y-1">
-                    {['Dal Lake', 'Nigeen Lake', 'Jhelum', 'Other'].map((area) => (
+                    {SHIKARA_AREAS.map((area) => (
                       <label key={area} className="flex items-center gap-2 text-sm">
                         <input
                           type="checkbox"
@@ -1175,7 +1176,7 @@ export default function JoinPage() {
                 <div>
                   <label className="text-xs font-medium">Operating Areas</label>
                   <div className="mt-1 space-y-1">
-                    {['Srinagar Airport', 'Dal Lake', 'Gulmarg', 'Pahalgam', 'Sonamarg', 'Yusmarg', 'Doodhpathri', 'Kokernag', 'Patnitop', 'Leh'].map((area) => (
+                    {KASHMIR_AREAS.map((area) => (
                       <label key={area} className="flex items-center gap-2 text-sm">
                         <input type="checkbox" checked={form.taxi.operating_areas.includes(area)} onChange={(e) => setForm((prev) => ({ ...prev, taxi: { ...prev.taxi, operating_areas: e.target.checked ? [...prev.taxi.operating_areas, area] : prev.taxi.operating_areas.filter((a) => a !== area) } }))} className="rounded" />
                         {area}
@@ -1583,7 +1584,7 @@ export default function JoinPage() {
                 <div>
                   <label className="text-xs font-medium">Operating Areas</label>
                   <div className="mt-1 space-y-1">
-                    {['Srinagar Airport', 'Dal Lake', 'Gulmarg', 'Pahalgam', 'Sonamarg', 'Yusmarg', 'Doodhpathri', 'Kokernag', 'Patnitop', 'Leh'].map((area) => (
+                    {KASHMIR_AREAS.map((area) => (
                       <label key={area} className="flex items-center gap-2 text-sm">
                         <input type="checkbox" checked={form.guide.operating_areas.includes(area)} onChange={(e) => setForm((prev) => ({ ...prev, guide: { ...prev.guide, operating_areas: e.target.checked ? [...prev.guide.operating_areas, area] : prev.guide.operating_areas.filter((a) => a !== area) } }))} className="rounded" />
                         {area}
@@ -1607,7 +1608,7 @@ export default function JoinPage() {
                 <div>
                   <label className="text-xs font-medium">Operating Areas</label>
                   <div className="mt-1 space-y-1">
-                    {['Srinagar Airport', 'Dal Lake', 'Gulmarg', 'Pahalgam', 'Sonamarg', 'Yusmarg', 'Doodhpathri', 'Kokernag', 'Patnitop', 'Leh'].map((area) => (
+                    {KASHMIR_AREAS.map((area) => (
                       <label key={area} className="flex items-center gap-2 text-sm">
                         <input type="checkbox" checked={form.vendor.operating_areas.includes(area)} onChange={(e) => setForm((prev) => ({ ...prev, vendor: { ...prev.vendor, operating_areas: e.target.checked ? [...prev.vendor.operating_areas, area] : prev.vendor.operating_areas.filter((a) => a !== area) } }))} className="rounded" />
                         {area}

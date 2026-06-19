@@ -9,6 +9,7 @@ import Link from 'next/link';
 import imageCompression from 'browser-image-compression';
 import { parseGoogleMapsUrl } from '@/lib/location';
 import { ghats } from '@/lib/ghats';
+import { KASHMIR_AREAS, SHIKARA_AREAS } from '@/lib/areas';
 
 const businessTypes = [
   'Handicraft Artisan', 'Handicraft Manufacturer', 'Handicraft Exporter',
@@ -700,7 +701,7 @@ export default function EditProfilePage() {
               <div>
                 <label className="text-xs font-medium">Operating Area</label>
                 <div className="mt-1 space-y-1">
-                  {['Dal Lake', 'Nigeen Lake', 'Jhelum', 'Other'].map((area) => (
+                  {SHIKARA_AREAS.map((area) => (
                     <label key={area} className="flex items-center gap-2 text-sm">
                       <input
                         type="checkbox"
@@ -1011,7 +1012,7 @@ export default function EditProfilePage() {
               <div>
                 <label className="text-xs font-medium">Operating Areas</label>
                 <div className="mt-1 space-y-1">
-                  {['Srinagar Airport', 'Dal Lake', 'Gulmarg', 'Pahalgam', 'Sonamarg', 'Yusmarg', 'Doodhpathri', 'Kokernag', 'Patnitop', 'Leh'].map((area) => (
+                  {KASHMIR_AREAS.map((area) => (
                     <label key={area} className="flex items-center gap-2 text-sm">
                       <input type="checkbox" checked={(form.operating_areas || []).includes(area)} onChange={(e) => setForm({ ...form, operating_areas: e.target.checked ? [...(form.operating_areas || []), area] : (form.operating_areas || []).filter((a: string) => a !== area) })} className="rounded" />
                       {area}
@@ -1127,7 +1128,7 @@ export default function EditProfilePage() {
               <div>
                 <label className="text-xs font-medium">Operating Areas</label>
                 <div className="mt-1 space-y-1">
-                  {['Srinagar Airport', 'Dal Lake', 'Gulmarg', 'Pahalgam', 'Sonamarg', 'Yusmarg', 'Doodhpathri', 'Kokernag', 'Patnitop', 'Leh'].map((area) => (
+                  {KASHMIR_AREAS.map((area) => (
                     <label key={area} className="flex items-center gap-2 text-sm">
                       <input type="checkbox" checked={(form.guide_operating_areas || []).includes(area)} onChange={(e) => setForm({ ...form, guide_operating_areas: e.target.checked ? [...(form.guide_operating_areas || []), area] : (form.guide_operating_areas || []).filter((a: string) => a !== area) })} className="rounded" />
                       {area}
@@ -1195,7 +1196,7 @@ export default function EditProfilePage() {
               <div>
                 <label className="text-xs font-medium">Operating Areas</label>
                 <div className="mt-1 space-y-1">
-                  {['Srinagar Airport', 'Dal Lake', 'Gulmarg', 'Pahalgam', 'Sonamarg', 'Yusmarg', 'Doodhpathri', 'Kokernag', 'Patnitop', 'Leh'].map((area) => (
+                  {KASHMIR_AREAS.map((area) => (
                     <label key={area} className="flex items-center gap-2 text-sm">
                       <input type="checkbox" checked={(form.vendor_operating_areas || []).includes(area)} onChange={(e) => setForm({ ...form, vendor_operating_areas: e.target.checked ? [...(form.vendor_operating_areas || []), area] : (form.vendor_operating_areas || []).filter((a: string) => a !== area) })} className="rounded" />
                       {area}

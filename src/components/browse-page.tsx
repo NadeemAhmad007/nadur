@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { OperatorCard } from '@/components/operator-card';
 import { CardSkeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import { KASHMIR_AREAS } from '@/lib/areas';
 import { Badge } from '@/components/ui/badge';
 import {
   Search, MapPin, Navigation, Compass, Sparkles, Building2,
@@ -32,10 +33,7 @@ const GHATS = [
   'Rainawari Ghat',
 ];
 
-const AREAS = [
-  'Srinagar Airport', 'Dal Lake', 'Nigeen Lake', 'Gulmarg',
-  'Pahalgam', 'Sonamarg', 'Yusmarg', 'Doodhpathri', 'Kokernag', 'Patnitop', 'Leh',
-];
+const AREAS = KASHMIR_AREAS;
 
 const LANGUAGES = ['Kashmiri', 'Urdu', 'Hindi', 'English', 'Arabic', 'Pashto', 'French', 'German'];
 
@@ -132,7 +130,7 @@ export default function BrowsePage() {
   };
 
   const categoriesWithGhat = ['houseboat', 'shikara'];
-  const categoriesWithArea = ['shikara', 'taxi', 'guide', 'vendor', 'homestay', 'guest_house'];
+  const categoriesWithArea = ['shikara', 'taxi', 'guide', 'vendor'];
   const categoriesWithLanguage = ['shikara', 'taxi', 'guide', 'homestay', 'guest_house'];
   const showGhatFilter = !activeCategory || categoriesWithGhat.includes(activeCategory);
   const showAreaFilter = !activeCategory || categoriesWithArea.includes(activeCategory);
