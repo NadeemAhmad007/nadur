@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth';
 import { db } from '@/db';
 import { adminMessages, operators } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
+import { sendText } from '@/lib/openwa';
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -38,7 +39,7 @@ export async function POST(req: NextRequest) {
 
   const op = await db.query.operators.findFirst({
     where: eq(operators.id, operator_id),
-    columns: { verified: true },
+    columns: { verified: true, whatsapp: true },
   });
 
   if (!op) {
@@ -50,6 +51,14 @@ export async function POST(req: NextRequest) {
     message: message.trim(),
     sent_by: session!.user?.email || 'admin',
   }).returning();
+
+  // Forward message to operator's WhatsApp via OpenWA
+  if (op.whatsapp) {
+    const waMsg = `📩 *Message from Kashmir360 Admin*\n\n${message.trim()}`;
+    sendText(op.whatsapp, waMsg).catch((err) =>
+      console.error('[admin/messages] WhatsApp delivery failed:', err)
+    );
+  }
 
   return NextResponse.json(row[0], { status: 201 });
 }
