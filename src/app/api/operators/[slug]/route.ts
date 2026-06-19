@@ -3,6 +3,7 @@ import { db } from '@/db';
 import { operators } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { auth } from '@/lib/auth';
+import { sendText } from '@/lib/openwa';
 
 export async function GET(req: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -115,6 +116,15 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ slug: 
 
   if (!result.length) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
+
+  const updatedOp = result[0];
+  const adminPhone = process.env.KASHEER360_ADMIN_WHATSAPP;
+  if (adminPhone) {
+    sendText(
+      adminPhone,
+      `✏️ Profile Updated on Kasheer360\n\nName: ${updatedOp.name}\nCategory: ${updatedOp.category}\nWhatsApp: ${updatedOp.whatsapp}\nStatus: ${updatedOp.status}\n\nView: https://kasheer360.com/admin/operators/${updatedOp.id}`,
+    ).catch((err) => console.error('[operators] Failed to notify admin of edit:', err));
   }
 
   return NextResponse.json(result[0]);

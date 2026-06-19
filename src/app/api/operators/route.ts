@@ -4,6 +4,7 @@ import { operators } from '@/db/schema';
 import { eq, and, like, or, sql, asc, desc } from 'drizzle-orm';
 import { auth } from '@/lib/auth';
 import { rateLimit } from '@/lib/rate-limit';
+import { sendText } from '@/lib/openwa';
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -288,6 +289,15 @@ export async function POST(req: Request) {
         status: 'pending',
       })
       .returning();
+
+    const newOp = result[0];
+    const adminPhone = process.env.KASHEER360_ADMIN_WHATSAPP;
+    if (adminPhone) {
+      sendText(
+        adminPhone,
+        `🆕 New Registration on Kasheer360\n\nName: ${newOp.name}\nCategory: ${newOp.category}\nWhatsApp: ${newOp.whatsapp}\nEmail: ${newOp.email || '—'}\nStatus: Pending approval\n\nView: https://kasheer360.com/admin/operators/${newOp.id}`,
+      ).catch((err) => console.error('[operators] Failed to notify admin:', err));
+    }
 
     return NextResponse.json(result[0], { status: 201 });
   } catch (error) {
