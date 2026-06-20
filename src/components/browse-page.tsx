@@ -7,6 +7,7 @@ import { CardSkeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { KASHMIR_AREAS } from '@/lib/areas';
 import { Badge } from '@/components/ui/badge';
+import { fetchDestinations, type Destination } from '@/lib/wikipedia';
 import {
   Search, MapPin, Navigation, Compass, Sparkles, Building2,
   Ship, Palette, Store, LogIn, UserPlus, Car,
@@ -57,6 +58,7 @@ export default function BrowsePage() {
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [verifiedOnly, setVerifiedOnly] = useState(false);
+  const [destinations, setDestinations] = useState<Destination[]>([]);
 
   const hasActiveFilters = priceMin || priceMax || selectedGhats.length > 0 || selectedAreas.length > 0 || selectedLanguages.length > 0 || verifiedOnly;
 
@@ -99,6 +101,8 @@ export default function BrowsePage() {
   }, [buildParams]);
 
   useEffect(() => { fetchOperators(); }, [fetchOperators]);
+
+  useEffect(() => { fetchDestinations().then(setDestinations); }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -244,6 +248,42 @@ export default function BrowsePage() {
             </p>
           </div>
         </div>
+
+        {/* Discover Kashmir */}
+        {destinations.length > 0 && (
+          <div className="mb-10">
+            <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+              <Compass className="h-5 w-5 text-accent" /> Discover Kashmir
+            </h2>
+            <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-none">
+              {destinations.map((d) => (
+                <a
+                  key={d.title}
+                  href={d.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group shrink-0 w-56 rounded-2xl border border-border/50 bg-card overflow-hidden hover:shadow-md hover:border-accent/30 transition-all duration-200"
+                >
+                  <div className="aspect-[16/9] bg-muted relative overflow-hidden">
+                    {d.thumbnail ? (
+                      <img src={d.thumbnail} alt={d.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-accent/10 to-accent/5">
+                        <Compass className="h-10 w-10 text-accent/30" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                  </div>
+                  <div className="p-3.5">
+                    <h3 className="text-sm font-semibold text-foreground truncate">{d.title}</h3>
+                    <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 leading-relaxed">{d.extract}</p>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Categories */}
         <div className="flex gap-2 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-none">
           {CATEGORIES.map((cat) => {
