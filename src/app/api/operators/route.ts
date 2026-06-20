@@ -6,6 +6,19 @@ import { auth } from '@/lib/auth';
 import { rateLimit } from '@/lib/rate-limit';
 import { sendText } from '@/lib/openwa';
 import { getClientIp } from '@/lib/ip';
+import { getGoogleMapsUrl } from '@/lib/parse-operator-coords';
+import { parseGoogleMapsUrl } from '@/lib/location';
+
+function effectiveCoords(op: { lat: number | null; lng: number | null } & Parameters<typeof getGoogleMapsUrl>[0]): { lat: number; lng: number } | null {
+  if (op.lat && op.lng && op.lat !== 0 && op.lng !== 0) {
+    return { lat: op.lat, lng: op.lng };
+  }
+  const gmaps = getGoogleMapsUrl(op);
+  if (gmaps) {
+    return parseGoogleMapsUrl(gmaps);
+  }
+  return null;
+}
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -178,19 +191,69 @@ export async function GET(req: Request) {
       conditions.push(eq(operators.verified, true));
     }
 
-    if (lat && lng && radius) {
-      const latNum = parseFloat(lat);
-      const lngNum = parseFloat(lng);
-      const radiusMeters = parseFloat(radius) * 1000;
-      if (!isNaN(latNum) && !isNaN(lngNum) && !isNaN(radiusMeters)) {
-        conditions.push(
-          sql`earth_box(ll_to_earth(${latNum}, ${lngNum}), ${radiusMeters}) @> ll_to_earth(${operators.lat}, ${operators.lng})`
-        );
-      }
-    }
-
     if (conditions.length > 0) {
       query = query.where(and(...conditions));
+    }
+
+    const nearMe = lat && lng && radius;
+    const latNum = nearMe ? parseFloat(lat) : null;
+    const lngNum = nearMe ? parseFloat(lng) : null;
+
+    // Near Me: fetch all matching operators (no pagination in SQL), parse coords from
+    // google_maps URLs for operators without DB lat/lng, then filter + paginate in JS
+    if (nearMe && latNum && lngNum) {
+      const all = await db
+        .select({
+          id: operators.id,
+          created_at: operators.created_at,
+          updated_at: operators.updated_at,
+          user_id: operators.user_id,
+          slug: operators.slug,
+          name: operators.name,
+          category: operators.category,
+          short_desc: operators.short_desc,
+          long_desc: operators.long_desc,
+          whatsapp: operators.whatsapp,
+          email: operators.email,
+          pricing_note: operators.pricing_note,
+          status: operators.status,
+          hidden: operators.hidden,
+          verified: operators.verified,
+          plan: operators.plan,
+          lead_month: operators.lead_month,
+          photos: operators.photos,
+          tariffs: operators.tariffs,
+          houseboat_details: operators.houseboat_details,
+          shikara_details: operators.shikara_details,
+          artisan_details: operators.artisan_details,
+          taxi_details: operators.taxi_details,
+          accommodation_details: operators.accommodation_details,
+          guide_details: operators.guide_details,
+          vendor_details: operators.vendor_details,
+          lat: operators.lat,
+          lng: operators.lng,
+        })
+        .from(operators)
+        .where(and(...conditions));
+
+      const radiusKm = parseFloat(radius);
+      const withDist: (typeof operators.$inferSelect & { distance_km?: number })[] = [];
+      for (const op of all) {
+        const coords = effectiveCoords(op);
+        if (!coords) continue;
+        const d = distance(latNum, lngNum, coords.lat, coords.lng);
+        if (d <= radiusKm) {
+          (op as any).lat = coords.lat;
+          (op as any).lng = coords.lng;
+          (op as any).distance_km = Math.round(d * 10) / 10;
+          withDist.push(op as any);
+        }
+      }
+      withDist.sort((a, b) => (a.distance_km ?? Infinity) - (b.distance_km ?? Infinity));
+      const paginated = withDist.slice(offset, offset + limit + 1);
+      const hasMore = paginated.length > limit;
+      if (hasMore) paginated.pop();
+      return NextResponse.json({ data: paginated, hasMore });
     }
 
     // Sort
@@ -217,19 +280,30 @@ export async function GET(req: Request) {
     const hasMore = result.length > limit;
     if (hasMore) result.pop();
 
+    // Parse coordinates from google_maps URLs for operators without DB lat/lng
+    for (const op of result) {
+      if (!op.lat || !op.lng || op.lat === 0 || op.lng === 0) {
+        const coords = effectiveCoords(op);
+        if (coords) {
+          (op as any).lat = coords.lat;
+          (op as any).lng = coords.lng;
+        }
+      }
+    }
+
     if (lat && lng) {
       const latNum = parseFloat(lat);
       const lngNum = parseFloat(lng);
       if (!isNaN(latNum) && !isNaN(lngNum)) {
-        result.sort((a, b) => {
-          if (!a.lat || !a.lng || !b.lat || !b.lng) return 0;
-          const da = distance(latNum, lngNum, a.lat, a.lng);
-          const db = distance(latNum, lngNum, b.lat, b.lng);
-          return da - db;
-        });
-        result.forEach(op => {
-          if (op.lat && op.lng) op.distance_km = Math.round(distance(latNum, lngNum, op.lat, op.lng) * 10) / 10;
-        });
+        for (const op of result) {
+          const coords = effectiveCoords(op);
+          if (coords) {
+            (op as any).lat = coords.lat;
+            (op as any).lng = coords.lng;
+            (op as any).distance_km = Math.round(distance(latNum, lngNum, coords.lat, coords.lng) * 10) / 10;
+          }
+        }
+        result.sort((a, b) => (a.distance_km ?? Infinity) - (b.distance_km ?? Infinity));
       }
     }
 
