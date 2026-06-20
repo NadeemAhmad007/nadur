@@ -88,7 +88,11 @@ export async function GET(req: Request) {
     }
 
     if (category) {
-      conditions.push(eq(operators.category, category as any));
+      if (category === 'accommodation') {
+        conditions.push(sql`${operators.category} IN ('homestay', 'guest_house')`);
+      } else {
+        conditions.push(eq(operators.category, category as any));
+      }
     }
 
     if (q) {

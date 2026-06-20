@@ -73,8 +73,13 @@ export default function LoginPage() {
       const data = await res.json();
       if (data.success) {
         const signInRes = await signIn('email-otp', { email, otp: emailOtp, redirect: false });
-        console.log('[login] signIn result:', signInRes);
-        if (signInRes?.error) setError(`Login failed: ${signInRes.error} (status ${signInRes.status})`);
+        if (signInRes?.error) {
+          setError(`Login failed: ${signInRes.error}`);
+        } else if (signInRes?.ok) {
+          if (data.is_admin) router.push('/admin');
+          else router.push('/portal');
+          return;
+        }
       } else setError(data.error || 'Verification failed');
     } catch { setError('Network error'); }
     setLoading(false);
@@ -106,7 +111,13 @@ export default function LoginPage() {
       const data = await res.json();
       if (data.success) {
         const signInRes = await signIn('whatsapp-otp', { phone, otp: phoneOtp, redirect: false });
-        if (signInRes?.error) setError('Login failed. Check your phone number.');
+        if (signInRes?.error) {
+          setError('Login failed. Check your phone number.');
+        } else if (signInRes?.ok) {
+          if (data.is_admin) router.push('/admin');
+          else router.push('/portal');
+          return;
+        }
       } else {
         setError(data.error || 'Invalid OTP');
       }

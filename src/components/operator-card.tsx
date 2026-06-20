@@ -7,13 +7,19 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import type { Operator } from '@/types';
 import { cn } from '@/lib/utils';
-import { BadgeCheck, MapPin, ExternalLink, X, Send, ChevronDown, Info, MessageCircle, Phone, IndianRupee } from 'lucide-react';
+import { BadgeCheck, MapPin, ExternalLink, X, Send, ChevronDown, Info, MessageCircle, Phone, IndianRupee, Building2, Ship, Palette, Navigation, Store, Car } from 'lucide-react';
 import { countryOptions } from '@/data/country-codes';
 
 const categoryLabels: Record<string, string> = {
   houseboat: 'Houseboat', shikara: 'Shikara Ride', artisan: 'Artisan',
   guide: 'Local Guide', vendor: 'Floating Vendor', taxi: 'Taxi & Transfers',
   homestay: 'Homestay', guest_house: 'Guest House',
+};
+
+const categoryIcons: Record<string, React.FC<{ className?: string }>> = {
+  houseboat: Building2, shikara: Ship, artisan: Palette,
+  guide: Navigation, vendor: Store, taxi: Car,
+  homestay: Building2, guest_house: Building2,
 };
 
 function getPriceLabel(op: Operator): string | null {
@@ -66,9 +72,15 @@ export function OperatorCard({ operator, className }: { operator: Operator; clas
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-border/50">
-              <div className="text-center">
-                <div className="text-4xl font-bold text-muted-foreground/20">{operator.name[0]}</div>
-              </div>
+              {(() => {
+                const cat = operator.category;
+                const Icon = cat ? categoryIcons[cat] : null;
+                return Icon ? (
+                  <Icon className="h-16 w-16 text-muted-foreground/20" />
+                ) : (
+                  <div className="text-4xl font-bold text-muted-foreground/20">{operator.name[0]}</div>
+                );
+              })()}
             </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />

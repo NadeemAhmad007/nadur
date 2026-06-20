@@ -9,10 +9,14 @@ import {
   ArrowLeft, BadgeCheck, Heart, Share2, MessageCircle,
   ChevronLeft, ChevronRight, Send, MapPin, Phone, Mail,
   Star, User, Map, Clock, Globe, X, TrendingUp,
-  Car, Hash, Building2, Navigation, Store, Info, ChevronDown, Ship
+  Car, Hash, Building2, Navigation, Store, Info, ChevronDown, Ship, Sun, Droplets, Wind
 } from 'lucide-react';
 import Link from 'next/link';
 import { countryOptions } from '@/data/country-codes';
+import { fetchWeather, weatherEmoji, weatherLabel, type WeatherData } from '@/lib/weather';
+import { getExchangeRates, formatConverted, CURRENCIES } from '@/lib/currency';
+import { translateText, translateBatch, LANGUAGES, type LanguageCode } from '@/lib/translate';
+import { fetchAQI, type AQIData } from '@/lib/air-quality';
 
 const categoryLabels: Record<string, string> = {
   houseboat: 'Houseboat', shikara: 'Shikara Ride', artisan: 'Artisan',
@@ -38,6 +42,36 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
   const getPhone = () => countryCode + localNumber;
 
   const photos = op.photos?.length ? op.photos : [];
+  const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [rates, setRates] = useState<Record<string, number> | null>(null);
+  const [lang, setLang] = useState<LanguageCode>('en');
+  const [translatedShortDesc, setTranslatedShortDesc] = useState('');
+  const [translatedLongDesc, setTranslatedLongDesc] = useState('');
+  const [aqi, setAqi] = useState<AQIData | null>(null);
+
+  useEffect(() => {
+    const lat = op.lat || 34.08;
+    const lng = op.lng || 74.79;
+    fetchWeather(lat, lng).then(setWeather);
+    getExchangeRates().then(setRates);
+    fetchAQI(lat, lng).then(setAqi);
+  }, [op.lat, op.lng]);
+
+  useEffect(() => {
+    if (lang === 'en') {
+      setTranslatedShortDesc('');
+      setTranslatedLongDesc('');
+      return;
+    }
+    const texts: string[] = [];
+    if (op.short_desc) texts.push(op.short_desc);
+    if (op.long_desc) texts.push(op.long_desc);
+    if (!texts.length) return;
+    translateBatch(texts, lang).then((results) => {
+      if (op.short_desc) setTranslatedShortDesc(results.shift() || '');
+      if (op.long_desc) setTranslatedLongDesc(results.shift() || '');
+    });
+  }, [lang, op.short_desc, op.long_desc]);
 
   useEffect(() => {
     const stored = localStorage.getItem('kasheer360-favorites');
@@ -205,9 +239,99 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
           </div>
         </div>
 
+        {/* Language switcher */}
+        <div className="flex gap-1.5 flex-wrap">
+          {LANGUAGES.map((l) => (
+            <button
+              key={l.code}
+              onClick={() => setLang(l.code)}
+              className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${
+                lang === l.code
+                  ? 'bg-accent text-accent-foreground shadow-sm'
+                  : 'bg-secondary text-muted-foreground hover:bg-border'
+              }`}
+            >
+              {l.flag} {l.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Air Quality */}
+        {aqi && aqi.aqi != null && (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span
+              className="inline-block w-2.5 h-2.5 rounded-full"
+              style={{ backgroundColor: aqi.color }}
+            />
+            Air Quality: {aqi.aqi} · {aqi.label}
+          </div>
+        )}
+
         {/* Description */}
-        {op.short_desc && <p className="text-muted-foreground leading-relaxed">{op.short_desc}</p>}
-        {op.long_desc && <p className="text-muted-foreground leading-relaxed">{op.long_desc}</p>}
+        {op.short_desc && (
+          <p className="text-muted-foreground leading-relaxed">
+            {lang !== 'en' && translatedShortDesc ? translatedShortDesc : op.short_desc}
+          </p>
+        )}
+        {op.long_desc && (
+          <p className="text-muted-foreground leading-relaxed">
+            {lang !== 'en' && translatedLongDesc ? translatedLongDesc : op.long_desc}
+          </p>
+        )}
+
+        {/* Weather */}
+        {weather && (
+          <Card>
+            <CardContent className="p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold flex items-center gap-2 text-sm"><Sun className="h-4 w-4 text-muted-foreground" /> Weather</h3>
+                <span className="text-sm text-muted-foreground">Now</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-3xl">{weatherEmoji(weather.current.weatherCode)}</span>
+                <div>
+                  <p className="text-2xl font-bold">{Math.round(weather.current.temperature)}°C</p>
+                  <p className="text-xs text-muted-foreground">Feels like {Math.round(weather.current.feelsLike)}°C</p>
+                </div>
+                <div className="ml-auto space-y-1 text-xs text-muted-foreground">
+                  <p className="flex items-center gap-1"><Droplets className="h-3 w-3" /> {weather.current.humidity}%</p>
+                  <p className="flex items-center gap-1"><Wind className="h-3 w-3" /> {Math.round(weather.current.windSpeed)} km/h</p>
+                </div>
+              </div>
+              <div className="flex gap-2 pt-1 border-t border-border/60">
+                {weather.daily.slice(1).map((day) => (
+                  <div key={day.date} className="flex-1 text-center">
+                    <p className="text-[11px] text-muted-foreground">
+                      {new Date(day.date + 'T12:00:00').toLocaleDateString('en-IN', { weekday: 'short' })}
+                    </p>
+                    <p className="text-lg my-0.5">{weatherEmoji(day.weatherCode)}</p>
+                    <p className="text-[11px] font-medium">{Math.round(day.tempMax)}°/{Math.round(day.tempMin)}°</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Currency conversion */}
+        {rates && (
+          <Card className="bg-secondary/30 border-dashed">
+            <CardContent className="p-4">
+              <p className="text-xs text-muted-foreground mb-2">Approximate conversion</p>
+              <div className="flex gap-3 text-sm">
+                {CURRENCIES.map((code) => {
+                  const rate = rates[code];
+                  if (!rate) return null;
+                  return (
+                    <span key={code} className="text-muted-foreground">
+                      <span className="font-medium text-foreground">1 INR</span> = {rate} {code}
+                    </span>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Category-specific details */}
         {op.houseboat_details && op.category === 'houseboat' && (
@@ -356,18 +480,22 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
             <CardContent className="p-5 space-y-4">
               <h2 className="font-semibold flex items-center gap-2"><TrendingUp className="h-4 w-4 text-muted-foreground" /> Pricing (₹)</h2>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {(op.accommodation_details as any).pricing_single && (
-                  <div className="rounded-xl bg-secondary p-3.5 text-center">
-                    <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Single/Night</p>
-                    <p className="text-lg font-bold text-foreground mt-0.5">₹{(op.accommodation_details as any).pricing_single}</p>
-                  </div>
-                )}
-                {(op.accommodation_details as any).pricing_double && (
-                  <div className="rounded-xl bg-secondary p-3.5 text-center">
-                    <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Double/Night</p>
-                    <p className="text-lg font-bold text-foreground mt-0.5">₹{(op.accommodation_details as any).pricing_double}</p>
-                  </div>
-                )}
+                {[
+                  ['pricing_single', 'Single/Night'],
+                  ['pricing_double', 'Double/Night'],
+                ].map(([key, label]) => {
+                  const val = (op.accommodation_details as any)?.[key];
+                  if (!val) return null;
+                  const usd = rates ? (val * rates.USD).toFixed(0) : null;
+                  const eur = rates ? (val * rates.EUR).toFixed(0) : null;
+                  return (
+                    <div key={key} className="rounded-xl bg-secondary p-3.5 text-center">
+                      <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{label}</p>
+                      <p className="text-lg font-bold text-foreground mt-0.5">₹{val}</p>
+                      {usd && eur && <p className="text-[10px] text-muted-foreground/60 mt-0.5">≈${usd} · €{eur}</p>}
+                    </div>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
@@ -536,10 +664,13 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
                 ] as const).map(([key, label]) => {
                   const val = (op.tariffs as any)?.[key];
                   if (!val) return null;
+                  const usd = rates ? (val * rates.USD).toFixed(0) : null;
+                  const eur = rates ? (val * rates.EUR).toFixed(0) : null;
                   return (
                     <div key={key} className="rounded-xl bg-secondary p-3.5 text-center">
                       <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{label}</p>
                       <p className="text-lg font-bold text-foreground mt-0.5">₹{val}</p>
+                      {usd && eur && <p className="text-[10px] text-muted-foreground/60 mt-0.5">≈${usd} · €{eur}</p>}
                     </div>
                   );
                 })}

@@ -22,8 +22,7 @@ const CATEGORIES = [
   { slug: 'guide', label: 'Guides', icon: Navigation },
   { slug: 'vendor', label: 'Vendors', icon: Store },
   { slug: 'taxi', label: 'Taxis', icon: Car },
-  { slug: 'homestay', label: 'Homestays', icon: Building2 },
-  { slug: 'guest_house', label: 'Guest Houses', icon: Building2 },
+  { slug: 'accommodation', label: 'Accommodation', icon: Building2 },
 ];
 
 const GHATS = [
@@ -131,7 +130,7 @@ export default function BrowsePage() {
 
   const categoriesWithGhat = ['houseboat', 'shikara'];
   const categoriesWithArea = ['shikara', 'taxi', 'guide', 'vendor'];
-  const categoriesWithLanguage = ['shikara', 'taxi', 'guide', 'homestay', 'guest_house'];
+  const categoriesWithLanguage = ['shikara', 'taxi', 'guide', 'accommodation'];
   const showGhatFilter = !activeCategory || categoriesWithGhat.includes(activeCategory);
   const showAreaFilter = !activeCategory || categoriesWithArea.includes(activeCategory);
   const showLanguageFilter = !activeCategory || categoriesWithLanguage.includes(activeCategory);
