@@ -184,9 +184,9 @@ export default function BrowsePage() {
     <>
       <header className="sticky top-0 z-30 bg-[#FAF8F3]/90 backdrop-blur-lg border-b border-border/50">
         <div className="max-w-5xl mx-auto px-4">
-          <div className="flex items-center justify-between py-3 min-h-24">
+          <div className="flex items-center justify-between py-3 min-h-16 sm:min-h-24">
             <Link href="/" className="flex items-center gap-3 shrink-0">
-              <img src="/logo.png" alt="Kasheer360" className="h-32 w-auto object-contain" />
+              <img src="/logo.png" alt="Kasheer360" className="h-16 sm:h-20 md:h-32 w-auto object-contain" />
             </Link>
             <div className="flex items-center gap-2">
               <button
@@ -323,8 +323,8 @@ export default function BrowsePage() {
             <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
               <Compass className="h-5 w-5 text-accent" /> Discover Kashmir
             </h2>
-            <div className="w-screen relative left-1/2 -translate-x-1/2 overflow-x-auto scrollbar-none">
-              <div className="flex gap-4 px-4" style={{ width: 'max-content' }}>
+            <div className="-mx-4 px-4 overflow-x-auto scrollbar-none max-w-[100vw]">
+              <div className="flex gap-4" style={{ width: 'max-content' }}>
                 {destinations.map((d) => (
                   <a
                     key={d.title}
@@ -355,8 +355,8 @@ export default function BrowsePage() {
         )}
 
         {/* Categories */}
-        <div className="w-screen relative left-1/2 -translate-x-1/2 overflow-x-auto scrollbar-none mb-5">
-          <div className="flex gap-2 px-4" style={{ width: 'max-content' }}>
+        <div className="-mx-4 px-4 overflow-x-auto scrollbar-none max-w-[100vw] mb-5">
+          <div className="flex gap-2" style={{ width: 'max-content' }}>
             {CATEGORIES.map((cat) => {
               const Icon = cat.icon;
               const isActive = activeCategory === cat.slug;
@@ -458,8 +458,8 @@ export default function BrowsePage() {
         {/* Events */}
         {events.length > 0 && (
           <div className="mb-5">
-            <div className="w-screen relative left-1/2 -translate-x-1/2 overflow-x-auto scrollbar-none">
-              <div className="flex items-center gap-2 px-4" style={{ width: 'max-content' }}>
+            <div className="-mx-4 px-4 overflow-x-auto scrollbar-none max-w-[100vw]">
+              <div className="flex items-center gap-2" style={{ width: 'max-content' }}>
                 <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-accent">Events</span>
                 {events.map((e, i) => (
                   <a

@@ -258,9 +258,9 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
 
         {/* Air Quality */}
         {aqi && aqi.eaqi != null && (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
             <span
-              className="inline-block w-2.5 h-2.5 rounded-full"
+              className="inline-block w-2.5 h-2.5 rounded-full shrink-0"
               style={{ backgroundColor: aqi.color }}
             />
             Air Quality: {aqi.eaqi}/100 · {aqi.label}{aqi.pm25 != null ? ` · PM2.5: ${aqi.pm25} µg` : ''}
@@ -318,7 +318,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
           <Card className="bg-secondary/30 border-dashed">
             <CardContent className="p-4">
               <p className="text-xs text-muted-foreground mb-2">Approximate conversion</p>
-              <div className="flex gap-3 text-sm">
+              <div className="flex gap-3 text-sm flex-wrap">
                 {CURRENCIES.map((code) => {
                   const rate = rates[code];
                   if (!rate) return null;
@@ -786,7 +786,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
             <Button
               onClick={() => setShowForm(true)}
               size="lg"
-              className="w-full h-13 text-base shadow-sm"
+              className="w-full h-12 text-base shadow-sm"
             >
               <MessageCircle className="h-5 w-5" />
               Contact on WhatsApp

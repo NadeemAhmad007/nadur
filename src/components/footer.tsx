@@ -11,7 +11,7 @@ export function Footer() {
           {/* Brand */}
           <div className="space-y-3">
             <Link href="/" className="flex items-center gap-3">
-              <img src="/logo.png" alt="Kasheer360" className="h-24 w-auto object-contain" />
+              <img src="/logo.png" alt="Kasheer360" className="h-16 sm:h-20 lg:h-24 w-auto object-contain" />
             </Link>
             <p className="text-xs text-muted-foreground/70 leading-relaxed max-w-xs">
               Connect directly with verified houseboats, shikara rides, artisans, guides, and local businesses across Kashmir.

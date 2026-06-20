@@ -104,7 +104,7 @@ export function OperatorCard({ operator, className, pexelsFallback }: { operator
         <div className="p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
           <div>
             <div className="flex items-start justify-between gap-2">
-              <h3 className="font-semibold text-foreground truncate hover:text-accent transition-colors">
+              <h3 className="font-semibold text-foreground truncate hover:text-accent transition-colors" title={operator.name}>
                 {operator.name}
               </h3>
               {getPriceLabel(operator) && (
