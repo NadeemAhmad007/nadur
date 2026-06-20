@@ -95,4 +95,28 @@ API_KEY=$(docker logs nadur-openwa 2>&1 | grep -o 'owa_k1_[a-f0-9]*' | head -1)
 ## Area Filter Hierarchy
 - **`src/lib/areas.ts`** — `AREA_GROUPS` exports three groups: Kashmir Valley, Jammu Region, Tourist Destinations
 - Browse page filter panel renders grouped sections with group labels instead of one flat list
+
+## Interactive Map
+- **`src/components/map-view.tsx`** — Leaflet map component with OpenStreetMap tiles
+- Toggle Map/Grid button in browse page toolbar
+- Shows operator pins (click → profile), user location marker, auto-fit bounds
+- **`src/lib/nominatim.ts`** — Forward/reverse geocoding via Nominatim (free, no key)
+- CSP: `*.tile.openstreetmap.org` in `img-src`, `nominatim.openstreetmap.org` in `connect-src`
+
+## Stock Photos (Pexels)
+- **`src/lib/photos.ts`** — Client fetcher with 24-hr localStorage cache
+- **`src/app/api/photos/route.ts`** — Server proxy to Pexels API
+- Requires `PEXELS_API_KEY` env var (free at https://pexels.com/api)
+- `operator-card.tsx` accepts `pexelsFallback` prop — shows relevant stock photo when operator has no photos
+
+## Local Events (Ticketmaster)
+- **`src/lib/events.ts`** — Client fetcher with 6-hr localStorage cache
+- **`src/app/api/events/route.ts`** — Server proxy to Ticketmaster Discovery API
+- Requires `TICKETMASTER_API_KEY` env var (free at https://developer.ticketmaster.com)
+- Renders horizontal event pill row on browse page
+
+## Pincode Auto-fill
+- **`src/lib/pincode.ts`** — Fetches city/district/state from Indian Pincode API (free, no key)
+- Integrated in `portal/edit/page.tsx` — houseboat address section
+- CSP: `indianpincode.com` in `connect-src`
 <!-- END:browse-page-features -->

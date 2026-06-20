@@ -10,6 +10,7 @@ import imageCompression from 'browser-image-compression';
 import { parseGoogleMapsUrl } from '@/lib/location';
 import { ghats } from '@/lib/ghats';
 import { KASHMIR_AREAS, SHIKARA_AREAS } from '@/lib/areas';
+import { lookupPincode } from '@/lib/pincode';
 
 const businessTypes = [
   'Handicraft Artisan', 'Handicraft Manufacturer', 'Handicraft Exporter',
@@ -52,6 +53,9 @@ export default function EditProfilePage() {
   const [emailOtpLoading, setEmailOtpLoading] = useState(false);
   const [emailOtpError, setEmailOtpError] = useState('');
   const [emailOtpCooldown, setEmailOtpCooldown] = useState(0);
+  const [pincode, setPincode] = useState('');
+  const [pincodeLoading, setPincodeLoading] = useState(false);
+  const [pincodeResult, setPincodeResult] = useState<{ city: string; district: string; state: string } | null>(null);
 
   useEffect(() => {
     if (emailOtpCooldown > 0) {
@@ -559,6 +563,38 @@ export default function EditProfilePage() {
               <div>
                 <label className="text-xs font-medium">Address</label>
                 <input value={form.address || ''} onChange={(e) => setForm({ ...form, address: e.target.value })} className="w-full mt-0.5 px-3 py-2 border border-input rounded-lg text-sm" />
+              </div>
+              <div>
+                <label className="text-xs font-medium">Pincode (auto-fill area)</label>
+                <div className="flex gap-2 mt-0.5">
+                  <input
+                    value={pincode}
+                    onChange={(e) => { setPincode(e.target.value.replace(/\D/g, '').slice(0, 6)); setPincodeResult(null); }}
+                    className="flex-1 px-3 py-2 border border-input rounded-lg text-sm"
+                    placeholder="190001"
+                    maxLength={6}
+                  />
+                  <button
+                    onClick={async () => {
+                      if (!/^\d{6}$/.test(pincode)) return;
+                      setPincodeLoading(true);
+                      const result = await lookupPincode(pincode);
+                      if (result) {
+                        setPincodeResult(result);
+                        setForm({ ...form, address: result.city ? `${result.city}, ${result.district}, ${result.state}` : form.address });
+                      }
+                      setPincodeLoading(false);
+                    }}
+                    disabled={pincode.length !== 6 || pincodeLoading}
+                    className="shrink-0 px-3 py-2 rounded-lg text-xs font-medium bg-accent text-accent-foreground hover:bg-accent-light disabled:opacity-50 transition-all"
+                  >
+                    {pincodeLoading ? '...' : 'Lookup'}
+                  </button>
+                </div>
+                {pincodeResult && (
+                  <p className="text-xs text-muted-foreground mt-1">{pincodeResult.city}, {pincodeResult.district}, {pincodeResult.state}</p>
+                )}
+                <p className="text-[10px] text-muted-foreground mt-1">Enter a 6-digit pincode to auto-fill city, district & state</p>
               </div>
               <div>
                 <label className="text-xs font-medium">Contact</label>

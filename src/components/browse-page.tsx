@@ -11,11 +11,14 @@ import { fetchDestinations, type Destination } from '@/lib/wikipedia';
 import { fetchFlights } from '@/lib/flights';
 import { getUpcomingHoliday } from '@/lib/holidays';
 import { fetchNews, type NewsItem } from '@/lib/news';
+import { fetchEvents } from '@/lib/events';
+import { fetchCategoryPhoto } from '@/lib/photos';
+import MapView from '@/components/map-view';
 import {
   Search, MapPin, Navigation, Compass, Sparkles, Building2,
   Ship, Palette, Store, LogIn, UserPlus, Car,
   SlidersHorizontal, X, Check, ArrowUpDown, AlertTriangle,
-  Heart, Menu, RotateCcw, Filter, Plane, Calendar,
+  Heart, Menu, RotateCcw, Filter, Plane, Calendar, Map, Grid3X3,
 } from 'lucide-react';
 
 const CATEGORIES = [
@@ -65,6 +68,9 @@ export default function BrowsePage() {
   const [flightCount, setFlightCount] = useState<number | null>(null);
   const [upcomingHoliday, setUpcomingHoliday] = useState<{ date: string; name: string } | null>(null);
   const [news, setNews] = useState<NewsItem[]>([]);
+  const [showMap, setShowMap] = useState(false);
+  const [events, setEvents] = useState<{ name: string; date: string; url: string; venue: string }[]>([]);
+  const [pexelsCache, setPexelsCache] = useState<Record<string, string>>({});
 
   const hasActiveFilters = priceMin || priceMax || selectedGhats.length > 0 || selectedAreas.length > 0 || selectedLanguages.length > 0 || verifiedOnly;
 
@@ -115,6 +121,19 @@ export default function BrowsePage() {
   useEffect(() => { const h = getUpcomingHoliday(); if (h) setUpcomingHoliday({ date: h.date, name: h.localName }); }, []);
 
   useEffect(() => { fetchNews().then(setNews); }, []);
+
+  useEffect(() => { fetchEvents().then(setEvents); }, []);
+
+  useEffect(() => {
+    if (operators.length === 0) return;
+    const missing = operators.filter(o => !o.photos?.[0] && !pexelsCache[o.id]);
+    if (missing.length === 0) return;
+    missing.forEach(op => {
+      fetchCategoryPhoto(op.category, op.short_desc?.split(' ').slice(0, 3).join(' ')).then(url => {
+        if (url) setPexelsCache(prev => ({ ...prev, [op.id]: url }));
+      });
+    });
+  }, [operators]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -419,6 +438,28 @@ export default function BrowsePage() {
           </div>
         )}
 
+        {/* Events */}
+        {events.length > 0 && (
+          <div className="mb-5">
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-none">
+              <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-accent">Events</span>
+              {events.map((e, i) => (
+                <a
+                  key={i}
+                  href={e.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl border border-border/60 bg-card text-xs hover:border-accent/30 hover:bg-accent/5 transition-all"
+                >
+                  <Calendar className="h-3 w-3 text-accent" />
+                  <span className="font-medium text-foreground truncate max-w-[180px]">{e.name}</span>
+                  <span className="text-muted-foreground">{e.date}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Filter Panel */}
         {showFilters && (
           <div className="mb-6 p-5 rounded-xl bg-card border border-border shadow-sm space-y-5">
@@ -559,15 +600,29 @@ export default function BrowsePage() {
           </div>
         )}
 
+        {/* Map view */}
+        {showMap && operators.length > 0 && (
+          <div className="mb-5 rounded-xl overflow-hidden border border-border" style={{ height: '500px' }}>
+            <MapView
+              operators={operators}
+              userLat={userLat}
+              userLng={userLng}
+              onSelect={(slug) => router.push(`/o/${slug}`)}
+            />
+          </div>
+        )}
+
         {/* Results grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {loading && operators.length === 0
-            ? Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)
-            : operators.map((op) => (
-                <OperatorCard key={op.id} operator={op} />
-              ))
-          }
-        </div>
+        {!showMap && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {loading && operators.length === 0
+              ? Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)
+              : operators.map((op) => (
+                  <OperatorCard key={op.id} operator={op} pexelsFallback={pexelsCache[op.id] || null} />
+                ))
+            }
+          </div>
+        )}
 
         {/* Error state */}
         {fetchError && (

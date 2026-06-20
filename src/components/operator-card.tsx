@@ -51,9 +51,9 @@ function getPriceLabel(op: Operator): string | null {
   return null;
 }
 
-export function OperatorCard({ operator, className }: { operator: Operator; className?: string }) {
+export function OperatorCard({ operator, className, pexelsFallback }: { operator: Operator; className?: string; pexelsFallback?: string | null }) {
   const router = useRouter();
-  const photo = operator.photos?.[0];
+  const photo = operator.photos?.[0] || pexelsFallback;
   const [showLeadForm, setShowLeadForm] = useState(false);
 
   return (
