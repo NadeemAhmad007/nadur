@@ -71,6 +71,7 @@ export default function BrowsePage() {
   const [upcomingHoliday, setUpcomingHoliday] = useState<{ date: string; name: string } | null>(null);
   const [news, setNews] = useState<NewsItem[]>([]);
   const [showMap, setShowMap] = useState(false);
+  const [allMapOperators, setAllMapOperators] = useState<any[]>([]);
   const [events, setEvents] = useState<{ name: string; date: string; url: string; venue: string }[]>([]);
   const [pexelsCache, setPexelsCache] = useState<Record<string, string>>({});
 
@@ -114,7 +115,26 @@ export default function BrowsePage() {
     setLoading(false);
   }, [buildParams]);
 
+  const fetchMapOperators = useCallback(async () => {
+    try {
+      const res = await fetch('/api/operators?limit=200&lat=34.08&lng=74.79');
+      if (res.ok) {
+        const { data } = await res.json();
+        setAllMapOperators(data);
+      }
+    } catch {}
+  }, []);
+
   useEffect(() => { fetchOperators(); }, [fetchOperators]);
+
+  useEffect(() => {
+    if (!showMap) return;
+    let cancelled = false;
+    fetch('/api/operators?limit=250').then(r => r.ok && r.json()).then(({ data }) => {
+      if (!cancelled) setAllMapOperators(data);
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [showMap]);
 
   useEffect(() => { fetchDestinations().then(setDestinations); }, []);
 
@@ -658,10 +678,10 @@ export default function BrowsePage() {
         )}
 
         {/* Map view */}
-        {showMap && operators.length > 0 && (
-          <div className="mb-5 rounded-xl overflow-hidden border border-border" style={{ height: '500px' }}>
+        {showMap && (
+          <div className="mb-5 rounded-lg overflow-hidden border border-border/60" style={{ height: '500px' }}>
             <MapView
-              operators={operators}
+              operators={allMapOperators}
               userLat={userLat}
               userLng={userLng}
               onSelect={(slug) => router.push(`/o/${slug}`)}
@@ -696,7 +716,7 @@ export default function BrowsePage() {
         )}
 
         {/* Empty state */}
-        {!loading && !fetchError && operators.length === 0 && (
+        {!showMap && !loading && !fetchError && operators.length === 0 && (
           <div className="text-center py-20">
             <div className="flex justify-center mb-5">
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary">
