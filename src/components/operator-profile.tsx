@@ -15,6 +15,9 @@ import { countryOptions } from '@/data/country-codes';
 import { fetchWeather, weatherEmoji, type WeatherData } from '@/lib/weather';
 import { getExchangeRates, CURRENCIES } from '@/lib/currency';
 import { fetchAQI, type AQIData } from '@/lib/air-quality';
+import dynamic from 'next/dynamic';
+
+const OperatorMap = dynamic(() => import('@/components/operator-map').then(m => m.OperatorMap), { ssr: false });
 
 const categoryLabels: Record<string, string> = {
   houseboat: 'Houseboat', shikara: 'Shikara Ride', artisan: 'Artisan',
@@ -626,14 +629,22 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
             )}
 
             {/* Location */}
-            {(op.lat || op.lng) && (
+            {(op.lat && op.lng) ? (
+              <div>
+                <h2 className="font-display text-xl font-medium text-foreground mb-3">Location</h2>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+                  {op.category === 'houseboat' ? 'On Dal Lake' : 'Srinagar'}, Kashmir
+                </p>
+                <OperatorMap lat={op.lat} lng={op.lng} name={op.name} />
+              </div>
+            ) : (op.lat || op.lng) && (
               <div>
                 <h2 className="font-display text-xl font-medium text-foreground mb-3">Location</h2>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-3">
                   {op.category === 'houseboat' ? 'On Dal Lake' : 'Srinagar'}, Kashmir
                 </p>
                 <div className="w-full h-44 rounded-lg bg-muted flex items-center justify-center text-xs text-muted-foreground border border-border/60">
-                  <MapPin className="h-4 w-4 mr-1" /> Map: {op.lat?.toFixed(4)}, {op.lng?.toFixed(4)}
+                  <MapPin className="h-4 w-4 mr-1" /> {op.lat?.toFixed(4)}, {op.lng?.toFixed(4)}
                 </div>
               </div>
             )}
