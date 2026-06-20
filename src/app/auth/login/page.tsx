@@ -143,7 +143,7 @@ export default function LoginPage() {
         }} />
         <div className="relative text-center max-w-sm">
           <Link href="/">
-            <img src="/logo.png" alt="Kasheer360" className="h-28 w-auto mx-auto brightness-0 invert" />
+            <img src="/logo.png" alt="Kasheer360" className="h-28 w-auto mx-auto" />
           </Link>
           <h1 className="mt-8 text-3xl font-display text-white font-normal leading-tight">
             Welcome back
