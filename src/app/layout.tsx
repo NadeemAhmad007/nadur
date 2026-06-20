@@ -4,6 +4,7 @@ import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 import { Footer } from "@/components/footer";
 import { OrganizationSchema, LocalBusinessSchema } from "@/components/schema-markup";
+import "@/lib/env";
 
 const poppins = Poppins({
   variable: "--font-poppins",
