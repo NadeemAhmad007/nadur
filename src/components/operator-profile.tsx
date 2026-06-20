@@ -25,6 +25,16 @@ const categoryLabels: Record<string, string> = {
   homestay: 'Homestay', guest_house: 'Guest House',
 };
 
+function googleMapsUrl(op: Operator): string | null {
+  return op.houseboat_details?.google_maps
+    ?? op.artisan_details?.google_maps
+    ?? op.taxi_details?.google_maps
+    ?? op.guide_details?.google_maps
+    ?? op.vendor_details?.google_maps
+    ?? op.accommodation_details?.google_maps
+    ?? null;
+}
+
 function getPrice(op: Operator): { label: string; value: string } | null {
   const c = op.category;
   if (c === 'shikara') {
@@ -635,7 +645,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
                 <p className="text-sm text-muted-foreground leading-relaxed mb-3">
                   {op.category === 'houseboat' ? 'On Dal Lake' : 'Srinagar'}, Kashmir
                 </p>
-                <OperatorMap lat={op.lat} lng={op.lng} name={op.name} />
+                <OperatorMap lat={op.lat} lng={op.lng} name={op.name} googleMapsUrl={googleMapsUrl(op)} />
               </div>
             ) : (op.lat || op.lng) && (
               <div>

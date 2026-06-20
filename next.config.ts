@@ -33,7 +33,7 @@ const nextConfig: NextConfig = {
               "font-src 'self' data:",
               "connect-src 'self' blob: https://api.open-meteo.com https://air-quality-api.open-meteo.com https://en.wikipedia.org https://nominatim.openstreetmap.org https://indianpincode.com",
               "worker-src 'self' blob: https://cdn.jsdelivr.net",
-              "frame-src 'none'",
+              "frame-src www.google.com",
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",
