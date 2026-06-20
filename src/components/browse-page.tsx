@@ -143,6 +143,12 @@ export default function BrowsePage() {
   };
 
   const locateMe = () => {
+    if (userLat && userLng) {
+      setUserLat(null);
+      setUserLng(null);
+      if (sortBy === 'distance') setSortBy('relevance');
+      return;
+    }
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => { setUserLat(pos.coords.latitude); setUserLng(pos.coords.longitude); setLocating(false); },
