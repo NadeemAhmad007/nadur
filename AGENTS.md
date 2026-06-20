@@ -77,15 +77,14 @@ API_KEY=$(docker logs nadur-openwa 2>&1 | grep -o 'owa_k1_[a-f0-9]*' | head -1)
 # Browse Page Widgets
 
 ## Flight Arrivals Bar
-- **`src/lib/flights.ts`** — Fetches arriving flights at Srinagar Airport (VISR) from OpenSky Network (anonymous, 10 req/day limit)
-- Falls back to static "check live arrivals" message if no data
-- CSP: `opensky-network.org` added to `connect-src`
-- Client-side cache: 5 min, localStorage
+- **`src/lib/flights.ts`** — Client fetcher with 5-min localStorage cache
+- **`src/app/api/flights/route.ts`** — Server proxy to OpenSky Network (avoids CORS)
+- Falls back to static message if no data
+- CSP: no external domain needed (proxied)
 
 ## Festival Badge
 - **`src/lib/holidays.ts`** — Hardcoded Kashmir-relevant holidays for 2026 (Islamic, national, regional)
-- `getUpcomingHoliday()` returns the next upcoming holiday
-- Falls back to built-in list; Calendarific API integration optional (set `CALENDARIFIC_API_KEY` env var)
+- `getUpcomingHoliday()` returns the next upcoming holiday (no API calls)
 
 ## News Ticker
 - **`src/lib/news.ts`** — Client fetcher with 10-min localStorage cache

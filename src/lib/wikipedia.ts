@@ -10,10 +10,10 @@ const DESTINATION_TITLES = [
   'Gulmarg',
   'Pahalgam',
   'Sonamarg',
-  'Mughal Gardens, Srinagar',
+  'Nishat Bagh',
   'Shalimar Bagh, Srinagar',
   'Pari Mahal',
-  'Indira Gandhi Tulip Garden',
+  'Indira Gandhi Memorial Tulip Garden',
 ];
 
 export function getDestinationTitles(): string[] {

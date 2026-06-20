@@ -1,17 +1,8 @@
 'use client';
 
-interface Flight {
-  icao24: string;
-  estDepartureAirport: string | null;
-  estArrivalAirport: string;
-  firstSeen: number;
-  lastSeen: number;
-  callSign: string | null;
-}
-
 interface FlightData {
   count: number;
-  flights: Flight[];
+  flights: any[];
 }
 
 const CACHE_KEY = 'sxr_flights_cache';
@@ -35,17 +26,10 @@ export async function fetchFlights(): Promise<FlightData | null> {
   const cached = getCached();
   if (cached) return cached;
 
-  const now = Math.floor(Date.now() / 1000);
-  const begin = now - 86400 * 3;
-
   try {
-    const res = await fetch(
-      `https://opensky-network.org/api/flights/arrival?airport=VISR&begin=${begin}&end=${now}`,
-      { signal: AbortSignal.timeout(8000) },
-    );
+    const res = await fetch('/api/flights', { signal: AbortSignal.timeout(8000) });
     if (!res.ok) return null;
-    const flights: Flight[] = await res.json();
-    const data: FlightData = { count: flights.length, flights };
+    const data: FlightData = await res.json();
     if (data.count > 0) setCached(data);
     return data;
   } catch {

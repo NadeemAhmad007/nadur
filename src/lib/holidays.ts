@@ -6,24 +6,7 @@ interface Holiday {
   localName: string;
 }
 
-const CACHE_KEY = 'holidays_cache';
-const CACHE_TTL = 6 * 60 * 60 * 1000;
-
-function getCached(): Holiday[] | null {
-  try {
-    const raw = localStorage.getItem(CACHE_KEY);
-    if (!raw) return null;
-    const { data, ts } = JSON.parse(raw);
-    if (Date.now() - ts > CACHE_TTL) { localStorage.removeItem(CACHE_KEY); return null; }
-    return data;
-  } catch { return null; }
-}
-
-function setCached(data: Holiday[]) {
-  try { localStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now() })); } catch { }
-}
-
-const FALLBACK_HOLIDAYS: Holiday[] = [
+const HOLIDAYS: Holiday[] = [
   { date: '2026-01-26', name: 'Republic Day', localName: 'Republic Day' },
   { date: '2026-02-17', name: 'Maha Shivaratri', localName: 'Maha Shivaratri' },
   { date: '2026-03-21', name: 'Nowruz / Navroz', localName: 'Nowruz' },
@@ -39,38 +22,13 @@ const FALLBACK_HOLIDAYS: Holiday[] = [
 ];
 
 export function getUpcomingHoliday(): Holiday | null {
-  const cached = getCached();
-  const holidays = cached ?? FALLBACK_HOLIDAYS;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const upcoming = holidays
+  const upcoming = HOLIDAYS
     .map(h => ({ ...h, dt: new Date(h.date) }))
     .filter(({ dt }) => dt >= today)
     .sort((a, b) => a.dt.getTime() - b.dt.getTime());
 
   return upcoming.length > 0 ? upcoming[0] : null;
-}
-
-export async function fetchHolidays(): Promise<Holiday[]> {
-  const cached = getCached();
-  if (cached) return cached;
-
-  try {
-    const res = await fetch('https://calendarific.com/api/v2/holidays', {
-      signal: AbortSignal.timeout(5000),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      const holidays: Holiday[] = (data?.response?.holidays ?? []).map((h: any) => ({
-        date: h.date.iso,
-        name: h.name,
-        localName: h.name,
-      }));
-      if (holidays.length > 0) setCached(holidays);
-      return holidays;
-    }
-  } catch { }
-
-  return FALLBACK_HOLIDAYS;
 }

@@ -9,7 +9,7 @@ import { KASHMIR_AREAS, AREA_GROUPS } from '@/lib/areas';
 import { Badge } from '@/components/ui/badge';
 import { fetchDestinations, type Destination } from '@/lib/wikipedia';
 import { fetchFlights } from '@/lib/flights';
-import { getUpcomingHoliday, fetchHolidays } from '@/lib/holidays';
+import { getUpcomingHoliday } from '@/lib/holidays';
 import { fetchNews, type NewsItem } from '@/lib/news';
 import {
   Search, MapPin, Navigation, Compass, Sparkles, Building2,
@@ -112,7 +112,7 @@ export default function BrowsePage() {
 
   useEffect(() => { fetchFlights().then(d => setFlightCount(d?.count ?? null)); }, []);
 
-  useEffect(() => { fetchHolidays().then(() => { const h = getUpcomingHoliday(); if (h) setUpcomingHoliday({ date: h.date, name: h.localName }); }); }, []);
+  useEffect(() => { const h = getUpcomingHoliday(); if (h) setUpcomingHoliday({ date: h.date, name: h.localName }); }, []);
 
   useEffect(() => { fetchNews().then(setNews); }, []);
 
