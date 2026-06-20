@@ -1,21 +1,19 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
+import { Input } from '@/components/ui/input';
 import type { Operator } from '@/types';
 import {
   ArrowLeft, BadgeCheck, Heart, Share2, MessageCircle,
-  ChevronLeft, ChevronRight, Send, MapPin, Phone, Mail,
-  Star, User, Map, Clock, Globe, X, TrendingUp,
-  Car, Hash, Building2, Navigation, Store, Info, ChevronDown, Ship, Sun, Droplets, Wind
+  ChevronLeft, ChevronRight, Phone, MapPin, Globe, Clock, Info,
+  Star, User, Check, X, ChevronDown, Sparkles,
+  Building2, Ship, Palette, Navigation, Store, Car, Map,
+  TrendingUp, Hash, Sun, Droplets, Wind
 } from 'lucide-react';
 import Link from 'next/link';
 import { countryOptions } from '@/data/country-codes';
-import { fetchWeather, weatherEmoji, weatherLabel, type WeatherData } from '@/lib/weather';
-import { getExchangeRates, formatConverted, CURRENCIES } from '@/lib/currency';
-import { translateText, translateBatch, LANGUAGES, type LanguageCode } from '@/lib/translate';
+import { fetchWeather, weatherEmoji, type WeatherData } from '@/lib/weather';
+import { getExchangeRates, CURRENCIES } from '@/lib/currency';
 import { fetchAQI, type AQIData } from '@/lib/air-quality';
 
 const categoryLabels: Record<string, string> = {
@@ -23,6 +21,75 @@ const categoryLabels: Record<string, string> = {
   guide: 'Local Guide', vendor: 'Floating Vendor', taxi: 'Taxi & Transfers',
   homestay: 'Homestay', guest_house: 'Guest House',
 };
+
+function getPrice(op: Operator): { label: string; value: string } | null {
+  const c = op.category;
+  if (c === 'shikara') {
+    const d = op.shikara_details;
+    if (d?.price_per_ride) return { label: 'Per ride', value: `₹${d.price_per_ride}` };
+    if (d?.price_per_hour) return { label: 'Per hour', value: `₹${d.price_per_hour}` };
+  }
+  if (c === 'taxi') {
+    const d = op.taxi_details;
+    if (d?.price_per_km) return { label: 'Per km', value: `₹${d.price_per_km}` };
+    if (d?.price_per_day) return { label: 'Per day', value: `₹${d.price_per_day}` };
+    if (d?.airport_flat_rate) return { label: 'Airport flat', value: `₹${d.airport_flat_rate}` };
+  }
+  if (c === 'homestay' || c === 'guest_house') {
+    const d = op.accommodation_details;
+    if (d?.pricing_single) return { label: 'Per night', value: `₹${d.pricing_single}` };
+    if (d?.pricing_double) return { label: 'Per night', value: `₹${d.pricing_double}` };
+  }
+  if (c === 'houseboat') {
+    const t = op.tariffs;
+    if (t) {
+      const v = t.double_ep || t.double_cp || t.single_ep || t.single_cp;
+      if (v) return { label: 'Per night', value: `₹${v}` };
+    }
+  }
+  if (op.pricing_note) return { label: '', value: op.pricing_note };
+  return null;
+}
+
+function getFeatures(op: Operator): string[] {
+  const features: string[] = [];
+  if (op.category === 'houseboat') {
+    const d = op.houseboat_details as any;
+    if (d?.amenities) features.push(...d.amenities);
+    if (d?.room_types) features.push(...d.room_types.map((r: string) => r + ' room'));
+  }
+  if (op.category === 'shikara') {
+    const d = op.shikara_details as any;
+    if (d?.services) features.push(...d.services);
+    if (d?.tour_duration) features.push(d.tour_duration + ' tour');
+  }
+  if (op.category === 'homestay' || op.category === 'guest_house') {
+    const d = op.accommodation_details as any;
+    if (d?.amenities) features.push(...d.amenities);
+    if (d?.room_types) features.push(...d.room_types.map((r: string) => r));
+    if (d?.meals_included) features.push(...d.meals_included.map((m: string) => m + ' included'));
+  }
+  if (op.category === 'taxi') {
+    const d = op.taxi_details as any;
+    if (d?.tour_types) features.push(...d.tour_types.map((t: string) => t + ' tours'));
+    if (d?.vehicle_type) features.push(d.vehicle_type);
+  }
+  if (op.category === 'guide') {
+    const d = op.guide_details as any;
+    if (d?.specialties) features.push(...d.specialties);
+    if (d?.certification) features.push('Certified: ' + d.certification);
+  }
+  if (op.category === 'artisan') {
+    const d = op.artisan_details as any;
+    if (d?.specialties) features.push(...d.specialties);
+    if (d?.business_type) features.push(d.business_type);
+  }
+  if (op.category === 'vendor') {
+    const d = op.vendor_details as any;
+    if (d?.specialties) features.push(...d.specialties);
+  }
+  return features.slice(0, 8);
+}
 
 export function OperatorProfile({ operator: op }: { operator: Operator }) {
   const [currentPhoto, setCurrentPhoto] = useState(0);
@@ -44,10 +111,12 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
   const photos = op.photos?.length ? op.photos : [];
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [rates, setRates] = useState<Record<string, number> | null>(null);
-  const [lang, setLang] = useState<LanguageCode>('en');
-  const [translatedShortDesc, setTranslatedShortDesc] = useState('');
-  const [translatedLongDesc, setTranslatedLongDesc] = useState('');
   const [aqi, setAqi] = useState<AQIData | null>(null);
+
+  const price = getPrice(op);
+  const features = getFeatures(op);
+  const hostSince = op.created_at ? new Date(op.created_at).getFullYear().toString() : null;
+  const travelerConversations = op.lead_month || 0;
 
   useEffect(() => {
     const lat = op.lat || 34.08;
@@ -56,22 +125,6 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
     getExchangeRates().then(setRates);
     fetchAQI(lat, lng).then(setAqi);
   }, [op.lat, op.lng]);
-
-  useEffect(() => {
-    if (lang === 'en') {
-      setTranslatedShortDesc('');
-      setTranslatedLongDesc('');
-      return;
-    }
-    const texts: string[] = [];
-    if (op.short_desc) texts.push(op.short_desc);
-    if (op.long_desc) texts.push(op.long_desc);
-    if (!texts.length) return;
-    translateBatch(texts, lang).then((results) => {
-      if (op.short_desc) setTranslatedShortDesc(results.shift() || '');
-      if (op.long_desc) setTranslatedLongDesc(results.shift() || '');
-    });
-  }, [lang, op.short_desc, op.long_desc]);
 
   useEffect(() => {
     const stored = localStorage.getItem('kasheer360-favorites');
@@ -148,7 +201,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Gallery */}
+      {/* ── Gallery ── */}
       <div className="relative bg-muted">
         {photos.length > 0 ? (
           <>
@@ -221,597 +274,569 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
         </div>
       </div>
 
-      {/* Content */}
-      <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
-        {/* Header info */}
-        <div>
-          <div className="flex items-start justify-between">
+      {/* ── Content ── */}
+      <div className="max-w-5xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-12">
+
+          {/* ── Left Column ── */}
+          <div className="space-y-10 min-w-0">
+
+            {/* Title block */}
             <div>
               <h1 className="text-2xl sm:text-3xl font-display text-foreground font-normal leading-tight">{op.name}</h1>
-              <div className="flex items-center gap-2.5 mt-2">
-                <span className="text-xs font-medium text-muted-foreground/70 uppercase tracking-wider">{op.category ? (categoryLabels[op.category] || op.category) : ''}</span>
-                {op.verified && (
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-accent">
-                    <BadgeCheck className="h-3.5 w-3.5" /> Verified
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2">
+                {op.category && (
+                  <span className="text-xs font-medium text-muted-foreground/70 uppercase tracking-wider">
+                    {categoryLabels[op.category] || op.category}
                   </span>
                 )}
+                {op.verified && (
+                  <>
+                    <span className="text-muted-foreground/30">&middot;</span>
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-accent">
+                      <BadgeCheck className="h-3.5 w-3.5" /> Verified by Kasheer360
+                    </span>
+                  </>
+                )}
               </div>
+              {(travelerConversations > 0 || hostSince) && (
+                <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
+                  {travelerConversations > 0 && (
+                    <>
+                      <span className="inline-flex items-center gap-1"><Star className="h-3 w-3 text-accent fill-accent" /> {travelerConversations} traveler conversation{travelerConversations !== 1 ? 's' : ''}</span>
+                      {hostSince && <span className="text-muted-foreground/30">&middot;</span>}
+                    </>
+                  )}
+                  {hostSince && <span>Host since {hostSince}</span>}
+                </div>
+              )}
+            </div>
+
+            {/* About */}
+            {(op.short_desc || op.long_desc) && (
+              <div>
+                <h2 className="font-display text-xl font-medium text-foreground mb-3">About this {op.category ? categoryLabels[op.category]?.toLowerCase() : 'listing'}</h2>
+                {op.short_desc && <p className="text-sm text-foreground leading-relaxed">{op.short_desc}</p>}
+                {op.long_desc && <p className="text-sm text-foreground leading-relaxed mt-3">{op.long_desc}</p>}
+              </div>
+            )}
+
+            {/* Your host */}
+            <div>
+              <h2 className="font-display text-xl font-medium text-foreground mb-4">Your host</h2>
+              <div className="flex items-start gap-4 p-5 rounded-lg bg-white border border-border/60">
+                <div className="w-14 h-14 rounded-full bg-muted overflow-hidden shrink-0">
+                  {photos[0] ? (
+                    <img src={photos[0]} alt={op.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground/30 text-xl font-bold">
+                      {op.name[0]}
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-display text-lg font-medium text-foreground">Meet {op.name.split(' ')[0]}</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {hostSince ? `Hosting since ${hostSince}` : 'Verified in person by Kasheer360'}
+                    {op.verified && <> &middot; Verified by Kasheer360</>}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-3 leading-relaxed italic border-l-2 border-accent/30 pl-3">
+                    {op.short_desc || 'Providing authentic local experiences in Kashmir.'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Features */}
+            {features.length > 0 && (
+              <div>
+                <h2 className="font-display text-xl font-medium text-foreground mb-3">What's included</h2>
+                <div className="flex flex-wrap gap-2">
+                  {features.map((f, i) => (
+                    <span key={i} className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white border border-border/60 text-xs text-foreground">
+                      <Check className="h-3 w-3 text-pine" />
+                      {f}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Weather / AQI / Currency */}
+            {(weather || aqi || rates) && (
+              <div>
+                <h2 className="font-display text-xl font-medium text-foreground mb-3">Know before you go</h2>
+                <div className="rounded-lg bg-white border border-border/60 divide-y divide-border/50">
+                  {weather && (
+                    <div className="p-4 flex items-center gap-4">
+                      <span className="text-2xl">{weatherEmoji(weather.current.weatherCode)}</span>
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{Math.round(weather.current.temperature)}°C</p>
+                        <p className="text-xs text-muted-foreground">Feels like {Math.round(weather.current.feelsLike)}°C &middot; {weather.current.humidity}% humidity</p>
+                      </div>
+                      <div className="ml-auto flex gap-3 text-xs text-muted-foreground">
+                        {weather.daily.slice(1, 4).map((day) => (
+                          <div key={day.date} className="text-center">
+                            <p>{new Date(day.date + 'T12:00:00').toLocaleDateString('en-IN', { weekday: 'short' })}</p>
+                            <p className="text-foreground font-medium">{Math.round(day.tempMax)}°</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {aqi && aqi.eaqi != null && (
+                    <div className="p-4 flex items-center gap-3 text-sm">
+                      <span className="inline-block w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: aqi.color }} />
+                      <span className="text-foreground">AQI {aqi.eaqi}/100</span>
+                      <span className="text-muted-foreground">&middot; {aqi.label}</span>
+                    </div>
+                  )}
+                  {rates && (
+                    <div className="p-4 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                      <span className="text-muted-foreground">Approximate conversion:</span>
+                      {CURRENCIES.slice(0, 3).map((code) => {
+                        const rate = rates[code];
+                        if (!rate) return null;
+                        return (
+                          <span key={code} className="text-foreground">
+                            1 INR = {rate.toFixed(2)} {code}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Category-specific details */}
+            {op.houseboat_details && op.category === 'houseboat' && (
+              <div>
+                <h2 className="font-display text-xl font-medium text-foreground mb-4">Houseboat details</h2>
+                <div className="rounded-lg bg-white border border-border/60 divide-y divide-border/50">
+                  {(op.houseboat_details as any).owner && <DetailRow icon={User} label="Owner" value={(op.houseboat_details as any).owner} />}
+                  {(op.houseboat_details as any).address && <DetailRow icon={MapPin} label="Address" value={(op.houseboat_details as any).address} />}
+                  {(op.houseboat_details as any).grade && <DetailRow icon={Star} label="Grade" value={(op.houseboat_details as any).grade} />}
+                  {(op.houseboat_details as any).total_rooms && <DetailRow icon={Building2} label="Total rooms" value={(op.houseboat_details as any).total_rooms} />}
+                  {(op.houseboat_details as any).capacity && <DetailRow icon={User} label="Max guests" value={(op.houseboat_details as any).capacity} />}
+                  {(op.houseboat_details as any).boat_ghat && <DetailRow icon={Map} label="Boat ghat" value={(op.houseboat_details as any).boat_ghat} />}
+                  {(op.houseboat_details as any).google_maps && (
+                    <a href={(op.houseboat_details as any).google_maps} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-3 text-sm text-accent font-medium hover:bg-muted/50 transition-colors">
+                      <Globe className="h-4 w-4" /> View on Google Maps
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {op.shikara_details && op.category === 'shikara' && (
+              <div>
+                <h2 className="font-display text-xl font-medium text-foreground mb-4">Shikara details</h2>
+                <div className="rounded-lg bg-white border border-border/60 divide-y divide-border/50">
+                  {(op.shikara_details as any).full_name && <DetailRow icon={User} label="Full name" value={(op.shikara_details as any).full_name} />}
+                  {(op.shikara_details as any).shikara_number && <DetailRow icon={Star} label="Shikara No." value={(op.shikara_details as any).shikara_number} />}
+                  {(op.shikara_details as any).ghat_number && <DetailRow icon={Map} label="Ghat" value={(op.shikara_details as any).ghat_number} />}
+                  {(op.shikara_details as any).operating_areas?.length > 0 && <DetailRow icon={MapPin} label="Areas" value={(op.shikara_details as any).operating_areas.join(', ')} />}
+                  {(op.shikara_details as any).years_experience && <DetailRow icon={Clock} label="Experience" value={`${(op.shikara_details as any).years_experience} years`} />}
+                  {(op.shikara_details as any).tour_duration && <DetailRow icon={Clock} label="Tour duration" value={(op.shikara_details as any).tour_duration} />}
+                </div>
+              </div>
+            )}
+
+            {op.artisan_details && op.category === 'artisan' && (
+              <div>
+                <h2 className="font-display text-xl font-medium text-foreground mb-4">Artisan details</h2>
+                <div className="rounded-lg bg-white border border-border/60 divide-y divide-border/50">
+                  {(op.artisan_details as any).business_type && <DetailRow icon={Store} label="Business type" value={(op.artisan_details as any).business_type} />}
+                  {(op.artisan_details as any).owner_name && <DetailRow icon={User} label="Owner" value={(op.artisan_details as any).owner_name} />}
+                  {(op.artisan_details as any).years_in_business && <DetailRow icon={Clock} label="Years in business" value={(op.artisan_details as any).years_in_business} />}
+                  {(op.artisan_details as any).business_scale && <DetailRow icon={TrendingUp} label="Scale" value={(op.artisan_details as any).business_scale} />}
+                  {(op.artisan_details as any).specialties?.length > 0 && <DetailRow icon={Sparkles} label="Specialties" value={(op.artisan_details as any).specialties.join(', ')} />}
+                  {(op.artisan_details as any).google_maps && (
+                    <a href={(op.artisan_details as any).google_maps} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-3 text-sm text-accent font-medium hover:bg-muted/50 transition-colors">
+                      <Globe className="h-4 w-4" /> View on Google Maps
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {(op.accommodation_details && (op.category === 'homestay' || op.category === 'guest_house')) && (
+              <div>
+                <h2 className="font-display text-xl font-medium text-foreground mb-4">Property details</h2>
+                <div className="rounded-lg bg-white border border-border/60 divide-y divide-border/50">
+                  {(op.accommodation_details as any).owner_name && <DetailRow icon={User} label="Owner" value={(op.accommodation_details as any).owner_name} />}
+                  {(op.accommodation_details as any).address && <DetailRow icon={MapPin} label="Address" value={(op.accommodation_details as any).address} />}
+                  {(op.accommodation_details as any).total_rooms && <DetailRow icon={Building2} label="Rooms" value={(op.accommodation_details as any).total_rooms} />}
+                  {(op.accommodation_details as any).room_types?.length > 0 && <DetailRow icon={Building2} label="Room types" value={(op.accommodation_details as any).room_types.join(', ')} />}
+                  {(op.accommodation_details as any).check_in && <DetailRow icon={Clock} label="Check-in" value={(op.accommodation_details as any).check_in} />}
+                  {(op.accommodation_details as any).check_out && <DetailRow icon={Clock} label="Check-out" value={(op.accommodation_details as any).check_out} />}
+                  {(op.accommodation_details as any).nearby_attractions && <DetailRow icon={MapPin} label="Nearby attractions" value={(op.accommodation_details as any).nearby_attractions} />}
+                  {(op.accommodation_details as any).google_maps && (
+                    <a href={(op.accommodation_details as any).google_maps} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-3 text-sm text-accent font-medium hover:bg-muted/50 transition-colors">
+                      <Globe className="h-4 w-4" /> View on Google Maps
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {op.taxi_details && op.category === 'taxi' && (
+              <div>
+                <h2 className="font-display text-xl font-medium text-foreground mb-4">Taxi details</h2>
+                <div className="rounded-lg bg-white border border-border/60 divide-y divide-border/50">
+                  {op.taxi_details.driver_name && <DetailRow icon={User} label="Driver" value={op.taxi_details.driver_name} />}
+                  {op.taxi_details.vehicle_type && <DetailRow icon={Car} label="Vehicle type" value={op.taxi_details.vehicle_type} />}
+                  {op.taxi_details.vehicle_model && <DetailRow icon={Car} label="Model" value={op.taxi_details.vehicle_model} />}
+                  {op.taxi_details.registration_number && <DetailRow icon={Hash} label="Registration" value={op.taxi_details.registration_number} />}
+                  {(op.taxi_details as any).operating_areas?.length > 0 && <DetailRow icon={MapPin} label="Areas" value={(op.taxi_details as any).operating_areas.join(', ')} />}
+                  {op.taxi_details.years_experience && <DetailRow icon={Clock} label="Experience" value={`${op.taxi_details.years_experience} years`} />}
+                  {op.taxi_details.google_maps && (
+                    <a href={op.taxi_details.google_maps} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-3 text-sm text-accent font-medium hover:bg-muted/50 transition-colors">
+                      <Globe className="h-4 w-4" /> View on Google Maps
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {op.guide_details && op.category === 'guide' && (
+              <div>
+                <h2 className="font-display text-xl font-medium text-foreground mb-4">Guide details</h2>
+                <div className="rounded-lg bg-white border border-border/60 divide-y divide-border/50">
+                  {op.guide_details.full_name && <DetailRow icon={User} label="Name" value={op.guide_details.full_name} />}
+                  {op.guide_details.years_experience && <DetailRow icon={Clock} label="Experience" value={`${op.guide_details.years_experience} years`} />}
+                  {op.guide_details.certification && <DetailRow icon={BadgeCheck} label="Certification" value={op.guide_details.certification} />}
+                  {op.guide_details.languages && op.guide_details.languages.length > 0 && <DetailRow icon={Globe} label="Languages" value={op.guide_details.languages.join(', ')} />}
+                  {op.guide_details.specialties && op.guide_details.specialties.length > 0 && <DetailRow icon={Sparkles} label="Specialties" value={op.guide_details.specialties.join(', ')} />}
+                  {op.guide_details.operating_areas && op.guide_details.operating_areas.length > 0 && <DetailRow icon={MapPin} label="Operating areas" value={op.guide_details.operating_areas.join(', ')} />}
+                  {op.guide_details.google_maps && (
+                    <a href={op.guide_details.google_maps} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-3 text-sm text-accent font-medium hover:bg-muted/50 transition-colors">
+                      <Globe className="h-4 w-4" /> View on Google Maps
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {op.vendor_details && op.category === 'vendor' && (
+              <div>
+                <h2 className="font-display text-xl font-medium text-foreground mb-4">Vendor details</h2>
+                <div className="rounded-lg bg-white border border-border/60 divide-y divide-border/50">
+                  {op.vendor_details.business_name && <DetailRow icon={Store} label="Business" value={op.vendor_details.business_name} />}
+                  {op.vendor_details.owner_name && <DetailRow icon={User} label="Owner" value={op.vendor_details.owner_name} />}
+                  {op.vendor_details.business_type && <DetailRow icon={Building2} label="Type" value={op.vendor_details.business_type.replace('_', ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())} />}
+                  {op.vendor_details.specialties && op.vendor_details.specialties.length > 0 && <DetailRow icon={Sparkles} label="Specialties" value={op.vendor_details.specialties.join(', ')} />}
+                  {op.vendor_details.operating_areas && op.vendor_details.operating_areas.length > 0 && <DetailRow icon={MapPin} label="Areas" value={op.vendor_details.operating_areas.join(', ')} />}
+                  {op.vendor_details.google_maps && (
+                    <a href={op.vendor_details.google_maps} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-3 text-sm text-accent font-medium hover:bg-muted/50 transition-colors">
+                      <Globe className="h-4 w-4" /> View on Google Maps
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Pricing */}
+            {(op.tariffs && op.category === 'houseboat') && (
+              <div>
+                <h2 className="font-display text-xl font-medium text-foreground mb-4">Tariffs</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {([
+                    ['double_ep', 'Double EP'], ['double_cp', 'Double CP'],
+                    ['double_map', 'Double MAP'], ['double_ap', 'Double AP'],
+                    ['single_ep', 'Single EP'], ['single_cp', 'Single CP'],
+                    ['single_map', 'Single MAP'], ['single_ap', 'Single AP'],
+                  ] as const).map(([key, label]) => {
+                    const val = (op.tariffs as any)?.[key];
+                    if (!val) return null;
+                    const usd = rates ? (val * rates.USD).toFixed(0) : null;
+                    return (
+                      <div key={key} className="rounded-lg bg-secondary p-3.5 text-center">
+                        <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{label}</p>
+                        <p className="text-lg font-bold text-foreground mt-0.5">₹{val}</p>
+                        {usd && <p className="text-[10px] text-muted-foreground/60 mt-0.5">≈${usd}</p>}
+                      </div>
+                    );
+                  })}
+                </div>
+                {(op.tariffs as any)?.note && (
+                  <p className="text-xs text-muted-foreground mt-3">{(op.tariffs as any).note}</p>
+                )}
+              </div>
+            )}
+
+            {(op.accommodation_details && (op.category === 'homestay' || op.category === 'guest_house')) && (
+              <div>
+                <h2 className="font-display text-xl font-medium text-foreground mb-4">Pricing</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {[
+                    ['pricing_single', 'Single/Night'],
+                    ['pricing_double', 'Double/Night'],
+                  ].map(([key, label]) => {
+                    const val = (op.accommodation_details as any)?.[key];
+                    if (!val) return null;
+                    const usd = rates ? (val * rates.USD).toFixed(0) : null;
+                    return (
+                      <div key={key} className="rounded-lg bg-secondary p-3.5 text-center">
+                        <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{label}</p>
+                        <p className="text-lg font-bold text-foreground mt-0.5">₹{val}</p>
+                        {usd && <p className="text-[10px] text-muted-foreground/60 mt-0.5">≈${usd}</p>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {op.taxi_details && op.category === 'taxi' && (
+              <div>
+                <h2 className="font-display text-xl font-medium text-foreground mb-4">Pricing</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {op.taxi_details.price_per_km && (
+                    <div className="rounded-lg bg-secondary p-3.5 text-center">
+                      <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Per km</p>
+                      <p className="text-lg font-bold text-foreground mt-0.5">₹{op.taxi_details.price_per_km}</p>
+                    </div>
+                  )}
+                  {op.taxi_details.price_per_day && (
+                    <div className="rounded-lg bg-secondary p-3.5 text-center">
+                      <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Per day</p>
+                      <p className="text-lg font-bold text-foreground mt-0.5">₹{op.taxi_details.price_per_day}</p>
+                    </div>
+                  )}
+                  {op.taxi_details.airport_flat_rate && (
+                    <div className="rounded-lg bg-secondary p-3.5 text-center">
+                      <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Airport</p>
+                      <p className="text-lg font-bold text-foreground mt-0.5">₹{op.taxi_details.airport_flat_rate}</p>
+                    </div>
+                  )}
+                  {op.taxi_details.extra_per_km && (
+                    <div className="rounded-lg bg-secondary p-3.5 text-center">
+                      <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Extra/km</p>
+                      <p className="text-lg font-bold text-foreground mt-0.5">₹{op.taxi_details.extra_per_km}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {op.pricing_note && !price && (
+              <p className="text-sm text-muted-foreground">{op.pricing_note}</p>
+            )}
+
+            {/* Location */}
+            {(op.lat || op.lng) && (
+              <div>
+                <h2 className="font-display text-xl font-medium text-foreground mb-3">Location</h2>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+                  {op.category === 'houseboat' ? 'On Dal Lake' : 'Srinagar'}, Kashmir
+                </p>
+                <div className="w-full h-44 rounded-lg bg-muted flex items-center justify-center text-xs text-muted-foreground border border-border/60">
+                  <MapPin className="h-4 w-4 mr-1" /> Map: {op.lat?.toFixed(4)}, {op.lng?.toFixed(4)}
+                </div>
+              </div>
+            )}
+
+            {/* Traveler conversations */}
+            {overflow && (
+              <div className="p-4 rounded-lg bg-warning/5 border border-warning/20 flex items-start gap-2.5">
+                <Info className="h-4 w-4 text-warning shrink-0 mt-0.5" />
+                <p className="text-xs text-muted-foreground">This operator is currently at capacity. Your enquiry has been forwarded to our team.</p>
+              </div>
+            )}
+
+            {/* Browse all */}
+            <div className="text-center pt-4">
+              <Link href="/" className="text-xs text-muted-foreground hover:text-accent transition-colors inline-flex items-center gap-1">
+                Browse all operators
+              </Link>
+            </div>
+          </div>
+
+          {/* ── Right Sidebar ── */}
+          <aside className="hidden lg:block">
+            <div className="sticky top-32">
+              <div className="rounded-lg bg-white border border-border/60 shadow-sm">
+                <div className="p-6">
+                  {price ? (
+                    <>
+                      <div className="font-display text-3xl font-medium text-foreground">{price.value}</div>
+                      <p className="text-xs text-muted-foreground mt-1">{price.label}</p>
+                    </>
+                  ) : (
+                    <div className="font-display text-lg font-medium text-foreground">Contact for pricing</div>
+                  )}
+                  <p className="text-xs text-accent font-medium mt-2">Owner sets this price directly &middot; ₹0 commission</p>
+
+                  <button
+                    onClick={() => setShowForm(true)}
+                    className="flex items-center justify-center gap-2 w-full mt-5 py-3.5 rounded-lg bg-accent text-white text-sm font-medium hover:bg-accent/90 transition-colors"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    Chat on WhatsApp
+                  </button>
+
+                  {op.whatsapp && (
+                    <a
+                      href={`tel:${op.whatsapp}`}
+                      className="flex items-center justify-center gap-2 w-full mt-2.5 py-2.5 rounded-lg border border-border/60 text-sm text-foreground hover:border-accent/30 transition-colors"
+                    >
+                      <Phone className="h-4 w-4" />
+                      Call Direct
+                    </a>
+                  )}
+
+                  <div className="flex items-center justify-center gap-1.5 mt-4 text-xs text-pine font-medium">
+                    <span className="w-1.5 h-1.5 rounded-full bg-pine" />
+                    Typically replies within 1 hour
+                  </div>
+                </div>
+              </div>
+
+              {/* Languages */}
+              {(op.shikara_details as any)?.languages?.length > 0 ||
+               (op.taxi_details as any)?.languages?.length > 0 ||
+               (op.guide_details as any)?.languages?.length > 0 ? (
+                <div className="mt-3 text-center text-xs text-muted-foreground">
+                  Speaks {
+                    [...new Set([
+                      ...((op.shikara_details as any)?.languages || []),
+                      ...((op.taxi_details as any)?.languages || []),
+                      ...(op.guide_details?.languages || []),
+                    ])].join(', ')
+                  }
+                </div>
+              ) : (
+                <div className="mt-3 text-center text-xs text-muted-foreground">
+                  Speaks English &middot; Urdu &middot; Kashmiri
+                </div>
+              )}
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      {/* ── Mobile Bottom CTA ── */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-border/60 px-4 py-3 flex items-center justify-between z-30">
+        <div>
+          {price ? (
+            <>
+              <div className="font-display text-xl font-medium text-foreground">{price.value}</div>
+              <p className="text-[10px] text-muted-foreground">{price.label} &middot; Owner sets price directly</p>
+            </>
+          ) : (
+            <div className="font-display text-base font-medium text-foreground">Contact for pricing</div>
+          )}
+        </div>
+        <button
+          onClick={() => setShowForm(true)}
+          className="flex items-center gap-2 py-2.5 px-5 rounded-lg bg-accent text-white text-sm font-medium hover:bg-accent/90 transition-colors shrink-0"
+        >
+          <MessageCircle className="h-4 w-4" />
+          Chat
+        </button>
+      </div>
+
+      {/* ── Lead Form Modal ── */}
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={() => setShowForm(false)}>
+          <div className="w-full max-w-sm bg-white rounded-lg shadow-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-5 border-b border-border/60">
+              <h3 className="font-display text-lg font-medium text-foreground">
+                {otpSent ? 'Verify your phone' : 'Contact via WhatsApp'}
+              </h3>
+              <button onClick={() => setShowForm(false)} className="p-1.5 rounded-lg hover:bg-secondary transition-colors">
+                <X className="h-4 w-4 text-muted-foreground" />
+              </button>
+            </div>
+            <div className="p-5 space-y-5">
+              {otpSent ? (
+                <>
+                  <p className="text-sm text-muted-foreground">Enter the one-time code sent to <span className="font-medium text-foreground">{getPhone()}</span></p>
+                  <Input
+                    label="OTP"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    placeholder="000000"
+                    className="text-center tracking-[0.4em] text-lg font-mono"
+                  />
+                  {otpError && <p className="text-xs text-danger">{otpError}</p>}
+                  <div className="flex gap-2.5">
+                    <Button onClick={handleOtpSubmit} disabled={otp.length < 4 || otpSubmitting} className="flex-1">
+                      {otpSubmitting ? 'Verifying...' : 'Verify & Contact'}
+                    </Button>
+                    <Button variant="outline" onClick={() => { setOtpSent(false); setOtp(''); setOtpError(''); handleSubmit(); }} disabled={submitting}>
+                      Resend
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center gap-3 pb-1">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10">
+                      <MessageCircle className="h-5 w-5 text-accent" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{op.name}</p>
+                      <p className="text-xs text-muted-foreground">Reach out directly via WhatsApp</p>
+                    </div>
+                  </div>
+                  {op.plan === 'pro' && (
+                    <p className="text-xs text-muted-foreground bg-secondary rounded-lg px-3.5 py-2.5">We'll send a one-time code to verify your number.</p>
+                  )}
+                  <Input
+                    label="Your name"
+                    value={visitorName}
+                    onChange={(e) => setVisitorName(e.target.value)}
+                    placeholder="Enter your name"
+                  />
+                  <label className="text-sm font-medium text-foreground">Phone number</label>
+                  <div className="flex gap-2.5">
+                    <div className="relative w-[140px] shrink-0">
+                      <select
+                        value={countryCode}
+                        onChange={(e) => setCountryCode(e.target.value)}
+                        className="flex h-10 w-full rounded-lg border border-input bg-card px-3 pr-8 text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all"
+                      >
+                        {countryOptions.map((opt) => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    </div>
+                    <Input
+                      type="tel"
+                      value={localNumber}
+                      onChange={(e) => setLocalNumber(e.target.value.replace(/[^0-9]/g, ''))}
+                      placeholder="1234567890"
+                      className="flex-1"
+                    />
+                  </div>
+                  {stepError && <p className="text-xs text-danger">{stepError}</p>}
+                  <Button onClick={handleSubmit} disabled={!visitorName.trim() || !localNumber || submitting} className="w-full" size="lg">
+                    {submitting ? 'Sending...' : op.plan === 'pro' ? 'Send OTP' : 'Start Chat'}
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
+      )}
 
-        {/* Language switcher */}
-        <div className="flex gap-1.5 flex-wrap">
-          {LANGUAGES.map((l) => (
-            <button
-              key={l.code}
-              onClick={() => setLang(l.code)}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${
-                lang === l.code
-                  ? 'bg-accent text-accent-foreground shadow-sm'
-                  : 'bg-secondary text-muted-foreground hover:bg-border'
-              }`}
-            >
-              {l.flag} {l.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Air Quality */}
-        {aqi && aqi.eaqi != null && (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
-            <span
-              className="inline-block w-2.5 h-2.5 rounded-full shrink-0"
-              style={{ backgroundColor: aqi.color }}
-            />
-            Air Quality: {aqi.eaqi}/100 · {aqi.label}{aqi.pm25 != null ? ` · PM2.5: ${aqi.pm25} µg` : ''}
-          </div>
-        )}
-
-        {/* Description */}
-        {op.short_desc && (
-          <p className="text-muted-foreground leading-relaxed">
-            {lang !== 'en' && translatedShortDesc ? translatedShortDesc : op.short_desc}
-          </p>
-        )}
-        {op.long_desc && (
-          <p className="text-muted-foreground leading-relaxed">
-            {lang !== 'en' && translatedLongDesc ? translatedLongDesc : op.long_desc}
-          </p>
-        )}
-
-        {/* Weather */}
-        {weather && (
-          <Card>
-            <CardContent className="p-5 space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="font-display text-base font-medium flex items-center gap-2"><Sun className="h-4 w-4 text-muted-foreground" /> Weather</h3>
-                <span className="text-sm text-muted-foreground">Now</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-3xl">{weatherEmoji(weather.current.weatherCode)}</span>
-                <div>
-                  <p className="text-2xl font-bold">{Math.round(weather.current.temperature)}°C</p>
-                  <p className="text-xs text-muted-foreground">Feels like {Math.round(weather.current.feelsLike)}°C</p>
-                </div>
-                <div className="ml-auto space-y-1 text-xs text-muted-foreground">
-                  <p className="flex items-center gap-1"><Droplets className="h-3 w-3" /> {weather.current.humidity}%</p>
-                  <p className="flex items-center gap-1"><Wind className="h-3 w-3" /> {Math.round(weather.current.windSpeed)} km/h</p>
-                </div>
-              </div>
-              <div className="flex gap-2 pt-1 border-t border-border/60">
-                {weather.daily.slice(1).map((day) => (
-                  <div key={day.date} className="flex-1 text-center">
-                    <p className="text-[11px] text-muted-foreground">
-                      {new Date(day.date + 'T12:00:00').toLocaleDateString('en-IN', { weekday: 'short' })}
-                    </p>
-                    <p className="text-lg my-0.5">{weatherEmoji(day.weatherCode)}</p>
-                    <p className="text-[11px] font-medium">{Math.round(day.tempMax)}°/{Math.round(day.tempMin)}°</p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Currency conversion */}
-        {rates && (
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-xs text-muted-foreground mb-2">Approximate conversion</p>
-              <div className="flex gap-3 text-sm flex-wrap">
-                {CURRENCIES.map((code) => {
-                  const rate = rates[code];
-                  if (!rate) return null;
-                  return (
-                    <span key={code} className="text-muted-foreground">
-                      <span className="font-medium text-foreground">1 INR</span> = {rate} {code}
-                    </span>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Category-specific details */}
-        {op.houseboat_details && op.category === 'houseboat' && (
-          <Card>
-            <CardContent className="p-5 space-y-4">
-              <h2 className="font-display text-base font-medium flex items-center gap-2"><Building2 className="h-4 w-4 text-muted-foreground" /> Houseboat Details</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                {(op.houseboat_details as any).owner && <DetailRow icon={User} label="Owner" value={(op.houseboat_details as any).owner} />}
-                {(op.houseboat_details as any).address && <DetailRow icon={MapPin} label="Address" value={(op.houseboat_details as any).address} />}
-                {(op.houseboat_details as any).contact && <DetailRow icon={Phone} label="Contact" value={(op.houseboat_details as any).contact} />}
-                {(op.houseboat_details as any).contact2 && <DetailRow icon={Phone} label="Alt Contact" value={(op.houseboat_details as any).contact2} />}
-                {(op.houseboat_details as any).email && <DetailRow icon={Mail} label="Email" value={(op.houseboat_details as any).email} />}
-                {(op.houseboat_details as any).grade && <DetailRow icon={Star} label="Grade" value={(op.houseboat_details as any).grade} />}
-                {(op.houseboat_details as any).total_rooms && <DetailRow icon={Building2} label="Total Rooms" value={(op.houseboat_details as any).total_rooms} />}
-                {(op.houseboat_details as any).capacity && <DetailRow icon={User} label="Max Guests" value={(op.houseboat_details as any).capacity} />}
-                {(op.houseboat_details as any).boat_ghat && <DetailRow icon={Map} label="Boat Ghat" value={(op.houseboat_details as any).boat_ghat} />}
-              </div>
-              {(op.houseboat_details as any).room_types?.length > 0 && (
-                <div>
-                  <p className="text-xs text-muted-foreground font-medium mb-2">Room Types</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {(op.houseboat_details as any).room_types.map((r: string) => <Badge key={r} variant="outline" size="sm">{r}</Badge>)}
-                  </div>
-                </div>
-              )}
-              {(op.houseboat_details as any).amenities?.length > 0 && (
-                <div>
-                  <p className="text-xs text-muted-foreground font-medium mb-2">Amenities</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {(op.houseboat_details as any).amenities.map((a: string) => <Badge key={a} variant="outline" size="sm">{a}</Badge>)}
-                  </div>
-                </div>
-              )}
-              {(op.houseboat_details as any).google_maps && (
-                <a href={(op.houseboat_details as any).google_maps} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-accent font-medium hover:underline">
-                  <Globe className="h-4 w-4" /> View on Google Maps
-                </a>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {op.shikara_details && op.category === 'shikara' && (
-          <Card>
-            <CardContent className="p-5 space-y-4">
-              <h2 className="font-display text-base font-medium flex items-center gap-2"><Ship className="h-4 w-4 text-muted-foreground" /> Shikara Details</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                {(op.shikara_details as any).full_name && <DetailRow icon={User} label="Full Name" value={(op.shikara_details as any).full_name} />}
-                {(op.shikara_details as any).mobile_number && <DetailRow icon={Phone} label="Mobile" value={(op.shikara_details as any).mobile_number} />}
-                {(op.shikara_details as any).shikara_number && <DetailRow icon={Star} label="Shikara No." value={(op.shikara_details as any).shikara_number} />}
-                {(op.shikara_details as any).ghat_number && <DetailRow icon={Map} label="Ghat" value={(op.shikara_details as any).ghat_number} />}
-                {(op.shikara_details as any).operating_areas?.length > 0 && <DetailRow icon={MapPin} label="Areas" value={(op.shikara_details as any).operating_areas.join(', ')} />}
-                {(op.shikara_details as any).languages?.length > 0 && <DetailRow icon={Globe} label="Languages" value={(op.shikara_details as any).languages.join(', ')} />}
-              </div>
-              {(op.shikara_details as any).services?.length > 0 && (
-                <div>
-                  <p className="text-xs text-muted-foreground font-medium mb-2">Services</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {(op.shikara_details as any).services.map((s: string) => <Badge key={s} variant="outline" size="sm">{s}</Badge>)}
-                  </div>
-                </div>
-              )}
-              {(op.shikara_details as any).years_experience && <DetailRow icon={Clock} label="Experience" value={`${(op.shikara_details as any).years_experience} years`} />}
-              {(op.shikara_details as any).tour_duration && <DetailRow icon={Clock} label="Tour Duration" value={(op.shikara_details as any).tour_duration} />}
-              {(op.shikara_details as any).price_per_ride && <DetailRow icon={TrendingUp} label="Per Ride" value={`₹${(op.shikara_details as any).price_per_ride}`} />}
-              {(op.shikara_details as any).price_per_hour && <DetailRow icon={TrendingUp} label="Per Hour" value={`₹${(op.shikara_details as any).price_per_hour}`} />}
-              {(op.shikara_details as any).price_note && <DetailRow icon={Info} label="Price Note" value={(op.shikara_details as any).price_note} />}
-            </CardContent>
-          </Card>
-        )}
-
-        {op.artisan_details && op.category === 'artisan' && (
-          <Card>
-            <CardContent className="p-5 space-y-4">
-              <h2 className="font-display text-base font-medium flex items-center gap-2"><Store className="h-4 w-4 text-muted-foreground" /> Artisan Details</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                {(op.artisan_details as any).business_type && <DetailRow icon={Star} label="Business Type" value={(op.artisan_details as any).business_type} />}
-                {(op.artisan_details as any).business_scale && <DetailRow icon={TrendingUp} label="Scale" value={(op.artisan_details as any).business_scale} />}
-                {(op.artisan_details as any).owner_name && <DetailRow icon={User} label="Owner" value={(op.artisan_details as any).owner_name} />}
-                {(op.artisan_details as any).contact_number && <DetailRow icon={Phone} label="Contact" value={(op.artisan_details as any).contact_number} />}
-                {(op.artisan_details as any).years_in_business && <DetailRow icon={Clock} label="Years in Business" value={(op.artisan_details as any).years_in_business} />}
-              </div>
-              {(op.artisan_details as any).specialties?.length > 0 && (
-                <div>
-                  <p className="text-xs text-muted-foreground font-medium mb-2">Specialties</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {(op.artisan_details as any).specialties.map((s: string) => <Badge key={s} variant="outline" size="sm">{s}</Badge>)}
-                  </div>
-                </div>
-              )}
-              {(op.artisan_details as any).google_maps && (
-                <a href={(op.artisan_details as any).google_maps} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-accent font-medium hover:underline">
-                  <Globe className="h-4 w-4" /> View on Google Maps
-                </a>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Accommodation Details */}
-        {op.accommodation_details && (op.category === 'homestay' || op.category === 'guest_house') && (
-          <Card>
-            <CardContent className="p-5 space-y-4">
-              <h2 className="font-display text-base font-medium flex items-center gap-2"><Building2 className="h-4 w-4 text-muted-foreground" /> Property Details</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                {(op.accommodation_details as any).owner_name && <DetailRow icon={User} label="Owner" value={(op.accommodation_details as any).owner_name} />}
-                {(op.accommodation_details as any).manager_name && <DetailRow icon={User} label="Manager" value={(op.accommodation_details as any).manager_name} />}
-                {(op.accommodation_details as any).contact && <DetailRow icon={Phone} label="Contact" value={(op.accommodation_details as any).contact} />}
-                {(op.accommodation_details as any).email && <DetailRow icon={Mail} label="Email" value={(op.accommodation_details as any).email} />}
-                {(op.accommodation_details as any).address && <DetailRow icon={MapPin} label="Address" value={(op.accommodation_details as any).address} />}
-                {(op.accommodation_details as any).total_rooms && <DetailRow icon={Building2} label="Total Rooms" value={(op.accommodation_details as any).total_rooms} />}
-                {(op.accommodation_details as any).room_types?.length > 0 && <DetailRow icon={Building2} label="Room Types" value={(op.accommodation_details as any).room_types.join(', ')} />}
-                {(op.accommodation_details as any).languages?.length > 0 && <DetailRow icon={Globe} label="Languages" value={(op.accommodation_details as any).languages.join(', ')} />}
-                {(op.accommodation_details as any).check_in && <DetailRow icon={Clock} label="Check-in" value={(op.accommodation_details as any).check_in} />}
-                {(op.accommodation_details as any).check_out && <DetailRow icon={Clock} label="Check-out" value={(op.accommodation_details as any).check_out} />}
-              </div>
-              {(op.accommodation_details as any).amenities?.length > 0 && (
-                <div>
-                  <p className="text-xs text-muted-foreground font-medium mb-2">Amenities</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {(op.accommodation_details as any).amenities.map((a: string, i: number) => <Badge key={i} variant="outline" size="sm">{a}</Badge>)}
-                  </div>
-                </div>
-              )}
-              {(op.accommodation_details as any).meals_included?.length > 0 && (
-                <div>
-                  <p className="text-xs text-muted-foreground font-medium mb-2">Meals Included</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {(op.accommodation_details as any).meals_included.map((m: string, i: number) => <Badge key={i} variant="outline" size="sm">{m}</Badge>)}
-                  </div>
-                </div>
-              )}
-              {(op.accommodation_details as any).nearby_attractions && <DetailRow icon={MapPin} label="Nearby Attractions" value={(op.accommodation_details as any).nearby_attractions} />}
-              {(op.accommodation_details as any).google_maps && (
-                <a href={(op.accommodation_details as any).google_maps} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-accent font-medium hover:underline">
-                  <Globe className="h-4 w-4" /> View on Google Maps
-                </a>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Accommodation Pricing */}
-        {op.accommodation_details && (op.category === 'homestay' || op.category === 'guest_house') && (
-          <Card>
-            <CardContent className="p-5 space-y-4">
-              <h2 className="font-display text-base font-medium flex items-center gap-2"><TrendingUp className="h-4 w-4 text-muted-foreground" /> Pricing (₹)</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {[
-                  ['pricing_single', 'Single/Night'],
-                  ['pricing_double', 'Double/Night'],
-                ].map(([key, label]) => {
-                  const val = (op.accommodation_details as any)?.[key];
-                  if (!val) return null;
-                  const usd = rates ? (val * rates.USD).toFixed(0) : null;
-                  const eur = rates ? (val * rates.EUR).toFixed(0) : null;
-                  return (
-                    <div key={key} className="rounded-lg bg-secondary p-3.5 text-center">
-                      <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{label}</p>
-                      <p className="text-lg font-bold text-foreground mt-0.5">₹{val}</p>
-                      {usd && eur && <p className="text-[10px] text-muted-foreground/60 mt-0.5">≈${usd} · €{eur}</p>}
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Taxi Details */}
-        {op.taxi_details && op.category === 'taxi' && (
-          <Card>
-            <CardContent className="p-5 space-y-4">
-              <h2 className="font-display text-base font-medium flex items-center gap-2"><Car className="h-4 w-4 text-muted-foreground" /> Taxi Details</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                {op.taxi_details.driver_name && <DetailRow icon={User} label="Driver" value={op.taxi_details.driver_name} />}
-                {op.taxi_details.vehicle_type && <DetailRow icon={Car} label="Vehicle Type" value={op.taxi_details.vehicle_type} />}
-                {op.taxi_details.vehicle_model && <DetailRow icon={Car} label="Model" value={op.taxi_details.vehicle_model} />}
-                {op.taxi_details.registration_number && <DetailRow icon={Hash} label="Registration" value={op.taxi_details.registration_number} />}
-                {(op.taxi_details as any).operating_areas?.length > 0 && <DetailRow icon={MapPin} label="Areas" value={(op.taxi_details as any).operating_areas.join(', ')} />}
-                {(op.taxi_details as any).languages?.length > 0 && <DetailRow icon={Globe} label="Languages" value={(op.taxi_details as any).languages.join(', ')} />}
-                {op.taxi_details.years_experience && <DetailRow icon={Clock} label="Experience" value={`${op.taxi_details.years_experience} years`} />}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Pricing */}
-        {op.taxi_details && op.category === 'taxi' && (
-          <Card>
-            <CardContent className="p-5 space-y-4">
-              <h2 className="font-display text-base font-medium flex items-center gap-2"><TrendingUp className="h-4 w-4 text-muted-foreground" /> Pricing (₹)</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {op.taxi_details.price_per_km && (
-                  <div className="rounded-lg bg-secondary p-3.5 text-center">
-                    <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Per Km</p>
-                    <p className="text-lg font-bold text-foreground mt-0.5">₹{op.taxi_details.price_per_km}</p>
-                  </div>
-                )}
-                {op.taxi_details.price_per_day && (
-                  <div className="rounded-lg bg-secondary p-3.5 text-center">
-                    <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Per Day</p>
-                    <p className="text-lg font-bold text-foreground mt-0.5">₹{op.taxi_details.price_per_day}</p>
-                  </div>
-                )}
-                {op.taxi_details.airport_flat_rate && (
-                  <div className="rounded-lg bg-secondary p-3.5 text-center">
-                    <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Airport</p>
-                    <p className="text-lg font-bold text-foreground mt-0.5">₹{op.taxi_details.airport_flat_rate}</p>
-                  </div>
-                )}
-                {op.taxi_details.extra_per_km && (
-                  <div className="rounded-lg bg-secondary p-3.5 text-center">
-                    <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Extra/Km</p>
-                    <p className="text-lg font-bold text-foreground mt-0.5">₹{op.taxi_details.extra_per_km}</p>
-                  </div>
-                )}
-              </div>
-              {(op.taxi_details as any).tour_types?.length > 0 && (
-                <div>
-                  <p className="text-xs text-muted-foreground font-medium mb-2">Tour Types</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {(op.taxi_details as any).tour_types.map((t: string) => <Badge key={t} variant="outline" size="sm">{t}</Badge>)}
-                  </div>
-                </div>
-              )}
-              {op.taxi_details.google_maps && (
-                <a href={op.taxi_details.google_maps} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-accent font-medium hover:underline">
-                  <Globe className="h-4 w-4" /> View on Google Maps
-                </a>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Guide Details */}
-        {op.guide_details && op.category === 'guide' && (
-          <Card>
-            <CardContent className="p-5 space-y-3">
-              <h2 className="font-display text-base font-medium flex items-center gap-2"><Navigation className="h-4 w-4 text-muted-foreground" /> Guide Details</h2>
-              {op.guide_details.full_name && <DetailRow icon={User} label="Name" value={op.guide_details.full_name} />}
-              {op.guide_details.contact_number && <DetailRow icon={Phone} label="Contact" value={op.guide_details.contact_number} />}
-              {op.guide_details.whatsapp_number && <DetailRow icon={MessageCircle} label="WhatsApp" value={op.guide_details.whatsapp_number} />}
-              {op.guide_details.years_experience && <DetailRow icon={Clock} label="Experience" value={`${op.guide_details.years_experience} years`} />}
-              {op.guide_details.certification && <DetailRow icon={BadgeCheck} label="Certification" value={op.guide_details.certification} />}
-              {op.guide_details.languages && op.guide_details.languages.length > 0 && (
-                <div className="flex items-start gap-2.5">
-                  <Globe className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-xs text-muted-foreground font-medium">Languages</p>
-                    <div className="flex flex-wrap gap-1 mt-0.5">{op.guide_details.languages.map((l: string) => <Badge key={l} variant="outline" size="sm">{l}</Badge>)}</div>
-                  </div>
-                </div>
-              )}
-              {op.guide_details.specialties && op.guide_details.specialties.length > 0 && (
-                <div className="flex items-start gap-2.5">
-                  <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-xs text-muted-foreground font-medium">Specialties</p>
-                    <div className="flex flex-wrap gap-1 mt-0.5">{op.guide_details.specialties.map((s: string) => <Badge key={s} variant="outline" size="sm">{s}</Badge>)}</div>
-                  </div>
-                </div>
-              )}
-              {op.guide_details.operating_areas && op.guide_details.operating_areas.length > 0 && (
-                <div className="flex items-start gap-2.5">
-                  <Map className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-xs text-muted-foreground font-medium">Operating Areas</p>
-                    <div className="flex flex-wrap gap-1 mt-0.5">{op.guide_details.operating_areas.map((a: string) => <Badge key={a} variant="outline" size="sm">{a}</Badge>)}</div>
-                  </div>
-                </div>
-              )}
-              {op.guide_details.google_maps && (
-                <a href={op.guide_details.google_maps} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-accent font-medium hover:underline">
-                  <Globe className="h-4 w-4" /> View on Google Maps
-                </a>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Vendor Details */}
-        {op.vendor_details && op.category === 'vendor' && (
-          <Card>
-            <CardContent className="p-5 space-y-3">
-              <h2 className="font-display text-base font-medium flex items-center gap-2"><Store className="h-4 w-4 text-muted-foreground" /> Vendor Details</h2>
-              {op.vendor_details.business_name && <DetailRow icon={Store} label="Business" value={op.vendor_details.business_name} />}
-              {op.vendor_details.owner_name && <DetailRow icon={User} label="Owner" value={op.vendor_details.owner_name} />}
-              {op.vendor_details.contact_number && <DetailRow icon={Phone} label="Contact" value={op.vendor_details.contact_number} />}
-              {op.vendor_details.whatsapp_number && <DetailRow icon={MessageCircle} label="WhatsApp" value={op.vendor_details.whatsapp_number} />}
-              {op.vendor_details.business_type && <DetailRow icon={Building2} label="Type" value={op.vendor_details.business_type.replace('_', ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())} />}
-              {op.vendor_details.specialties && op.vendor_details.specialties.length > 0 && (
-                <div className="flex items-start gap-2.5">
-                  <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-xs text-muted-foreground font-medium">Specialties</p>
-                    <div className="flex flex-wrap gap-1 mt-0.5">{op.vendor_details.specialties.map((s: string) => <Badge key={s} variant="outline" size="sm">{s}</Badge>)}</div>
-                  </div>
-                </div>
-              )}
-              {op.vendor_details.operating_areas && op.vendor_details.operating_areas.length > 0 && (
-                <div className="flex items-start gap-2.5">
-                  <Map className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-xs text-muted-foreground font-medium">Operating Areas</p>
-                    <div className="flex flex-wrap gap-1 mt-0.5">{op.vendor_details.operating_areas.map((a: string) => <Badge key={a} variant="outline" size="sm">{a}</Badge>)}</div>
-                  </div>
-                </div>
-              )}
-              {op.vendor_details.google_maps && (
-                <a href={op.vendor_details.google_maps} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-accent font-medium hover:underline">
-                  <Globe className="h-4 w-4" /> View on Google Maps
-                </a>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Tariffs */}
-        {op.tariffs && op.category === 'houseboat' && (
-          <Card>
-            <CardContent className="p-5 space-y-4">
-              <h2 className="font-display text-base font-medium flex items-center gap-2"><TrendingUp className="h-4 w-4 text-muted-foreground" /> Tariffs (₹)</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {([
-                  ['double_ep', 'Double EP'], ['double_cp', 'Double CP'],
-                  ['double_map', 'Double MAP'], ['double_ap', 'Double AP'],
-                  ['single_ep', 'Single EP'], ['single_cp', 'Single CP'],
-                  ['single_map', 'Single MAP'], ['single_ap', 'Single AP'],
-                ] as const).map(([key, label]) => {
-                  const val = (op.tariffs as any)?.[key];
-                  if (!val) return null;
-                  const usd = rates ? (val * rates.USD).toFixed(0) : null;
-                  const eur = rates ? (val * rates.EUR).toFixed(0) : null;
-                  return (
-                    <div key={key} className="rounded-lg bg-secondary p-3.5 text-center">
-                      <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{label}</p>
-                      <p className="text-lg font-bold text-foreground mt-0.5">₹{val}</p>
-                      {usd && eur && <p className="text-[10px] text-muted-foreground/60 mt-0.5">≈${usd} · €{eur}</p>}
-                    </div>
-                  );
-                })}
-              </div>
-              {(op.tariffs as any)?.note && (
-                <p className="text-xs text-muted-foreground">{(op.tariffs as any).note}</p>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {op.pricing_note && (
-          <Card className="bg-secondary/50 border-dashed">
-            <CardContent className="p-5">
-              <p className="text-sm text-muted-foreground">{op.pricing_note}</p>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* CTA */}
-        {showForm && otpSent ? (
-          <Card>
-            <CardContent className="p-5 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold">Verify your phone</h3>
-                <button onClick={() => { setOtpSent(false); setOtp(''); setOtpError(''); }} className="p-1.5 rounded-lg hover:bg-secondary transition-colors">
-                  <X className="h-4 w-4 text-muted-foreground" />
-                </button>
-              </div>
-              <p className="text-sm text-muted-foreground">Enter the OTP sent to {getPhone()}</p>
-              <input
-                type="text"
-                inputMode="numeric"
-                placeholder="Enter OTP"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                className="w-full h-11 px-3.5 rounded-lg border border-input bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all text-center tracking-[0.4em] text-lg font-mono"
-              />
-              {otpError && <p className="text-xs text-danger">{otpError}</p>}
-              <div className="flex gap-2.5">
-                <Button onClick={handleOtpSubmit} className="flex-1" disabled={otpSubmitting || otp.length < 4}>
-                  {otpSubmitting ? 'Verifying...' : 'Verify & Contact'}
-                </Button>
-                <Button variant="outline" onClick={() => { setOtpSent(false); setOtp(''); setOtpError(''); handleSubmit(); }} disabled={submitting}>
-                  Resend
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ) : showForm ? (
-          <Card>
-            <CardContent className="p-5 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold">Share your details</h3>
-                <button onClick={() => setShowForm(false)} className="p-1.5 rounded-lg hover:bg-secondary transition-colors">
-                  <X className="h-4 w-4 text-muted-foreground" />
-                </button>
-              </div>
-              <div className="flex items-center gap-3 pb-1">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10">
-                  <MessageCircle className="h-5 w-5 text-accent" />
-                </div>
-                <p className="text-sm text-muted-foreground">Reach out to <span className="font-medium text-foreground">{op.name}</span> directly</p>
-              </div>
-              {op.plan === 'pro' && (
-                <p className="text-xs text-muted-foreground bg-secondary rounded-lg px-3.5 py-2.5">We'll send a one-time code to verify your number.</p>
-              )}
-              <input
-                type="text"
-                placeholder="Your name"
-                value={visitorName}
-                onChange={(e) => setVisitorName(e.target.value)}
-                className="w-full h-11 px-3.5 rounded-lg border border-input bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all placeholder:text-muted-foreground/50"
-              />
-              <p className="text-xs text-muted-foreground font-medium">Phone number</p>
-              <div className="flex gap-2.5">
-                <div className="relative w-[140px] shrink-0">
-                  <select
-                    value={countryCode}
-                    onChange={(e) => setCountryCode(e.target.value)}
-                    className="flex h-11 w-full rounded-lg border border-input bg-card px-3 pr-8 text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all"
-                  >
-                    {countryOptions.map((opt) => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                </div>
-                <input
-                  type="tel"
-                  value={localNumber}
-                  onChange={(e) => setLocalNumber(e.target.value.replace(/[^0-9]/g, ''))}
-                  placeholder="1234567890"
-                  className="flex-1 h-11 px-3.5 rounded-lg border border-input bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all placeholder:text-muted-foreground/50"
-                />
-              </div>
-              {stepError && <p className="text-xs text-danger">{stepError}</p>}
-              <Button onClick={handleSubmit} className="w-full" size="lg" disabled={submitting || !visitorName.trim() || !localNumber}>
-                {submitting ? 'Sending...' : op.plan === 'pro' ? 'Send OTP' : 'Start Chat'}
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <>
-            {overflow && (
-              <Card className="border-warning/20 bg-warning/[0.03]">
-                <CardContent className="p-4 flex items-start gap-2.5">
-                  <Info className="h-4 w-4 text-warning shrink-0 mt-0.5" />
-                  <p className="text-xs text-muted-foreground">This operator is currently at capacity. Your enquiry has been forwarded to our team.</p>
-                </CardContent>
-              </Card>
-            )}
-            <Button
-              onClick={() => setShowForm(true)}
-              size="lg"
-              className="w-full h-12 text-base shadow-sm rounded-lg"
-            >
-              <MessageCircle className="h-5 w-5" />
-              Contact on WhatsApp
-            </Button>
-          </>
-        )}
-
-        <div className="text-center pb-8">
-          <Link href="/" className="text-xs text-muted-foreground hover:text-accent transition-colors inline-flex items-center gap-1">
-            Browse all operators
-          </Link>
-        </div>
-      </div>
+      {/* Padding for mobile CTA */}
+      <div className="lg:hidden h-20" />
     </div>
   );
 }
 
 function DetailRow({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
   return (
-    <div className="flex items-start gap-2.5">
-      <Icon className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-      <div>
-        <p className="text-xs text-muted-foreground font-medium">{label}</p>
-        <p className="text-sm text-foreground">{value}</p>
+    <div className="flex items-center gap-3 px-4 py-3 text-sm">
+      <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
+      <div className="flex-1 min-w-0">
+        <p className="text-xs text-muted-foreground">{label}</p>
+        <p className="text-sm text-foreground truncate">{value}</p>
       </div>
     </div>
   );
