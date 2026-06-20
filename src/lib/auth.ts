@@ -41,6 +41,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             return null;
           }
 
+          if (adminEmails.includes(email)) {
+            return {
+              id: 'admin',
+              name: 'Admin',
+              email,
+              phone: '',
+            };
+          }
+
           let stored = await db.query.operators.findFirst({
             where: eq(operators.email, email),
           });
