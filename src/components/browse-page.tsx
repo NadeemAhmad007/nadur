@@ -323,55 +323,59 @@ export default function BrowsePage() {
             <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
               <Compass className="h-5 w-5 text-accent" /> Discover Kashmir
             </h2>
-            <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-none">
-              {destinations.map((d) => (
-                <a
-                  key={d.title}
-                  href={d.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group shrink-0 w-56 rounded-2xl border border-border/50 bg-card overflow-hidden hover:shadow-md hover:border-accent/30 transition-all duration-200"
-                >
-                  <div className="aspect-[16/9] bg-muted relative overflow-hidden">
-                    {d.thumbnail ? (
-                      <img src={d.thumbnail} alt={d.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-accent/10 to-accent/5">
-                        <Compass className="h-10 w-10 text-accent/30" />
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-                  </div>
-                  <div className="p-3.5">
-                    <h3 className="text-sm font-semibold text-foreground truncate">{d.title}</h3>
-                    <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 leading-relaxed">{d.extract}</p>
-                  </div>
-                </a>
-              ))}
+            <div className="w-screen relative left-1/2 -translate-x-1/2 overflow-x-auto scrollbar-none">
+              <div className="flex gap-4 px-4" style={{ width: 'max-content' }}>
+                {destinations.map((d) => (
+                  <a
+                    key={d.title}
+                    href={d.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group shrink-0 w-56 rounded-2xl border border-border/50 bg-card overflow-hidden hover:shadow-md hover:border-accent/30 transition-all duration-200"
+                  >
+                    <div className="aspect-[16/9] bg-muted relative overflow-hidden">
+                      {d.thumbnail ? (
+                        <img src={d.thumbnail} alt={d.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-accent/10 to-accent/5">
+                          <Compass className="h-10 w-10 text-accent/30" />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                    </div>
+                    <div className="p-3.5">
+                      <h3 className="text-sm font-semibold text-foreground truncate">{d.title}</h3>
+                      <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 leading-relaxed">{d.extract}</p>
+                    </div>
+                  </a>
+                ))}
+              </div>
             </div>
           </div>
         )}
 
         {/* Categories */}
-        <div className="flex gap-2 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-none">
-          {CATEGORIES.map((cat) => {
-            const Icon = cat.icon;
-            const isActive = activeCategory === cat.slug;
-            return (
-              <button
-                key={cat.slug}
-                onClick={() => setActiveCategory(cat.slug)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-200 shrink-0 ${
-                  isActive
-                    ? 'bg-accent text-accent-foreground shadow-sm'
-                    : 'bg-card text-muted-foreground border border-border hover:border-accent/30 hover:text-foreground'
-                }`}
-              >
-                <Icon className={`h-4 w-4 ${isActive ? 'text-accent-foreground' : 'text-muted-foreground'}`} />
-                {cat.label}
-              </button>
-            );
-          })}
+        <div className="w-screen relative left-1/2 -translate-x-1/2 overflow-x-auto scrollbar-none mb-5">
+          <div className="flex gap-2 px-4" style={{ width: 'max-content' }}>
+            {CATEGORIES.map((cat) => {
+              const Icon = cat.icon;
+              const isActive = activeCategory === cat.slug;
+              return (
+                <button
+                  key={cat.slug}
+                  onClick={() => setActiveCategory(cat.slug)}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-200 shrink-0 ${
+                    isActive
+                      ? 'bg-accent text-accent-foreground shadow-sm'
+                      : 'bg-card text-muted-foreground border border-border hover:border-accent/30 hover:text-foreground'
+                  }`}
+                >
+                  <Icon className={`h-4 w-4 ${isActive ? 'text-accent-foreground' : 'text-muted-foreground'}`} />
+                  {cat.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Toolbar */}
@@ -454,21 +458,23 @@ export default function BrowsePage() {
         {/* Events */}
         {events.length > 0 && (
           <div className="mb-5">
-            <div className="flex items-center gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-none">
-              <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-accent">Events</span>
-              {events.map((e, i) => (
-                <a
-                  key={i}
-                  href={e.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl border border-border/60 bg-card text-xs hover:border-accent/30 hover:bg-accent/5 transition-all"
-                >
-                  <Calendar className="h-3 w-3 text-accent" />
-                  <span className="font-medium text-foreground truncate max-w-[180px]">{e.name}</span>
-                  <span className="text-muted-foreground">{e.date}</span>
-                </a>
-              ))}
+            <div className="w-screen relative left-1/2 -translate-x-1/2 overflow-x-auto scrollbar-none">
+              <div className="flex items-center gap-2 px-4" style={{ width: 'max-content' }}>
+                <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-accent">Events</span>
+                {events.map((e, i) => (
+                  <a
+                    key={i}
+                    href={e.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl border border-border/60 bg-card text-xs hover:border-accent/30 hover:bg-accent/5 transition-all"
+                  >
+                    <Calendar className="h-3 w-3 text-accent" />
+                    <span className="font-medium text-foreground truncate max-w-[180px]">{e.name}</span>
+                    <span className="text-muted-foreground">{e.date}</span>
+                  </a>
+                ))}
+              </div>
             </div>
           </div>
         )}
