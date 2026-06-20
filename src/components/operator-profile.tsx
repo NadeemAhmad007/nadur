@@ -158,7 +158,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
                 alt={op.name}
                 className="w-full h-full object-cover transition-opacity duration-300"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/5" />
               {photos.length > 1 && (
                 <>
                   <button
@@ -177,15 +177,15 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
               )}
             </div>
             {photos.length > 1 && (
-              <div className="flex gap-2 px-4 py-3 overflow-x-auto scrollbar-none bg-card/80 backdrop-blur-sm">
+              <div className="flex justify-center gap-1.5 pb-1 mt-2">
                 {photos.map((photo, i) => (
                   <button
                     key={i}
                     onClick={() => setCurrentPhoto(i)}
-                    className={`shrink-0 w-16 h-12 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+                    className={`shrink-0 w-12 h-9 rounded overflow-hidden border transition-all duration-200 ${
                       i === currentPhoto
-                        ? 'border-accent ring-1 ring-accent/30 opacity-100'
-                        : 'border-transparent opacity-60 hover:opacity-90'
+                        ? 'border-accent opacity-100'
+                        : 'border-transparent opacity-50 hover:opacity-80'
                     }`}
                   >
                     <img src={photo} alt="" className="w-full h-full object-cover" />
@@ -227,13 +227,14 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
         <div>
           <div className="flex items-start justify-between">
             <div>
-              <div className="flex items-center gap-2.5">
-                <h1 className="text-2xl font-bold text-foreground">{op.name}</h1>
-                {op.verified && <BadgeCheck className="h-5 w-5 text-accent" />}
-              </div>
+              <h1 className="text-2xl sm:text-3xl font-display text-foreground font-normal leading-tight">{op.name}</h1>
               <div className="flex items-center gap-2.5 mt-2">
-                <Badge variant="outline" className="capitalize">{op.category ? (categoryLabels[op.category] || op.category) : ''}</Badge>
-                {op.verified && <Badge variant="primary" size="sm"><BadgeCheck className="h-3 w-3 mr-0.5" /> Verified</Badge>}
+                <span className="text-xs font-medium text-muted-foreground/70 uppercase tracking-wider">{op.category ? (categoryLabels[op.category] || op.category) : ''}</span>
+                {op.verified && (
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-accent">
+                    <BadgeCheck className="h-3.5 w-3.5" /> Verified
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -284,7 +285,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
           <Card>
             <CardContent className="p-5 space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold flex items-center gap-2 text-sm"><Sun className="h-4 w-4 text-muted-foreground" /> Weather</h3>
+                <h3 className="font-display text-base font-medium flex items-center gap-2"><Sun className="h-4 w-4 text-muted-foreground" /> Weather</h3>
                 <span className="text-sm text-muted-foreground">Now</span>
               </div>
               <div className="flex items-center gap-3">
@@ -315,7 +316,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
 
         {/* Currency conversion */}
         {rates && (
-          <Card className="bg-secondary/30 border-dashed">
+          <Card>
             <CardContent className="p-4">
               <p className="text-xs text-muted-foreground mb-2">Approximate conversion</p>
               <div className="flex gap-3 text-sm flex-wrap">
@@ -337,7 +338,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
         {op.houseboat_details && op.category === 'houseboat' && (
           <Card>
             <CardContent className="p-5 space-y-4">
-              <h2 className="font-semibold flex items-center gap-2"><Building2 className="h-4 w-4 text-muted-foreground" /> Houseboat Details</h2>
+              <h2 className="font-display text-base font-medium flex items-center gap-2"><Building2 className="h-4 w-4 text-muted-foreground" /> Houseboat Details</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 {(op.houseboat_details as any).owner && <DetailRow icon={User} label="Owner" value={(op.houseboat_details as any).owner} />}
                 {(op.houseboat_details as any).address && <DetailRow icon={MapPin} label="Address" value={(op.houseboat_details as any).address} />}
@@ -377,7 +378,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
         {op.shikara_details && op.category === 'shikara' && (
           <Card>
             <CardContent className="p-5 space-y-4">
-              <h2 className="font-semibold flex items-center gap-2"><Ship className="h-4 w-4 text-muted-foreground" /> Shikara Details</h2>
+              <h2 className="font-display text-base font-medium flex items-center gap-2"><Ship className="h-4 w-4 text-muted-foreground" /> Shikara Details</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 {(op.shikara_details as any).full_name && <DetailRow icon={User} label="Full Name" value={(op.shikara_details as any).full_name} />}
                 {(op.shikara_details as any).mobile_number && <DetailRow icon={Phone} label="Mobile" value={(op.shikara_details as any).mobile_number} />}
@@ -406,7 +407,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
         {op.artisan_details && op.category === 'artisan' && (
           <Card>
             <CardContent className="p-5 space-y-4">
-              <h2 className="font-semibold flex items-center gap-2"><Store className="h-4 w-4 text-muted-foreground" /> Artisan Details</h2>
+              <h2 className="font-display text-base font-medium flex items-center gap-2"><Store className="h-4 w-4 text-muted-foreground" /> Artisan Details</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 {(op.artisan_details as any).business_type && <DetailRow icon={Star} label="Business Type" value={(op.artisan_details as any).business_type} />}
                 {(op.artisan_details as any).business_scale && <DetailRow icon={TrendingUp} label="Scale" value={(op.artisan_details as any).business_scale} />}
@@ -435,7 +436,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
         {op.accommodation_details && (op.category === 'homestay' || op.category === 'guest_house') && (
           <Card>
             <CardContent className="p-5 space-y-4">
-              <h2 className="font-semibold flex items-center gap-2"><Building2 className="h-4 w-4 text-muted-foreground" /> Property Details</h2>
+              <h2 className="font-display text-base font-medium flex items-center gap-2"><Building2 className="h-4 w-4 text-muted-foreground" /> Property Details</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 {(op.accommodation_details as any).owner_name && <DetailRow icon={User} label="Owner" value={(op.accommodation_details as any).owner_name} />}
                 {(op.accommodation_details as any).manager_name && <DetailRow icon={User} label="Manager" value={(op.accommodation_details as any).manager_name} />}
@@ -478,7 +479,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
         {op.accommodation_details && (op.category === 'homestay' || op.category === 'guest_house') && (
           <Card>
             <CardContent className="p-5 space-y-4">
-              <h2 className="font-semibold flex items-center gap-2"><TrendingUp className="h-4 w-4 text-muted-foreground" /> Pricing (₹)</h2>
+              <h2 className="font-display text-base font-medium flex items-center gap-2"><TrendingUp className="h-4 w-4 text-muted-foreground" /> Pricing (₹)</h2>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
                   ['pricing_single', 'Single/Night'],
@@ -489,7 +490,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
                   const usd = rates ? (val * rates.USD).toFixed(0) : null;
                   const eur = rates ? (val * rates.EUR).toFixed(0) : null;
                   return (
-                    <div key={key} className="rounded-xl bg-secondary p-3.5 text-center">
+                    <div key={key} className="rounded-lg bg-secondary p-3.5 text-center">
                       <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{label}</p>
                       <p className="text-lg font-bold text-foreground mt-0.5">₹{val}</p>
                       {usd && eur && <p className="text-[10px] text-muted-foreground/60 mt-0.5">≈${usd} · €{eur}</p>}
@@ -505,7 +506,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
         {op.taxi_details && op.category === 'taxi' && (
           <Card>
             <CardContent className="p-5 space-y-4">
-              <h2 className="font-semibold flex items-center gap-2"><Car className="h-4 w-4 text-muted-foreground" /> Taxi Details</h2>
+              <h2 className="font-display text-base font-medium flex items-center gap-2"><Car className="h-4 w-4 text-muted-foreground" /> Taxi Details</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 {op.taxi_details.driver_name && <DetailRow icon={User} label="Driver" value={op.taxi_details.driver_name} />}
                 {op.taxi_details.vehicle_type && <DetailRow icon={Car} label="Vehicle Type" value={op.taxi_details.vehicle_type} />}
@@ -523,28 +524,28 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
         {op.taxi_details && op.category === 'taxi' && (
           <Card>
             <CardContent className="p-5 space-y-4">
-              <h2 className="font-semibold flex items-center gap-2"><TrendingUp className="h-4 w-4 text-muted-foreground" /> Pricing (₹)</h2>
+              <h2 className="font-display text-base font-medium flex items-center gap-2"><TrendingUp className="h-4 w-4 text-muted-foreground" /> Pricing (₹)</h2>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {op.taxi_details.price_per_km && (
-                  <div className="rounded-xl bg-secondary p-3.5 text-center">
+                  <div className="rounded-lg bg-secondary p-3.5 text-center">
                     <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Per Km</p>
                     <p className="text-lg font-bold text-foreground mt-0.5">₹{op.taxi_details.price_per_km}</p>
                   </div>
                 )}
                 {op.taxi_details.price_per_day && (
-                  <div className="rounded-xl bg-secondary p-3.5 text-center">
+                  <div className="rounded-lg bg-secondary p-3.5 text-center">
                     <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Per Day</p>
                     <p className="text-lg font-bold text-foreground mt-0.5">₹{op.taxi_details.price_per_day}</p>
                   </div>
                 )}
                 {op.taxi_details.airport_flat_rate && (
-                  <div className="rounded-xl bg-secondary p-3.5 text-center">
+                  <div className="rounded-lg bg-secondary p-3.5 text-center">
                     <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Airport</p>
                     <p className="text-lg font-bold text-foreground mt-0.5">₹{op.taxi_details.airport_flat_rate}</p>
                   </div>
                 )}
                 {op.taxi_details.extra_per_km && (
-                  <div className="rounded-xl bg-secondary p-3.5 text-center">
+                  <div className="rounded-lg bg-secondary p-3.5 text-center">
                     <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Extra/Km</p>
                     <p className="text-lg font-bold text-foreground mt-0.5">₹{op.taxi_details.extra_per_km}</p>
                   </div>
@@ -571,7 +572,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
         {op.guide_details && op.category === 'guide' && (
           <Card>
             <CardContent className="p-5 space-y-3">
-              <h2 className="font-semibold flex items-center gap-2"><Navigation className="h-4 w-4 text-muted-foreground" /> Guide Details</h2>
+              <h2 className="font-display text-base font-medium flex items-center gap-2"><Navigation className="h-4 w-4 text-muted-foreground" /> Guide Details</h2>
               {op.guide_details.full_name && <DetailRow icon={User} label="Name" value={op.guide_details.full_name} />}
               {op.guide_details.contact_number && <DetailRow icon={Phone} label="Contact" value={op.guide_details.contact_number} />}
               {op.guide_details.whatsapp_number && <DetailRow icon={MessageCircle} label="WhatsApp" value={op.guide_details.whatsapp_number} />}
@@ -617,7 +618,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
         {op.vendor_details && op.category === 'vendor' && (
           <Card>
             <CardContent className="p-5 space-y-3">
-              <h2 className="font-semibold flex items-center gap-2"><Store className="h-4 w-4 text-muted-foreground" /> Vendor Details</h2>
+              <h2 className="font-display text-base font-medium flex items-center gap-2"><Store className="h-4 w-4 text-muted-foreground" /> Vendor Details</h2>
               {op.vendor_details.business_name && <DetailRow icon={Store} label="Business" value={op.vendor_details.business_name} />}
               {op.vendor_details.owner_name && <DetailRow icon={User} label="Owner" value={op.vendor_details.owner_name} />}
               {op.vendor_details.contact_number && <DetailRow icon={Phone} label="Contact" value={op.vendor_details.contact_number} />}
@@ -654,7 +655,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
         {op.tariffs && op.category === 'houseboat' && (
           <Card>
             <CardContent className="p-5 space-y-4">
-              <h2 className="font-semibold flex items-center gap-2"><TrendingUp className="h-4 w-4 text-muted-foreground" /> Tariffs (₹)</h2>
+              <h2 className="font-display text-base font-medium flex items-center gap-2"><TrendingUp className="h-4 w-4 text-muted-foreground" /> Tariffs (₹)</h2>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {([
                   ['double_ep', 'Double EP'], ['double_cp', 'Double CP'],
@@ -667,7 +668,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
                   const usd = rates ? (val * rates.USD).toFixed(0) : null;
                   const eur = rates ? (val * rates.EUR).toFixed(0) : null;
                   return (
-                    <div key={key} className="rounded-xl bg-secondary p-3.5 text-center">
+                    <div key={key} className="rounded-lg bg-secondary p-3.5 text-center">
                       <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{label}</p>
                       <p className="text-lg font-bold text-foreground mt-0.5">₹{val}</p>
                       {usd && eur && <p className="text-[10px] text-muted-foreground/60 mt-0.5">≈${usd} · €{eur}</p>}
@@ -707,7 +708,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
                 placeholder="Enter OTP"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                className="w-full h-11 px-3.5 rounded-xl border border-input bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all text-center tracking-[0.4em] text-lg font-mono"
+                className="w-full h-11 px-3.5 rounded-lg border border-input bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all text-center tracking-[0.4em] text-lg font-mono"
               />
               {otpError && <p className="text-xs text-danger">{otpError}</p>}
               <div className="flex gap-2.5">
@@ -730,20 +731,20 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
                 </button>
               </div>
               <div className="flex items-center gap-3 pb-1">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10">
                   <MessageCircle className="h-5 w-5 text-accent" />
                 </div>
                 <p className="text-sm text-muted-foreground">Reach out to <span className="font-medium text-foreground">{op.name}</span> directly</p>
               </div>
               {op.plan === 'pro' && (
-                <p className="text-xs text-muted-foreground bg-secondary rounded-xl px-3.5 py-2.5">We'll send a one-time code to verify your number.</p>
+                <p className="text-xs text-muted-foreground bg-secondary rounded-lg px-3.5 py-2.5">We'll send a one-time code to verify your number.</p>
               )}
               <input
                 type="text"
                 placeholder="Your name"
                 value={visitorName}
                 onChange={(e) => setVisitorName(e.target.value)}
-                className="w-full h-11 px-3.5 rounded-xl border border-input bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all placeholder:text-muted-foreground/50"
+                className="w-full h-11 px-3.5 rounded-lg border border-input bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all placeholder:text-muted-foreground/50"
               />
               <p className="text-xs text-muted-foreground font-medium">Phone number</p>
               <div className="flex gap-2.5">
@@ -751,7 +752,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
                   <select
                     value={countryCode}
                     onChange={(e) => setCountryCode(e.target.value)}
-                    className="flex h-11 w-full rounded-xl border border-input bg-card px-3 pr-8 text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all"
+                    className="flex h-11 w-full rounded-lg border border-input bg-card px-3 pr-8 text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all"
                   >
                     {countryOptions.map((opt) => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -764,7 +765,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
                   value={localNumber}
                   onChange={(e) => setLocalNumber(e.target.value.replace(/[^0-9]/g, ''))}
                   placeholder="1234567890"
-                  className="flex-1 h-11 px-3.5 rounded-xl border border-input bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all placeholder:text-muted-foreground/50"
+                  className="flex-1 h-11 px-3.5 rounded-lg border border-input bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all placeholder:text-muted-foreground/50"
                 />
               </div>
               {stepError && <p className="text-xs text-danger">{stepError}</p>}
@@ -786,7 +787,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
             <Button
               onClick={() => setShowForm(true)}
               size="lg"
-              className="w-full h-12 text-base shadow-sm"
+              className="w-full h-12 text-base shadow-sm rounded-lg"
             >
               <MessageCircle className="h-5 w-5" />
               Contact on WhatsApp
@@ -795,7 +796,7 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
         )}
 
         <div className="text-center pb-8">
-          <Link href="/" className="text-sm text-accent font-medium hover:underline inline-flex items-center gap-1">
+          <Link href="/" className="text-xs text-muted-foreground hover:text-accent transition-colors inline-flex items-center gap-1">
             Browse all operators
           </Link>
         </div>

@@ -231,64 +231,86 @@ export default function BrowsePage() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 pt-8 pb-12">
+      <main className="max-w-5xl mx-auto px-4 pt-12 pb-12">
         {/* Hero Section */}
-        <div className="relative mb-10 text-center overflow-hidden rounded-3xl border border-border/40">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-accent/5 to-primary/5" />
-          <div className="absolute inset-0 opacity-[0.04]" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2316314D' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-            backgroundSize: '30px 30px'
+        <div className="relative mb-16 text-center overflow-hidden rounded-xl bg-gradient-to-b from-primary to-primary-dark">
+          <div className="absolute inset-0 opacity-[0.06]" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23FFFFFF' fill-opacity='0.15'%3E%3Cpath d='M50 50c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10c0 5.523-4.477 10-10 10s-10-4.477-10-10 4.477-10 10-10z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            backgroundSize: '60px 60px'
           }} />
-          <div className="relative p-8 sm:p-14">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-semibold uppercase tracking-wider mb-4">
-              <Sparkles className="h-3.5 w-3.5 animate-pulse" />
+          <div className="relative px-6 sm:px-16 pt-14 sm:pt-20 pb-10 sm:pb-14">
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-accent/15 text-accent-light text-xs font-medium uppercase tracking-wider mb-5 border border-accent/20">
+              <Sparkles className="h-3 w-3" />
               Explore Kashmir Like Never Before
             </div>
-            <h1 className="text-3xl sm:text-5xl font-black text-foreground tracking-tight max-w-2xl mx-auto leading-tight">
-              Connect Direct, <span className="text-accent">Book Local</span> on Kasheer360
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-display text-white leading-[1.1] max-w-3xl mx-auto font-normal tracking-tight">
+              Connect Direct, <span className="text-accent">Book Local</span>
             </h1>
-            <p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-xl mx-auto">
-               Your premium gateway to verified houseboats, shikara rides, authentic local artisans, tourist guides, and local taxi services across Kashmir. 100% direct connection—no middlemen, no hidden commissions.
+            <p className="mt-4 text-base sm:text-lg text-white/70 max-w-xl mx-auto leading-relaxed font-[450]">
+              Kashmir's trusted marketplace connecting you directly with verified local providers. No middlemen, no commissions.
             </p>
+          </div>
+          {/* Floating search card */}
+          <div className="relative px-6 sm:px-16 pb-0 -mb-8 sm:-mb-10">
+            <div className="bg-white rounded-lg shadow-xl shadow-primary/20 p-4 sm:p-5 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 max-w-2xl mx-auto">
+              <div className="flex items-center gap-3 flex-1">
+                <Search className="h-5 w-5 text-muted-foreground shrink-0" />
+                <input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch(e)}
+                  placeholder="Search houseboats, shikaras, guides..."
+                  className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none"
+                />
+              </div>
+              <button
+                onClick={(e) => handleSearch(e)}
+                className="shrink-0 bg-primary text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-primary-light transition-colors"
+              >
+                Search
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* AI Search Statement */}
-        <div className="mb-10 p-5 rounded-2xl bg-accent/5 border border-accent/20 text-center">
-          <p className="text-xs font-medium text-accent uppercase tracking-wider mb-1.5">AI & Search Optimized</p>
-          <p className="text-sm text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Kasheer360 is Kashmir's local travel marketplace connecting travelers directly with verified hotels, houseboats, taxi operators, guides, and experience providers for transparent pricing and authentic local experiences.
-          </p>
+        {/* How Kasheer360 Works */}
+        <div className="mb-16">
+          <h2 className="text-center text-2xl sm:text-3xl font-display text-foreground font-normal mb-10">
+            How Kasheer360 Works
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+            {[
+              { step: '01', title: 'Browse Verified Locals', desc: 'Explore authentic houseboats, shikaras, guides, and artisans — all verified by our team.' },
+              { step: '02', title: 'Connect Direct via WhatsApp', desc: 'Message or call the provider directly. No contact forms, no intermediaries.' },
+              { step: '03', title: 'Book & Pay Locally', desc: 'Arrange your stay or service directly with the owner. Fair rates, zero commission.' },
+            ].map((item) => (
+              <div key={item.step} className="text-center p-6 sm:p-8 rounded-lg bg-white border border-border/60">
+                <div className="w-10 h-10 rounded-full bg-primary/5 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-sm font-semibold text-accent">{item.step}</span>
+                </div>
+                <h3 className="font-display text-lg font-medium text-foreground mb-2">{item.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Why Choose Us Section */}
-        <div className="mb-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-card p-6 rounded-2xl border border-border/50 hover:border-accent/30 transition-all shadow-sm">
-            <div className="h-10 w-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent mb-4">
-              <Compass className="h-5 w-5" />
-            </div>
-            <h3 className="text-base font-bold text-foreground mb-2">100% Verified & Direct</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Every operator is verified locally for authenticity. Get their direct WhatsApp and mobile numbers to plan and negotiate directly.
-            </p>
-          </div>
-          <div className="bg-card p-6 rounded-2xl border border-border/50 hover:border-accent/30 transition-all shadow-sm">
-            <div className="h-10 w-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent mb-4">
-              <SlidersHorizontal className="h-5 w-5" />
-            </div>
-            <h3 className="text-base font-bold text-foreground mb-2">No Hidden Commissions</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Travel portals charge up to 30% commission. Kasheer360 connects you directly with the owner so you pay fair, local rates.
-            </p>
-          </div>
-          <div className="bg-card p-6 rounded-2xl border border-border/50 hover:border-accent/30 transition-all shadow-sm">
-            <div className="h-10 w-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent mb-4">
-              <Sparkles className="h-5 w-5" />
-            </div>
-            <h3 className="text-base font-bold text-foreground mb-2">Promote Local Tourism</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Support local houseboats, shikara drivers, guides, and artisans directly, keeping tourism revenue where it belongs—in Kashmir.
-            </p>
+        {/* Trust strip */}
+        <div className="mb-16">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            {[
+              { icon: Compass, title: '100% Verified & Direct', desc: 'Every operator is verified locally for authenticity. Get their direct WhatsApp and mobile numbers to plan and negotiate directly.' },
+              { icon: SlidersHorizontal, title: 'No Hidden Commissions', desc: 'Travel portals charge up to 30% commission. Kasheer360 connects you directly with the owner so you pay fair, local rates.' },
+              { icon: Sparkles, title: 'Promote Local Tourism', desc: 'Support local houseboats, shikara drivers, guides, and artisans directly, keeping tourism revenue where it belongs — in Kashmir.' },
+            ].map((item) => (
+              <div key={item.title} className="bg-white p-6 sm:p-7 rounded-lg border border-border/60 hover:shadow-sm transition-shadow">
+                <div className="h-10 w-10 rounded-lg bg-accent/10 flex items-center justify-center text-accent mb-4">
+                  <item.icon className="h-5 w-5" />
+                </div>
+                <h3 className="font-display text-lg font-medium text-foreground mb-2">{item.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -355,28 +377,57 @@ export default function BrowsePage() {
         )}
 
         {/* Categories */}
-        <div className="-mx-4 px-4 overflow-x-auto scrollbar-none max-w-[100vw] mb-5">
-          <div className="flex gap-2" style={{ width: 'max-content' }}>
-            {CATEGORIES.map((cat) => {
+        <div className="mb-10">
+          <h2 className="text-lg font-display text-foreground font-normal mb-5">
+            Browse by Category
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
+            {CATEGORIES.filter(c => c.slug).map((cat) => {
               const Icon = cat.icon;
               const isActive = activeCategory === cat.slug;
+              const gradients: Record<string, string> = {
+                houseboat: 'from-[#16314D] to-[#2A4F72]',
+                shikara: 'from-[#B65C38] to-[#C99A48]',
+                artisan: 'from-[#3F6B4F] to-[#6B8F6B]',
+                guide: 'from-[#16314D] to-[#3A6E94]',
+                vendor: 'from-[#6B665E] to-[#8A7A6A]',
+                taxi: 'from-[#2A4F72] to-[#4A6F8A]',
+                homestay: 'from-[#B65C38] to-[#D47A58]',
+                guest_house: 'from-[#3F6B4F] to-[#5A8B6A]',
+              };
+              const gradient = gradients[cat.slug] || 'from-primary to-primary-dark';
               return (
                 <button
                   key={cat.slug}
                   onClick={() => setActiveCategory(cat.slug)}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-200 shrink-0 ${
-                    isActive
-                      ? 'bg-accent text-accent-foreground shadow-sm'
-                      : 'bg-card text-muted-foreground border border-border hover:border-accent/30 hover:text-foreground'
+                  className={`relative group rounded-lg overflow-hidden transition-all duration-300 ${
+                    isActive ? 'ring-2 ring-accent ring-offset-2 ring-offset-background' : ''
                   }`}
+                  style={{ aspectRatio: '4/3' }}
                 >
-                  <Icon className={`h-4 w-4 ${isActive ? 'text-accent-foreground' : 'text-muted-foreground'}`} />
-                  {cat.label}
+                  <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-90 group-hover:opacity-100 transition-opacity duration-300`} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                  <div className="relative h-full flex flex-col items-center justify-center p-4">
+                    <Icon className="h-7 w-7 text-white/90 mb-2" />
+                    <span className="font-display text-sm text-white font-medium">{cat.label}</span>
+                  </div>
                 </button>
               );
             })}
           </div>
         </div>
+
+        {/* Flight arrivals bar */}
+        {flightCount !== null && (
+          <div className="mb-6 flex items-center gap-2 justify-center text-xs text-muted-foreground">
+            <Plane className="h-3.5 w-3.5" />
+            <span>
+              {flightCount === 0
+                ? 'No flights arriving at Srinagar Airport today'
+                : `${flightCount} flight${flightCount !== 1 ? 's' : ''} arriving at Srinagar Airport today`}
+            </span>
+          </div>
+        )}
 
         {/* Toolbar */}
         <div className="flex items-center justify-between gap-3 mb-5">
@@ -481,17 +532,17 @@ export default function BrowsePage() {
 
         {/* Filter Panel */}
         {showFilters && (
-          <div className="mb-6 p-5 rounded-xl bg-card border border-border shadow-sm space-y-5">
+          <div className="mb-6 p-5 rounded-lg bg-white border border-border/60 shadow-xs space-y-5">
             {/* Price range */}
             <div>
-              <p className="text-xs font-semibold text-foreground mb-2.5">Price Range</p>
+              <p className="text-xs font-medium text-foreground mb-2.5">Price Range</p>
               <div className="flex items-center gap-2.5">
                 <input
                   type="number"
                   placeholder="Min"
                   value={priceMin}
                   onChange={(e) => setPriceMin(e.target.value)}
-                  className="w-full h-9 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all"
+                  className="w-full h-9 px-3 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all"
                 />
                 <span className="text-muted-foreground text-xs">—</span>
                 <input
@@ -499,7 +550,7 @@ export default function BrowsePage() {
                   placeholder="Max"
                   value={priceMax}
                   onChange={(e) => setPriceMax(e.target.value)}
-                  className="w-full h-9 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all"
+                  className="w-full h-9 px-3 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all"
                 />
               </div>
             </div>
@@ -507,7 +558,7 @@ export default function BrowsePage() {
             {/* Ghat filter */}
             {showGhatFilter && (
               <div>
-                <p className="text-xs font-semibold text-foreground mb-2.5">Ghat / Location</p>
+                <p className="text-xs font-medium text-foreground mb-2.5">Ghat / Location</p>
                 <div className="flex flex-wrap gap-2">
                   {GHATS.map((g) => {
                     const selected = selectedGhats.includes(g);
@@ -532,11 +583,11 @@ export default function BrowsePage() {
             {/* Operating area filter */}
             {showAreaFilter && (
               <div>
-                <p className="text-xs font-semibold text-foreground mb-2.5">Operating Area</p>
+                <p className="text-xs font-medium text-foreground mb-2.5">Operating Area</p>
                 <div className="space-y-3">
                   {AREA_GROUPS.map((group) => (
                     <div key={group.label}>
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">{group.label}</p>
+                      <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1.5">{group.label}</p>
                       <div className="flex flex-wrap gap-2">
                         {group.items.map((a) => {
                           const selected = selectedAreas.includes(a);
@@ -564,7 +615,7 @@ export default function BrowsePage() {
             {/* Language filter */}
             {showLanguageFilter && (
               <div>
-                <p className="text-xs font-semibold text-foreground mb-2.5">Languages Spoken</p>
+                <p className="text-xs font-medium text-foreground mb-2.5">Languages Spoken</p>
                 <div className="flex flex-wrap gap-2">
                   {LANGUAGES.map((l) => {
                     const selected = selectedLanguages.includes(l);
@@ -588,7 +639,7 @@ export default function BrowsePage() {
 
             {/* Verified only */}
             <label className="flex items-center gap-2.5 cursor-pointer group">
-              <div className={`relative w-5 h-5 rounded-md border-2 transition-all ${
+              <div className={`relative w-5 h-5 rounded border-2 transition-all ${
                 verifiedOnly ? 'bg-accent border-accent' : 'border-border group-hover:border-accent/50'
               }`}>
                 {verifiedOnly && (

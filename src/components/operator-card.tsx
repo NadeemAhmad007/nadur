@@ -55,72 +55,71 @@ export function OperatorCard({ operator, className, pexelsFallback }: { operator
   const router = useRouter();
   const photo = operator.photos?.[0] || pexelsFallback;
   const [showLeadForm, setShowLeadForm] = useState(false);
+  const CatIcon = operator.category ? categoryIcons[operator.category] : null;
 
   return (
     <>
       <div
-        className={cn('group cursor-pointer rounded-[14px] border border-border bg-card shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden', className)}
+        className={cn('group cursor-pointer rounded-lg bg-white border border-border/60 hover:shadow-sm transition-all duration-300 overflow-hidden', className)}
         onClick={() => router.push(`/o/${operator.slug}`)}
       >
-        <div className="aspect-[4/3] bg-muted relative overflow-hidden">
+        <div className="aspect-[3/2] bg-muted relative overflow-hidden">
           {photo ? (
             <img
               src={photo}
               alt={operator.name}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               loading="lazy"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-border/50">
-              {(() => {
-                const cat = operator.category;
-                const Icon = cat ? categoryIcons[cat] : null;
-                return Icon ? (
-                  <Icon className="h-16 w-16 text-muted-foreground/20" />
-                ) : (
-                  <div className="text-4xl font-bold text-muted-foreground/20">{operator.name[0]}</div>
-                );
-              })()}
+              {CatIcon ? (
+                <CatIcon className="h-16 w-16 text-muted-foreground/20" />
+              ) : (
+                <div className="text-4xl font-bold text-muted-foreground/20">{operator.name[0]}</div>
+              )}
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent" />
           {operator.verified && (
-            <div className="absolute top-2.5 left-2.5 flex items-center gap-1 px-2 py-1 rounded-full bg-white/90 backdrop-blur-sm shadow-xs text-[11px] font-medium text-primary">
+            <div className="absolute top-3 left-3 flex items-center gap-1 px-2 py-1 rounded-md bg-white/80 backdrop-blur-sm text-[10px] font-medium text-primary shadow-xs">
               <BadgeCheck className="h-3 w-3" />
               Verified
             </div>
           )}
-          <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5">
-            <div className="px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-sm shadow-xs text-[11px] font-medium text-muted-foreground capitalize">
-              {operator.category ? (categoryLabels[operator.category] || operator.category) : ''}
+          {operator.distance_km !== undefined && operator.distance_km !== null && (
+            <div className="absolute top-3 right-3 px-2 py-1 rounded-md bg-white/80 backdrop-blur-sm text-[10px] font-medium text-muted-foreground shadow-xs">
+              {operator.distance_km < 1 ? '<1 km' : `${Math.round(operator.distance_km)} km`}
             </div>
-            {operator.distance_km !== undefined && operator.distance_km !== null && (
-              <div className="px-2 py-1 rounded-full bg-accent/90 backdrop-blur-sm shadow-xs text-[11px] font-medium text-white whitespace-nowrap">
-                {operator.distance_km < 1 ? '<1 km' : `${operator.distance_km} km`}
-              </div>
-            )}
-          </div>
+          )}
         </div>
         <div className="p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
-          <div>
-            <div className="flex items-start justify-between gap-2">
-              <h3 className="font-semibold text-foreground truncate hover:text-accent transition-colors" title={operator.name}>
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              <h3 className="font-display text-lg text-foreground font-medium truncate" title={operator.name}>
                 {operator.name}
               </h3>
-              {getPriceLabel(operator) && (
-                <span className="shrink-0 inline-flex items-center gap-0.5 text-xs font-bold text-accent whitespace-nowrap bg-accent/10 px-2 py-0.5 rounded-lg">
-                  <IndianRupee className="h-2.5 w-2.5" />
-                  {getPriceLabel(operator)!.replace('₹', '')}
-                </span>
+              {operator.short_desc && (
+                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1 leading-relaxed">{operator.short_desc}</p>
               )}
             </div>
-            {operator.short_desc && (
-              <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">{operator.short_desc}</p>
+            {getPriceLabel(operator) && (
+              <span className="shrink-0 text-xs font-medium text-foreground whitespace-nowrap">
+                {getPriceLabel(operator)}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5">
+            {operator.category && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground/70 uppercase tracking-wider">
+                {categoryLabels[operator.category] || operator.category}
+              </span>
             )}
           </div>
           <Button
             size="sm"
-            className="w-full"
+            variant="outline"
+            className="w-full rounded-lg text-xs font-medium"
             onClick={() => setShowLeadForm(true)}
           >
             <MessageCircle className="h-3.5 w-3.5" />
@@ -202,9 +201,9 @@ export function LeadFormModal({ operator, onClose }: { operator: Operator; onClo
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={onClose}>
-      <div className="w-full max-w-sm bg-card rounded-2xl shadow-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+      <div className="w-full max-w-sm bg-white rounded-lg shadow-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between p-5 border-b border-border/60">
-          <h3 className="font-semibold text-foreground text-base">
+          <h3 className="font-display text-lg text-foreground font-medium">
             {otpSent ? 'Verify Phone' : 'Contact via WhatsApp'}
           </h3>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-secondary transition-colors">
@@ -213,7 +212,7 @@ export function LeadFormModal({ operator, onClose }: { operator: Operator; onClo
         </div>
         <div className="p-5 space-y-5">
           {overflow && (
-            <div className="p-3.5 rounded-xl bg-warning/10 border border-warning/20 flex items-start gap-2.5">
+            <div className="p-3.5 rounded-lg bg-warning/10 border border-warning/20 flex items-start gap-2.5">
               <Info className="h-4 w-4 text-warning shrink-0 mt-0.5" />
               <p className="text-xs text-muted-foreground">This operator is currently at capacity. Your enquiry has been forwarded to our team.</p>
             </div>
@@ -241,7 +240,7 @@ export function LeadFormModal({ operator, onClose }: { operator: Operator; onClo
           ) : (
             <>
               <div className="flex items-center gap-3 pb-1">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10">
                   <MessageCircle className="h-5 w-5 text-accent" />
                 </div>
                 <div>
@@ -250,7 +249,7 @@ export function LeadFormModal({ operator, onClose }: { operator: Operator; onClo
                 </div>
               </div>
               {operator.plan === 'pro' && (
-                <p className="text-xs text-muted-foreground bg-secondary rounded-xl px-3.5 py-2.5">We'll send a one-time code to verify your number.</p>
+                <p className="text-xs text-muted-foreground bg-secondary rounded-lg px-3.5 py-2.5">We'll send a one-time code to verify your number.</p>
               )}
               <Input
                 label="Your name"
@@ -264,7 +263,7 @@ export function LeadFormModal({ operator, onClose }: { operator: Operator; onClo
                   <select
                     value={countryCode}
                     onChange={(e) => setCountryCode(e.target.value)}
-                    className="flex h-10 w-full rounded-xl border border-input bg-card px-3 pr-8 text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all"
+                    className="flex h-10 w-full rounded-lg border border-input bg-card px-3 pr-8 text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all"
                   >
                     {countryOptions.map((opt) => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
