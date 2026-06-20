@@ -31,7 +31,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: *.amazonaws.com *.r2.cloudflarestorage.com res.cloudinary.com upload.wikimedia.org *.tile.openstreetmap.org",
               "font-src 'self' data:",
-              "connect-src 'self' blob: https://api.open-meteo.com https://api.frankfurter.app https://air-quality-api.open-meteo.com https://en.wikipedia.org https://nominatim.openstreetmap.org https://indianpincode.com",
+              "connect-src 'self' blob: https://api.open-meteo.com https://air-quality-api.open-meteo.com https://en.wikipedia.org https://nominatim.openstreetmap.org https://indianpincode.com",
               "worker-src 'self' blob: https://cdn.jsdelivr.net",
               "frame-src 'none'",
               "object-src 'none'",
