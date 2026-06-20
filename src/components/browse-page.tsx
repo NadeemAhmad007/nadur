@@ -18,7 +18,7 @@ import {
   Search, MapPin, Navigation, Compass, Sparkles, Building2,
   Ship, Palette, Store, LogIn, UserPlus, Car,
   SlidersHorizontal, X, Check, ArrowUpDown, AlertTriangle,
-  Heart, Menu, RotateCcw, Filter, Plane, Calendar, Map, Grid3X3,
+  Heart, Menu, RotateCcw, Filter, Plane, Calendar, Map, Grid3X3, BadgeCheck,
 } from 'lucide-react';
 
 const MapView = dynamic(() => import('@/components/map-view'), { ssr: false });
@@ -26,12 +26,12 @@ const MapView = dynamic(() => import('@/components/map-view'), { ssr: false });
 const CATEGORIES = [
   { slug: '', label: 'All', icon: Sparkles },
   { slug: 'houseboat', label: 'Houseboats', icon: Building2 },
-  { slug: 'shikara', label: 'Shikara Rides', icon: Ship },
-  { slug: 'artisan', label: 'Artisans', icon: Palette },
-  { slug: 'guide', label: 'Guides', icon: Navigation },
-  { slug: 'vendor', label: 'Vendors', icon: Store },
-  { slug: 'taxi', label: 'Taxis', icon: Car },
   { slug: 'accommodation', label: 'Accommodation', icon: Building2 },
+  { slug: 'shikara', label: 'Shikara Rides', icon: Ship },
+  { slug: 'taxi', label: 'Taxis', icon: Car },
+  { slug: 'guide', label: 'Guides', icon: Navigation },
+  { slug: 'artisan', label: 'Artisans', icon: Palette },
+  { slug: 'vendor', label: 'Vendors', icon: Store },
 ];
 
 const GHATS = [
@@ -243,13 +243,16 @@ export default function BrowsePage() {
           <div className="relative px-6 sm:px-16 pt-14 sm:pt-20 pb-14 sm:pb-20">
             <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-accent/15 text-accent-light text-xs font-medium uppercase tracking-wider mb-5 border border-accent/20">
               <Sparkles className="h-3 w-3" />
-              Explore Kashmir Like Never Before
+              Kashmir's Verified Local Marketplace
             </div>
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-display text-white leading-[1.1] max-w-3xl mx-auto font-normal tracking-tight">
-              Connect Direct, <span className="text-accent">Book Local</span>
+              Connect Direct, <span className="text-accent">Book Local</span> on Kasheer360
             </h1>
             <p className="mt-4 text-base sm:text-lg text-white/70 max-w-xl mx-auto leading-relaxed font-[450]">
-              Kashmir's trusted marketplace connecting you directly with verified local providers. No middlemen, no commissions.
+              Houseboats, shikara rides, taxis, guides, and local artisans — booked straight from the people who run them. No agents, no markups, no middlemen.
+            </p>
+            <p className="mt-3 text-sm text-white/50 max-w-lg mx-auto">
+              500+ verified hosts · ₹0 commission · Direct WhatsApp contact
             </p>
           </div>
         </div>
@@ -280,9 +283,9 @@ export default function BrowsePage() {
         <div className="mb-16">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
             {[
-              { icon: Compass, title: '100% Verified & Direct', desc: 'Every operator is verified locally for authenticity. Get their direct WhatsApp and mobile numbers to plan and negotiate directly.' },
-              { icon: SlidersHorizontal, title: 'No Hidden Commissions', desc: 'Travel portals charge up to 30% commission. Kasheer360 connects you directly with the owner so you pay fair, local rates.' },
-              { icon: Sparkles, title: 'Promote Local Tourism', desc: 'Support local houseboats, shikara drivers, guides, and artisans directly, keeping tourism revenue where it belongs — in Kashmir.' },
+              { icon: BadgeCheck, title: 'Verified, Not Just Listed', desc: 'Every host is checked in person before they go live. You get their real WhatsApp number and talk to them directly — like a local would.' },
+              { icon: SlidersHorizontal, title: 'Fair Local Pricing', desc: 'Other platforms add up to 30% in commission. Kasheer360 takes none — the price you see is the price the owner actually charges.' },
+              { icon: Compass, title: 'Tourism That Stays in Kashmir', desc: 'Every booking goes straight to the houseboat owner, the driver, the guide — not a call centre. You\'re funding the people who make Kashmir what it is.' },
             ].map((item) => (
               <div key={item.title} className="bg-white p-6 sm:p-7 rounded-lg border border-border/60 hover:shadow-sm transition-shadow">
                 <div className="h-10 w-10 rounded-lg bg-accent/10 flex items-center justify-center text-accent mb-4">
@@ -445,11 +448,10 @@ export default function BrowsePage() {
                 onChange={(e) => setSortBy(e.target.value)}
                 className="appearance-none h-9 pl-3.5 pr-8 rounded-xl text-xs font-medium bg-card border border-border text-muted-foreground cursor-pointer hover:border-accent/30 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all"
               >
-                <option value="relevance">Relevance</option>
+                <option value="relevance">Recommended</option>
+                <option value="-rating">Highest Rated</option>
                 {userLat && userLng && <option value="distance">Nearest</option>}
                 <option value="newest">Newest</option>
-                <option value="name">Name A-Z</option>
-                <option value="-name">Name Z-A</option>
               </select>
               <ArrowUpDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
             </div>
