@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm';
 import { sendOtp } from '@/lib/openwa';
 import { hashOtp } from '@/lib/otp';
 import { rateLimit } from '@/lib/rate-limit';
+import { getClientIp } from '@/lib/ip';
 
 function generateOtp(): string {
   return String(Math.floor(100000 + Math.random() * 900000));
@@ -17,7 +18,7 @@ function validatePhone(phone: string): string | null {
 }
 
 export async function POST(req: Request) {
-  const ip = req.headers.get('x-forwarded-for') || 'anon';
+  const ip = getClientIp(req);
   const { allowed } = await rateLimit(`lead-send-otp:${ip}`, 5, 60000);
   if (!allowed) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });

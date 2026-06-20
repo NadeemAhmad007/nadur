@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm';
 import { auth } from '@/lib/auth';
 import { sendText } from '@/lib/openwa';
 import { rateLimit } from '@/lib/rate-limit';
+import { getClientIp } from '@/lib/ip';
 
 export async function GET(req: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -31,7 +32,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
 }
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ slug: string }> }) {
-  const ip = req.headers.get('x-forwarded-for') || 'anon';
+  const ip = getClientIp(req);
   const { allowed } = await rateLimit(`update-op:${ip}`, 10, 60000);
   if (!allowed) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });

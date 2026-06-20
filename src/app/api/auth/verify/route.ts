@@ -4,11 +4,12 @@ import { rateLimit } from '@/lib/rate-limit';
 import { db } from '@/db';
 import { operators } from '@/db/schema';
 import { eq } from 'drizzle-orm';
+import { getClientIp } from '@/lib/ip';
 
 const adminEmails = (process.env.ADMIN_EMAILS || 'nadeemkolu22@gmail.com').split(',').map(e => e.trim());
 
 export async function POST(req: Request) {
-  const ip = req.headers.get('x-forwarded-for') || 'anon';
+  const ip = getClientIp(req);
   const { allowed } = await rateLimit(`verify-otp:${ip}`, 5, 60000);
   if (!allowed) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });

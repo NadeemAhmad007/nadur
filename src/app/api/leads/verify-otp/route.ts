@@ -5,9 +5,10 @@ import { eq, sql, and, gte } from 'drizzle-orm';
 import { verifyPhoneOtp } from '@/lib/otp';
 import { notifyLead } from '@/lib/openwa';
 import { rateLimit } from '@/lib/rate-limit';
+import { getClientIp } from '@/lib/ip';
 
 export async function POST(req: Request) {
-  const ip = req.headers.get('x-forwarded-for') || 'anon';
+  const ip = getClientIp(req);
   const { allowed } = await rateLimit(`lead-verify-otp:${ip}`, 10, 60000);
   if (!allowed) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });

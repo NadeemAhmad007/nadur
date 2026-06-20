@@ -4,6 +4,7 @@ import { rateLimit } from '@/lib/rate-limit';
 import { setSetting } from '@/lib/settings';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { getClientIp } from '@/lib/ip';
 
 const execAsync = promisify(exec);
 
@@ -42,7 +43,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const ip = req.headers.get('x-forwarded-for') || 'anon';
+  const ip = getClientIp(req);
   const { allowed } = await rateLimit(`whatsapp-server-key:${ip}`, 10, 60000);
   if (!allowed) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });

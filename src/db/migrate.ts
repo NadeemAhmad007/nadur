@@ -78,6 +78,12 @@ const run = async () => {
     ON operators (category, status)
   `;
   await sql`
+    CREATE INDEX IF NOT EXISTS idx_operators_whatsapp ON operators (whatsapp)
+  `;
+  await sql`
+    CREATE INDEX IF NOT EXISTS idx_operators_email ON operators (email)
+  `;
+  await sql`
     CREATE TABLE IF NOT EXISTS phone_verifications (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       phone TEXT NOT NULL,
@@ -87,6 +93,10 @@ const run = async () => {
       verified BOOLEAN DEFAULT false,
       created_at TIMESTAMPTZ DEFAULT now()
     )
+  `;
+  await sql`
+    CREATE INDEX IF NOT EXISTS idx_phone_verifications_lookup
+    ON phone_verifications (phone, verified, expires_at DESC)
   `;
 
   await sql`
@@ -99,6 +109,10 @@ const run = async () => {
       verified BOOLEAN DEFAULT false,
       created_at TIMESTAMPTZ DEFAULT now()
     )
+  `;
+  await sql`
+    CREATE INDEX IF NOT EXISTS idx_email_verifications_lookup
+    ON email_verifications (email, verified, expires_at DESC)
   `;
 
   await sql`
@@ -212,6 +226,19 @@ const run = async () => {
       created_at TIMESTAMPTZ DEFAULT now(),
       read_at TIMESTAMPTZ
     )
+  `;
+  await sql`
+    CREATE INDEX IF NOT EXISTS idx_admin_messages_operator ON admin_messages (operator_id)
+  `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS rate_limits (
+      key TEXT PRIMARY KEY,
+      count INTEGER NOT NULL DEFAULT 1,
+      expires_at TIMESTAMPTZ NOT NULL
+    )
+  `;
+  await sql`
+    CREATE INDEX IF NOT EXISTS idx_rate_limits_expires ON rate_limits (expires_at)
   `;
 
   console.log('Migration completed successfully');

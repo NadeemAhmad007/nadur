@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth';
 import { rateLimit } from '@/lib/rate-limit';
 import { getAllSettings, setSetting } from '@/lib/settings';
 import { resetOpenwaConfig } from '@/lib/openwa';
+import { getClientIp } from '@/lib/ip';
 
 export async function GET() {
   const session = await auth();
@@ -28,7 +29,7 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const ip = req.headers.get('x-forwarded-for') || 'anon';
+  const ip = getClientIp(req);
   const { allowed } = await rateLimit(`settings-update:${ip}`, 20, 60000);
   if (!allowed) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });

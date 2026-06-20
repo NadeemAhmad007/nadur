@@ -4,13 +4,14 @@ import { phoneVerifications } from '@/db/schema';
 import { sendOtp } from '@/lib/openwa';
 import { hashOtp } from '@/lib/otp';
 import { rateLimit } from '@/lib/rate-limit';
+import { getClientIp } from '@/lib/ip';
 
 function generateOtp(): string {
   return String(Math.floor(100000 + Math.random() * 900000));
 }
 
 export async function POST(req: Request) {
-  const ip = req.headers.get('x-forwarded-for') || 'anon';
+  const ip = getClientIp(req);
   const { allowed } = await rateLimit(`send-otp-whatsapp:${ip}`, 3, 60000);
   if (!allowed) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });

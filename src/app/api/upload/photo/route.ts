@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { uploadPhotoToCloudinary } from '@/lib/cloudinary';
 import { rateLimit } from '@/lib/rate-limit';
+import { getClientIp } from '@/lib/ip';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_SIZE = 5 * 1024 * 1024;
@@ -17,7 +18,7 @@ function validateMagicBytes(buffer: Uint8Array, mimeType: string): boolean {
 }
 
 export async function POST(req: Request) {
-  const ip = req.headers.get('x-forwarded-for') || 'anon';
+  const ip = getClientIp(req);
   const { allowed } = await rateLimit(`upload:${ip}`, 10, 60000);
   if (!allowed) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });

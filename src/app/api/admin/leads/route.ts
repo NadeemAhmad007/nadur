@@ -4,6 +4,7 @@ import { leads, operators } from '@/db/schema';
 import { eq, sql, gte } from 'drizzle-orm';
 import { auth } from '@/lib/auth';
 import { rateLimit } from '@/lib/rate-limit';
+import { getClientIp } from '@/lib/ip';
 
 export async function GET(req: Request) {
   const session = await auth();
@@ -12,7 +13,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
   }
 
-  const ip = req.headers.get('x-forwarded-for') || 'admin-leads';
+  const ip = getClientIp(req);
   const { allowed } = await rateLimit(`admin-leads:${ip}`, 30);
   if (!allowed) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });

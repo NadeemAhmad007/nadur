@@ -75,6 +75,18 @@ export default async function OperatorPage({ params }: { params: Promise<{ slug:
 
   const op = await db.query.operators.findFirst({
     where: eq(operators.slug, slug),
+    columns: {
+      id: true, name: true, slug: true, category: true,
+      short_desc: true, long_desc: true, whatsapp: true, email: true,
+      pricing_note: true, status: true, verified: true, plan: true,
+      lead_month: true,
+      photos: true, tariffs: true,
+      houseboat_details: true, shikara_details: true,
+      artisan_details: true, taxi_details: true,
+      accommodation_details: true, guide_details: true, vendor_details: true,
+      lat: true, lng: true, user_id: true, hidden: true, last_seen: true,
+      created_at: true, updated_at: true,
+    },
   });
 
   if (!op) {

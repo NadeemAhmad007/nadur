@@ -40,8 +40,7 @@
     "react-dom": "19.2.4",
     "sharp": "^0.35.1",
     "slugify": "^1.6.9",
-    "tailwind-merge": "^3.6.0",
-    "xlsx": "^0.18.5"
+    "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
     "@aws-sdk/s3-request-presigner": "^3.1068.0",
