@@ -5,14 +5,17 @@ import Link from 'next/link';
 import { OperatorCard } from '@/components/operator-card';
 import { CardSkeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { KASHMIR_AREAS } from '@/lib/areas';
+import { KASHMIR_AREAS, AREA_GROUPS } from '@/lib/areas';
 import { Badge } from '@/components/ui/badge';
 import { fetchDestinations, type Destination } from '@/lib/wikipedia';
+import { fetchFlights } from '@/lib/flights';
+import { getUpcomingHoliday, fetchHolidays } from '@/lib/holidays';
+import { fetchNews, type NewsItem } from '@/lib/news';
 import {
   Search, MapPin, Navigation, Compass, Sparkles, Building2,
   Ship, Palette, Store, LogIn, UserPlus, Car,
   SlidersHorizontal, X, Check, ArrowUpDown, AlertTriangle,
-  Heart, Menu, RotateCcw, Filter,
+  Heart, Menu, RotateCcw, Filter, Plane, Calendar,
 } from 'lucide-react';
 
 const CATEGORIES = [
@@ -59,6 +62,9 @@ export default function BrowsePage() {
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [destinations, setDestinations] = useState<Destination[]>([]);
+  const [flightCount, setFlightCount] = useState<number | null>(null);
+  const [upcomingHoliday, setUpcomingHoliday] = useState<{ date: string; name: string } | null>(null);
+  const [news, setNews] = useState<NewsItem[]>([]);
 
   const hasActiveFilters = priceMin || priceMax || selectedGhats.length > 0 || selectedAreas.length > 0 || selectedLanguages.length > 0 || verifiedOnly;
 
@@ -103,6 +109,12 @@ export default function BrowsePage() {
   useEffect(() => { fetchOperators(); }, [fetchOperators]);
 
   useEffect(() => { fetchDestinations().then(setDestinations); }, []);
+
+  useEffect(() => { fetchFlights().then(d => setFlightCount(d?.count ?? null)); }, []);
+
+  useEffect(() => { fetchHolidays().then(() => { const h = getUpcomingHoliday(); if (h) setUpcomingHoliday({ date: h.date, name: h.localName }); }); }, []);
+
+  useEffect(() => { fetchNews().then(setNews); }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -249,6 +261,31 @@ export default function BrowsePage() {
           </div>
         </div>
 
+        {/* Flight info bar */}
+        <div className="mb-5 p-3.5 rounded-xl bg-card border border-border/50 flex items-center justify-between group hover:border-accent/20 transition-all">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
+              <Plane className="h-4 w-4 text-accent" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-foreground">
+                {flightCount !== null
+                  ? `${flightCount} arriving flight${flightCount === 1 ? '' : 's'} today at Srinagar Airport`
+                  : 'Srinagar Airport (SXR) — check live arrivals'}
+              </p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">Sheikh ul-Alam International Airport • VISR</p>
+            </div>
+          </div>
+          <a
+            href="https://www.flightradar24.com/data/airports/sxr/arrivals"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shrink-0 text-xs font-medium text-accent hover:underline hidden sm:block"
+          >
+            View flights →
+          </a>
+        </div>
+
         {/* Discover Kashmir */}
         {destinations.length > 0 && (
           <div className="mb-10">
@@ -351,6 +388,37 @@ export default function BrowsePage() {
           </div>
         </div>
 
+        {/* Festival badge */}
+        {upcomingHoliday && (
+          <div className="mb-5">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-accent/20 bg-accent/5 text-xs font-semibold text-accent">
+              <Calendar className="h-3.5 w-3.5" />
+              Upcoming: {upcomingHoliday.name} · {new Date(upcomingHoliday.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+            </span>
+          </div>
+        )}
+
+        {/* News ticker */}
+        {news.length > 0 && (
+          <div className="mb-5 overflow-hidden">
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border/50">
+              <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-accent">News</span>
+              <div className="overflow-hidden relative flex-1 h-5">
+                <div className="animate-marquee whitespace-nowrap" style={{ '--duration': `${Math.max(news.length * 4, 15)}s` } as React.CSSProperties}>
+                  {news.map((item, i) => (
+                    <span key={i} className="inline-flex items-center gap-2 mr-8">
+                      <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-accent transition-colors truncate max-w-[300px] sm:max-w-[500px] inline-block align-middle">
+                        {item.title}
+                      </a>
+                      <span className="text-[10px] text-muted-foreground/50">{item.source}</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Filter Panel */}
         {showFilters && (
           <div className="mb-6 p-5 rounded-xl bg-card border border-border shadow-sm space-y-5">
@@ -405,23 +473,30 @@ export default function BrowsePage() {
             {showAreaFilter && (
               <div>
                 <p className="text-xs font-semibold text-foreground mb-2.5">Operating Area</p>
-                <div className="flex flex-wrap gap-2">
-                  {AREAS.map((a) => {
-                    const selected = selectedAreas.includes(a);
-                    return (
-                      <button
-                        key={a}
-                        onClick={() => toggleChip(selectedAreas, a, setSelectedAreas)}
-                        className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
-                          selected
-                            ? 'bg-accent text-accent-foreground border-accent'
-                            : 'bg-background text-muted-foreground border-border hover:border-accent/40 hover:text-foreground'
-                        }`}
-                      >
-                        {a}
-                      </button>
-                    );
-                  })}
+                <div className="space-y-3">
+                  {AREA_GROUPS.map((group) => (
+                    <div key={group.label}>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">{group.label}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {group.items.map((a) => {
+                          const selected = selectedAreas.includes(a);
+                          return (
+                            <button
+                              key={a}
+                              onClick={() => toggleChip(selectedAreas, a, setSelectedAreas)}
+                              className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
+                                selected
+                                  ? 'bg-accent text-accent-foreground border-accent'
+                                  : 'bg-background text-muted-foreground border-border hover:border-accent/40 hover:text-foreground'
+                              }`}
+                            >
+                              {a}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

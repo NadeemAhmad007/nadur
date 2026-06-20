@@ -72,3 +72,28 @@ API_KEY=$(docker logs nadur-openwa 2>&1 | grep -o 'owa_k1_[a-f0-9]*' | head -1)
 - Session persists across restarts (volume: openwa-data)
 - Check status: `GET /api/sessions/<UUID>`
 <!-- END:openwa-integration -->
+
+<!-- BEGIN:browse-page-features -->
+# Browse Page Widgets
+
+## Flight Arrivals Bar
+- **`src/lib/flights.ts`** — Fetches arriving flights at Srinagar Airport (VISR) from OpenSky Network (anonymous, 10 req/day limit)
+- Falls back to static "check live arrivals" message if no data
+- CSP: `opensky-network.org` added to `connect-src`
+- Client-side cache: 5 min, localStorage
+
+## Festival Badge
+- **`src/lib/holidays.ts`** — Hardcoded Kashmir-relevant holidays for 2026 (Islamic, national, regional)
+- `getUpcomingHoliday()` returns the next upcoming holiday
+- Falls back to built-in list; Calendarific API integration optional (set `CALENDARIFIC_API_KEY` env var)
+
+## News Ticker
+- **`src/lib/news.ts`** — Client fetcher with 10-min localStorage cache
+- **`src/app/api/news/route.ts`** — Server proxy to GNews API
+- Requires `GNEWS_API_KEY` env var (free tier, 100 req/day at https://gnews.io)
+- Shows nothing if no key is configured
+
+## Area Filter Hierarchy
+- **`src/lib/areas.ts`** — `AREA_GROUPS` exports three groups: Kashmir Valley, Jammu Region, Tourist Destinations
+- Browse page filter panel renders grouped sections with group labels instead of one flat list
+<!-- END:browse-page-features -->

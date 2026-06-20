@@ -42,5 +42,20 @@ export const SHIKARA_AREAS = [
   'Other',
 ] as const;
 
+export const AREA_GROUPS = [
+  {
+    label: 'Kashmir Valley',
+    items: ['Srinagar', 'Baramulla', 'Anantnag', 'Budgam', 'Ganderbal', 'Kupwara', 'Bandipora', 'Pulwama', 'Kulgam', 'Shopian'],
+  },
+  {
+    label: 'Jammu Region',
+    items: ['Jammu', 'Doda', 'Kathua', 'Kishtwar', 'Poonch', 'Rajouri', 'Ramban', 'Reasi', 'Samba', 'Udhampur'],
+  },
+  {
+    label: 'Tourist Destinations',
+    items: ['Dal Lake', 'Gulmarg', 'Pahalgam', 'Sonamarg', 'Patnitop', 'Yusmarg', 'Doodhpathri', 'Kokernag', 'Nigeen Lake', 'Other'],
+  },
+];
+
 export type KashmirArea = (typeof KASHMIR_AREAS)[number];
 export type ShikaraArea = (typeof SHIKARA_AREAS)[number];
