@@ -139,7 +139,6 @@ export default function BrowsePage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
   };
 
   const locateMe = () => {
@@ -188,46 +187,49 @@ export default function BrowsePage() {
             <Link href="/" className="flex items-center gap-3 shrink-0">
               <img src="/logo.png" alt="Kasheer360" className="h-16 sm:h-20 md:h-32 w-auto object-contain" />
             </Link>
+            <div className="hidden sm:flex flex-1 max-w-md mx-6">
+              <div className="relative w-full">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
+                <input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search operators..."
+                  className="w-full pl-10 pr-4 h-10 rounded-lg border border-border/60 bg-white text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all"
+                />
+              </div>
+            </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={locateMe}
                 disabled={locating}
-                className={`hidden sm:inline-flex items-center gap-1.5 h-9 px-3 rounded-xl text-xs font-medium transition-all disabled:opacity-50 ${userLat ? 'bg-accent text-white shadow-sm' : 'bg-secondary text-muted-foreground hover:bg-border'}`}
+                className={`inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-xs font-medium transition-all disabled:opacity-50 ${userLat ? 'bg-accent text-white shadow-sm' : 'bg-white text-muted-foreground border border-border/60 hover:border-accent/30 hover:text-foreground'}`}
               >
                 {userLat && <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span></span>}
                 <MapPin className="h-3.5 w-3.5" />
-                {locating ? 'Locating...' : userLat ? 'Near Me' : 'Near Me'}
+                <span className="hidden sm:inline">{locating ? 'Locating...' : 'Near Me'}</span>
               </button>
-              <Link href="/auth/login" className="inline-flex items-center gap-1.5 h-9 px-3 rounded-xl text-xs font-medium text-foreground hover:bg-secondary transition-all">
+              <Link href="/auth/login" className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-xs font-medium bg-white text-muted-foreground border border-border/60 hover:border-accent/30 hover:text-foreground transition-all">
                 <LogIn className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Sign In</span>
               </Link>
-              <Link href="/join" className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl text-xs font-medium bg-primary text-primary-foreground hover:bg-primary-light transition-all shadow-sm">
+              <Link href="/join" className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-xs font-medium bg-primary text-primary-foreground hover:bg-primary-light transition-all shadow-sm">
                 <UserPlus className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Register</span>
               </Link>
             </div>
           </div>
-          <form onSubmit={handleSearch} className="pb-4">
+          {/* Mobile search bar */}
+          <div className="sm:hidden pb-3">
             <div className="relative">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
               <input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search operators..."
-                className="w-full pl-10 pr-4 h-11 rounded-xl border border-border bg-card text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring transition-all"
+                className="w-full pl-10 pr-4 h-10 rounded-lg border border-border/60 bg-white text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all"
               />
-              <button
-                type="button"
-                onClick={locateMe}
-                disabled={locating}
-                className={`sm:hidden absolute right-2 top-1/2 -translate-y-1/2 h-7 px-2 rounded-lg text-[11px] font-medium transition-all disabled:opacity-50 ${userLat ? 'bg-accent text-white' : 'bg-secondary text-muted-foreground hover:bg-border'}`}
-              >
-                {userLat && <span className="relative flex h-1.5 w-1.5 mr-1"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white"></span></span>}
-                <MapPin className="h-3 w-3" />
-              </button>
             </div>
-          </form>
+          </div>
         </div>
       </header>
 
@@ -238,7 +240,7 @@ export default function BrowsePage() {
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23FFFFFF' fill-opacity='0.15'%3E%3Cpath d='M50 50c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10c0 5.523-4.477 10-10 10s-10-4.477-10-10 4.477-10 10-10z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
             backgroundSize: '60px 60px'
           }} />
-          <div className="relative px-6 sm:px-16 pt-14 sm:pt-20 pb-10 sm:pb-14">
+          <div className="relative px-6 sm:px-16 pt-14 sm:pt-20 pb-14 sm:pb-20">
             <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-accent/15 text-accent-light text-xs font-medium uppercase tracking-wider mb-5 border border-accent/20">
               <Sparkles className="h-3 w-3" />
               Explore Kashmir Like Never Before
@@ -249,27 +251,6 @@ export default function BrowsePage() {
             <p className="mt-4 text-base sm:text-lg text-white/70 max-w-xl mx-auto leading-relaxed font-[450]">
               Kashmir's trusted marketplace connecting you directly with verified local providers. No middlemen, no commissions.
             </p>
-          </div>
-          {/* Floating search card */}
-          <div className="relative px-6 sm:px-16 pb-0 -mb-8 sm:-mb-10">
-            <div className="bg-white rounded-lg shadow-xl shadow-primary/20 p-4 sm:p-5 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 max-w-2xl mx-auto">
-              <div className="flex items-center gap-3 flex-1">
-                <Search className="h-5 w-5 text-muted-foreground shrink-0" />
-                <input
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSearch(e)}
-                  placeholder="Search houseboats, shikaras, guides..."
-                  className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none"
-                />
-              </div>
-              <button
-                onClick={(e) => handleSearch(e)}
-                className="shrink-0 bg-primary text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-primary-light transition-colors"
-              >
-                Search
-              </button>
-            </div>
           </div>
         </div>
 
