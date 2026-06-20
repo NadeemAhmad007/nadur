@@ -167,6 +167,7 @@ export interface Operator {
   vendor_details: VendorDetails | null;
   lat: number | null;
   lng: number | null;
+  distance_km?: number;
 }
 
 export interface Lead {

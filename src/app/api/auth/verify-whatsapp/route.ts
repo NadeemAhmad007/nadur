@@ -39,6 +39,8 @@ export async function POST(req: Request) {
       if (op.email && adminEmails.includes(op.email)) {
         is_admin = true;
       }
+    } else {
+      return NextResponse.json({ error: 'No account found with this phone number. Please register first.' }, { status: 404 });
     }
 
     return NextResponse.json({ success: true, is_admin, operator_id });

@@ -38,6 +38,8 @@ export async function POST(req: Request) {
       });
       if (op) {
         operator_id = op.id;
+      } else {
+        return NextResponse.json({ error: 'No account found with this email. Please register first.' }, { status: 404 });
       }
     }
 

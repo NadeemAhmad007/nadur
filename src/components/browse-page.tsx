@@ -13,13 +13,15 @@ import { getUpcomingHoliday } from '@/lib/holidays';
 import { fetchNews, type NewsItem } from '@/lib/news';
 import { fetchEvents } from '@/lib/events';
 import { fetchCategoryPhoto } from '@/lib/photos';
-import MapView from '@/components/map-view';
+import dynamic from 'next/dynamic';
 import {
   Search, MapPin, Navigation, Compass, Sparkles, Building2,
   Ship, Palette, Store, LogIn, UserPlus, Car,
   SlidersHorizontal, X, Check, ArrowUpDown, AlertTriangle,
   Heart, Menu, RotateCcw, Filter, Plane, Calendar, Map, Grid3X3,
 } from 'lucide-react';
+
+const MapView = dynamic(() => import('@/components/map-view'), { ssr: false });
 
 const CATEGORIES = [
   { slug: '', label: 'All', icon: Sparkles },
@@ -157,6 +159,8 @@ export default function BrowsePage() {
     setSelectedLanguages([]);
     setVerifiedOnly(false);
     setSortBy('relevance');
+    setUserLat(null);
+    setUserLng(null);
   };
 
   const toggleChip = (list: string[], item: string, setter: (v: string[]) => void) => {
@@ -182,8 +186,9 @@ export default function BrowsePage() {
               <button
                 onClick={locateMe}
                 disabled={locating}
-                className="hidden sm:inline-flex items-center gap-1.5 h-9 px-3 rounded-xl text-xs font-medium bg-secondary text-muted-foreground hover:bg-border transition-all disabled:opacity-50"
+                className={`hidden sm:inline-flex items-center gap-1.5 h-9 px-3 rounded-xl text-xs font-medium transition-all disabled:opacity-50 ${userLat ? 'bg-accent text-white shadow-sm' : 'bg-secondary text-muted-foreground hover:bg-border'}`}
               >
+                {userLat && <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span></span>}
                 <MapPin className="h-3.5 w-3.5" />
                 {locating ? 'Locating...' : userLat ? 'Near Me' : 'Near Me'}
               </button>
@@ -210,8 +215,9 @@ export default function BrowsePage() {
                 type="button"
                 onClick={locateMe}
                 disabled={locating}
-                className="sm:hidden absolute right-2 top-1/2 -translate-y-1/2 h-7 px-2 rounded-lg text-[11px] font-medium bg-secondary text-muted-foreground hover:bg-border transition-all disabled:opacity-50"
+                className={`sm:hidden absolute right-2 top-1/2 -translate-y-1/2 h-7 px-2 rounded-lg text-[11px] font-medium transition-all disabled:opacity-50 ${userLat ? 'bg-accent text-white' : 'bg-secondary text-muted-foreground hover:bg-border'}`}
               >
+                {userLat && <span className="relative flex h-1.5 w-1.5 mr-1"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white"></span></span>}
                 <MapPin className="h-3 w-3" />
               </button>
             </div>
@@ -398,6 +404,7 @@ export default function BrowsePage() {
                 className="appearance-none h-9 pl-3.5 pr-8 rounded-xl text-xs font-medium bg-card border border-border text-muted-foreground cursor-pointer hover:border-accent/30 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all"
               >
                 <option value="relevance">Relevance</option>
+                {userLat && userLng && <option value="distance">Nearest</option>}
                 <option value="newest">Newest</option>
                 <option value="name">Name A-Z</option>
                 <option value="-name">Name Z-A</option>

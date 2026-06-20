@@ -211,7 +211,7 @@ export async function GET(req: Request) {
     const result = await query
       .orderBy(...(Array.isArray(orderBy) ? orderBy : [orderBy]))
       .limit(limit + 1)
-      .offset(offset);
+      .offset(offset) as (typeof operators.$inferSelect & { distance_km?: number })[];
 
     const hasMore = result.length > limit;
     if (hasMore) result.pop();
@@ -225,6 +225,9 @@ export async function GET(req: Request) {
           const da = distance(latNum, lngNum, a.lat, a.lng);
           const db = distance(latNum, lngNum, b.lat, b.lng);
           return da - db;
+        });
+        result.forEach(op => {
+          if (op.lat && op.lng) op.distance_km = Math.round(distance(latNum, lngNum, op.lat, op.lng) * 10) / 10;
         });
       }
     }

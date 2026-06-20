@@ -90,8 +90,15 @@ export function OperatorCard({ operator, className, pexelsFallback }: { operator
               Verified
             </div>
           )}
-          <div className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-sm shadow-xs text-[11px] font-medium text-muted-foreground capitalize">
-            {operator.category ? (categoryLabels[operator.category] || operator.category) : ''}
+          <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5">
+            <div className="px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-sm shadow-xs text-[11px] font-medium text-muted-foreground capitalize">
+              {operator.category ? (categoryLabels[operator.category] || operator.category) : ''}
+            </div>
+            {operator.distance_km !== undefined && operator.distance_km !== null && (
+              <div className="px-2 py-1 rounded-full bg-accent/90 backdrop-blur-sm shadow-xs text-[11px] font-medium text-white whitespace-nowrap">
+                {operator.distance_km < 1 ? '<1 km' : `${operator.distance_km} km`}
+              </div>
+            )}
           </div>
         </div>
         <div className="p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
