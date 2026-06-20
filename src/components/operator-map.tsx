@@ -1,12 +1,16 @@
 import { MapPin } from 'lucide-react';
+import { parseGoogleMapsUrl } from '@/lib/location';
 
 export function OperatorMap({ lat, lng, name, googleMapsUrl }: { lat: number; lng: number; name: string; googleMapsUrl?: string | null }) {
-  const destination = googleMapsUrl || `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+  const urlCoords = googleMapsUrl ? parseGoogleMapsUrl(googleMapsUrl) : null;
+  const efLat = urlCoords?.lat ?? lat;
+  const efLng = urlCoords?.lng ?? lng;
+  const destination = googleMapsUrl || `https://www.google.com/maps/dir/?api=1&destination=${efLat},${efLng}`;
   return (
     <div>
       <div className="w-full rounded-lg overflow-hidden border border-border/60">
         <iframe
-          src={`https://www.google.com/maps?q=${lat},${lng}&output=embed&z=14`}
+          src={`https://www.google.com/maps?q=${efLat},${efLng}&output=embed&z=14`}
           width="100%"
           height="176"
           style={{ border: 0, display: 'block' }}
