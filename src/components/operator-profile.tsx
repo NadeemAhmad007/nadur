@@ -257,13 +257,13 @@ export function OperatorProfile({ operator: op }: { operator: Operator }) {
         </div>
 
         {/* Air Quality */}
-        {aqi && aqi.aqi != null && (
+        {aqi && aqi.eaqi != null && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <span
               className="inline-block w-2.5 h-2.5 rounded-full"
               style={{ backgroundColor: aqi.color }}
             />
-            Air Quality: {aqi.aqi} · {aqi.label}
+            Air Quality: {aqi.eaqi}/100 · {aqi.label}{aqi.pm25 != null ? ` · PM2.5: ${aqi.pm25} µg` : ''}
           </div>
         )}
 
