@@ -187,27 +187,7 @@ export default function BrowsePage() {
             <Link href="/" className="flex items-center gap-3 shrink-0">
               <img src="/logo.png" alt="Kasheer360" className="h-16 sm:h-20 md:h-32 w-auto object-contain" />
             </Link>
-            <div className="hidden sm:flex flex-1 max-w-md mx-6">
-              <div className="relative w-full">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
-                <input
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search operators..."
-                  className="w-full pl-10 pr-4 h-10 rounded-lg border border-border/60 bg-white text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all"
-                />
-              </div>
-            </div>
             <div className="flex items-center gap-2">
-              <button
-                onClick={locateMe}
-                disabled={locating}
-                className={`inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-xs font-medium transition-all disabled:opacity-50 ${userLat ? 'bg-accent text-white shadow-sm' : 'bg-white text-muted-foreground border border-border/60 hover:border-accent/30 hover:text-foreground'}`}
-              >
-                {userLat && <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span></span>}
-                <MapPin className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">{locating ? 'Locating...' : 'Near Me'}</span>
-              </button>
               <Link href="/auth/login" className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-xs font-medium bg-white text-muted-foreground border border-border/60 hover:border-accent/30 hover:text-foreground transition-all">
                 <LogIn className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Sign In</span>
@@ -216,18 +196,6 @@ export default function BrowsePage() {
                 <UserPlus className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Register</span>
               </Link>
-            </div>
-          </div>
-          {/* Mobile search bar */}
-          <div className="sm:hidden pb-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
-              <input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search operators..."
-                className="w-full pl-10 pr-4 h-10 rounded-lg border border-border/60 bg-white text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all"
-              />
             </div>
           </div>
         </div>
@@ -414,46 +382,82 @@ export default function BrowsePage() {
         )}
 
         {/* Toolbar */}
-        <div className="flex items-center justify-between gap-3 mb-5">
-          <div className="flex items-center gap-2.5">
-            {operators.length > 0 && (
-              <p className="text-sm text-muted-foreground">{operators.length} operator{operators.length !== 1 ? 's' : ''}</p>
-            )}
-            {hasActiveFilters && (
-              <button onClick={clearFilters} className="text-xs text-accent font-medium hover:underline inline-flex items-center gap-1">
-                <RotateCcw className="h-3 w-3" /> Clear
-              </button>
-            )}
+        <div className="space-y-3 mb-5">
+          {/* Search row */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by name, category, or keyword..."
+              className="w-full pl-10 pr-4 h-10 rounded-lg border border-border/60 bg-white text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all"
+            />
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl text-xs font-medium transition-all ${
-                showFilters || hasActiveFilters
-                  ? 'bg-accent text-accent-foreground shadow-sm'
-                  : 'bg-card text-muted-foreground border border-border hover:border-accent/30 hover:text-foreground'
-              }`}
-            >
-              <Filter className="h-3.5 w-3.5" />
-              Filters
-              {hasActiveFilters && (
-                <span className="ml-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-accent-foreground/20 text-[10px] font-bold">
-                  {(selectedGhats.length + selectedAreas.length + selectedLanguages.length + (verifiedOnly ? 1 : 0) + (priceMin ? 1 : 0) + (priceMax ? 1 : 0))}
-                </span>
+          {/* Controls row */}
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              {operators.length > 0 && (
+                <p className="text-xs text-muted-foreground">{operators.length} operator{operators.length !== 1 ? 's' : ''}</p>
               )}
-            </button>
-            <div className="relative">
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="appearance-none h-9 pl-3.5 pr-8 rounded-xl text-xs font-medium bg-card border border-border text-muted-foreground cursor-pointer hover:border-accent/30 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all"
+              {hasActiveFilters && (
+                <button onClick={clearFilters} className="text-xs text-accent font-medium hover:underline inline-flex items-center gap-1">
+                  <RotateCcw className="h-3 w-3" /> Clear
+                </button>
+              )}
+            </div>
+            <div className="flex items-center gap-2 flex-wrap justify-end">
+              <button
+                onClick={locateMe}
+                disabled={locating}
+                className={`inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-medium transition-all disabled:opacity-50 ${
+                  userLat
+                    ? 'bg-accent text-white shadow-sm'
+                    : 'bg-white text-muted-foreground border border-border/60 hover:border-accent/30 hover:text-foreground'
+                }`}
               >
-                <option value="relevance">Recommended</option>
-                <option value="-rating">Highest Rated</option>
-                {userLat && userLng && <option value="distance">Nearest</option>}
-                <option value="newest">Newest</option>
-              </select>
-              <ArrowUpDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
+                {userLat && <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span></span>}
+                <MapPin className="h-3.5 w-3.5" />
+                {locating ? 'Locating...' : userLat ? 'Near Me' : 'Near Me'}
+              </button>
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-medium transition-all ${
+                  showFilters || hasActiveFilters
+                    ? 'bg-accent text-accent-foreground shadow-sm'
+                    : 'bg-white text-muted-foreground border border-border/60 hover:border-accent/30 hover:text-foreground'
+                }`}
+              >
+                <Filter className="h-3.5 w-3.5" />
+                Filters
+                {hasActiveFilters && (
+                  <span className="ml-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-accent-foreground/20 text-[10px] font-bold">
+                    {(selectedGhats.length + selectedAreas.length + selectedLanguages.length + (verifiedOnly ? 1 : 0) + (priceMin ? 1 : 0) + (priceMax ? 1 : 0))}
+                  </span>
+                )}
+              </button>
+              <div className="relative">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="appearance-none h-8 pl-3 pr-7 rounded-lg text-xs font-medium bg-white border border-border/60 text-muted-foreground cursor-pointer hover:border-accent/30 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 transition-all"
+                >
+                  <option value="relevance">Recommended</option>
+                  <option value="-rating">Highest Rated</option>
+                  {userLat && userLng && <option value="distance">Nearest</option>}
+                  <option value="newest">Newest</option>
+                </select>
+                <ArrowUpDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
+              </div>
+              <button
+                onClick={() => setShowMap(!showMap)}
+                className={`inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-medium transition-all ${
+                  showMap
+                    ? 'bg-accent text-accent-foreground shadow-sm'
+                    : 'bg-white text-muted-foreground border border-border/60 hover:border-accent/30 hover:text-foreground'
+                }`}
+              >
+                {showMap ? <span className="inline-flex items-center gap-1"><Grid3X3 className="h-3.5 w-3.5" />List</span> : <span className="inline-flex items-center gap-1"><Map className="h-3.5 w-3.5" />Map</span>}
+              </button>
             </div>
           </div>
         </div>
